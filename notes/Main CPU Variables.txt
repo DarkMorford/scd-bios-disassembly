@@ -1,0 +1,45 @@
+FFFFE000
+FFFFF700
+FFFFF900
+FFFFFB80
+FFFFFD00
+FFFFFD02
+FFFFFD0E
+FFFFFD78
+FFFFFD7E
+FFFFFD84
+FFFFFD8A
+FFFFFD90
+FFFFFD96
+FFFFFD9C
+FFFFFDA2
+FFFFFDA8
+FFFFFDB4 - VdpRegisterCache (Reg0)
+FFFFFDB6 - VdpRegisterCache (Reg1)
+FFFFFDB8 - VdpRegisterCache (Reg2)
+FFFFFDBA - VdpRegisterCache (Reg3)
+FFFFFDBC - VdpRegisterCache (Reg4)
+FFFFFDBE - VdpRegisterCache (Reg5)
+FFFFFDC0 - VdpRegisterCache (Reg6)
+FFFFFDC2 - VdpRegisterCache (Reg7)
+FFFFFDC4 - VdpRegisterCache (Reg8)
+FFFFFDC6 - VdpRegisterCache (Reg9)
+FFFFFDC8 - VdpRegisterCache (Reg10)
+FFFFFDCA - VdpRegisterCache (Reg11)
+FFFFFDCC - VdpRegisterCache (Reg12)
+FFFFFDCE - VdpRegisterCache (Reg13)
+FFFFFDD0 - VdpRegisterCache (Reg14)
+FFFFFDD2 - VdpRegisterCache (Reg15)
+FFFFFDD4 - VdpRegisterCache (Reg16)
+FFFFFDD6 - VdpRegisterCache (Reg17)
+FFFFFDD8 - VdpRegisterCache (Reg18)
+FFFFFDDC
+FFFFFDDD
+FFFFFDDE
+FFFFFE20 - Joypad 1 status
+FFFFFE22 - Joypad 2 status
+FFFFFE26
+FFFFFE27
+FFFFFE28
+FFFFFE2E
+FFFFFE54
