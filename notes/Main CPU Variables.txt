@@ -1,4 +1,5 @@
 FFFFC102
+FFFFC106
 FFFFC10A
 FFFFC10C
 FFFFC10E
@@ -57,12 +58,11 @@ FFFFEB4C
 FFFFF5C6
 FFFFF700
 FFFFF900
-FFFFFB80
+FFFFFB80 - Color palettes (at least 2)
 FFFFFBC6
-FFFFFD00 - Generic exception handler (?)
+FFFFFD00 - Initial top of stack / Exception handler
 FFFFFD06 - INT6 autovector (V-blank)
 FFFFFD0C - INT4 autovector (H-blank)
-FFFFFD0E
 FFFFFD12 - INT2 autovector (External)
 FFFFFD18 - TRAP0 vector
 FFFFFD1E - TRAP1 vector
@@ -89,6 +89,7 @@ FFFFFD96 - F-line emulator
 FFFFFD9C - Privilege violation error
 FFFFFDA2 - Trace
 FFFFFDA8
+FFFFFDAE
 FFFFFDB4 - VdpRegisterCache (Reg0)
 FFFFFDB6 - VdpRegisterCache (Reg1)
 FFFFFDB8 - VdpRegisterCache (Reg2)
@@ -108,23 +109,26 @@ FFFFFDD2 - VdpRegisterCache (Reg15)
 FFFFFDD4 - VdpRegisterCache (Reg16)
 FFFFFDD6 - VdpRegisterCache (Reg17)
 FFFFFDD8 - VdpRegisterCache (Reg18)
-FFFFFDDA
+FFFFFDDA - Next main-loop state
 FFFFFDDC
 FFFFFDDD
-FFFFFDDE
+FFFFFDDE - Main CPU communication flags
+FFFFFDE0 - Main CPU communication data
+FFFFFDF0 - Sub-CPU communication data
 FFFFFE18
 FFFFFE19
 FFFFFE20 - Joypad 1 status (buttons down)
 FFFFFE21 - Joypad 1 status (buttons triggered)
 FFFFFE22 - Joypad 2 status (buttons down)
 FFFFFE23 - Joypad 2 status (buttons triggered)
-FFFFFE26
+FFFFFE26 - V-blank operation code (?)
 FFFFFE27
 FFFFFE28
 FFFFFE29
 FFFFFE2A - RNG storage
 FFFFFE2C
 FFFFFE2E
+FFFFFE3A
 FFFFFE4E
 FFFFFE50
 FFFFFE54

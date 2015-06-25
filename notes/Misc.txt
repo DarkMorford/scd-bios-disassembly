@@ -1,0 +1,41 @@
+Common instructions:
+--------------------
+4E73 - RTE
+4E75 - RTS
+4EF9 - JMP to long address
+
+Subroutines:
+------------
+3A4 - Install exception vectors
+57C - Found bootable cartridge
+5F0 - Set up Genesis hardware
+904 - V-blank handler
+970 - Seed RNG (?)
+15BE - Clear main CPU comm registers
+21F4 - First state after boot
+6DCE - Look for bootable cartridge
+
+dmaFillVramWithByte (0x0ABA) clobbers d3, a6
+clearSubCpuPrg (0x06D4) clobbers a5, a6, d5, d7
+clearWordRam2M (0x077E)
+	- Requires reg a6 set to 0xA12002
+	- Clobbers d7
+	- Does nothing if Word RAM is in 1M mode or assigned to sub-CPU
+
+Load VDP Registers (0x09D0)
+---------------------------
+8004 - HINT off, HV counter enable
+8124 - Display off, VINT on, DMA off, V28 cell mode
+9011 - 64x64 cell scroll planes
+8B00 - Ext INT off, H/V full scroll
+8C81 - H40 cell mode, shadow/hilight off, no interlace
+8328 - Window pattern table address 0xA000
+8230 - Scroll A pattern table address 0xC000
+8407 - Scroll B pattern table address 0xE000
+855C - Sprite attribute table address 0xB800
+8D2F - H-scroll data table address 0xBC00
+8700 - Background color: palette 0, color 0
+8A00 - HINT every line if enabled
+8F02 - Address auto-increment 2
+9100 - Window H position 0
+9200 - Window V position 0
