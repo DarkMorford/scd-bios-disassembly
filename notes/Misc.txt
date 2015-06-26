@@ -3,6 +3,69 @@ Common instructions:
 4E73 - RTE
 4E75 - RTS
 4EF9 - JMP to long address
+60XX - BRA
+	XX = $00: word displacement
+
+SUB CPU
+=======
+
+Sub-CPU Segments
+----------------
+PRG_RAM      [$000000-$01FFFF] ($0000-$29FF write-protected)
+WORD_RAM_2M  [$080000-$0BFFFF]
+WORD_RAM_1M  [$0C0000-$0DFFFF]
+BATTERY_SRAM [$FE0000-$FE3FFF] (Odd bytes)
+PCM_SOURCE   [$FF0000-$FF7FFF] (Odd bytes)
+GATE_ARRAY   [$FF8000-$FF81FF] (Base $0FF00000)
+
+Interrupts
+----------
+1 - Graphic processing complete
+2 - Main CPU (V-Blank, etc.)
+3 - Timer
+4 - CDD
+5 - CDC
+6 - Subcode
+
+Subroutines
+-----------
+364 - Set up jump points
+	Install interrupt vectors
+		INT1 - $0660
+		INT2 - $05F2
+		INT3 - $0660
+		INT4 - $0610
+		INT5 - $0634
+		INT6 - $0648
+		INT7 - $0660
+	Install unk jump vectors
+		5F0A - $05D0
+		5F10 - $05E2
+		5F16 - $443A
+		5F1C - $3904
+		5F22 - $2928 (_cdbios)
+
+30C  - clears 8 kB of RAM between BIOS end and BOOT start [$5800-$5FFF]
+
+3D4 - Enable INT2/INT4 (MD/CDD), activate CDD clock
+
+5E2 - Spin until something (interrupt) clears $5EA4 bit 0
+
+1CBC - Initialize CDC
+	Reset CDC
+	Write IFCTRL: $3A
+		Disable CMDI/DTEI, Enable DECI
+		Disable command break
+		Disable data transfer WAIT
+		Enable status transfer WAIT
+		Enable data out, disable status out
+	Write WAL: 0
+	Write WAL: 0
+	Write PTL: 0
+	Write PTL: 0
+
+MAIN CPU
+========
 
 Subroutines:
 ------------
@@ -39,3 +102,18 @@ Load VDP Registers (0x09D0)
 8F02 - Address auto-increment 2
 9100 - Window H position 0
 9200 - Window V position 0
+
+MAIN CPU GATE ARRAY
+-------------------
+GA_INTERRUPT:    equ $A12000
+GA_RESET_HALT:	 equ $A12001
+GA_WRITE_PROTECT: equ $A12002
+GA_MEMORY_MODE:	 equ $A12003
+GA_CDC_TRANSFER: equ $A12004
+GA_HINT_VECTOR:	 equ $A12006
+GA_CDC_DATA:     equ $A12008
+GA_STOPWATCH:    equ $A1200C
+GA_COMM_MAINFLAGS: equ $A1200E
+GA_COMM_SUBFLAGS: equ $A1200F
+GA_COMM_MAINDATA: equ $A12010
+GA_COMM_SUBDATA: equ $A12020
