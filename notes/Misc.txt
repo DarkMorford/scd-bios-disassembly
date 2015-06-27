@@ -11,7 +11,7 @@ SUB CPU
 
 Sub-CPU Segments
 ----------------
-PRG_RAM      [$000000-$01FFFF] ($0000-$29FF write-protected)
+PRG_RAM      [$000000-$07FFFF] ($0000-$29FF write-protected)
 WORD_RAM_2M  [$080000-$0BFFFF]
 WORD_RAM_1M  [$0C0000-$0DFFFF]
 BATTERY_SRAM [$FE0000-$FE3FFF] (Odd bytes)
