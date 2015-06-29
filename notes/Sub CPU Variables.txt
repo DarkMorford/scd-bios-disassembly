@@ -86,26 +86,134 @@ GA_SUBCODE_BUFFER: equ $FFFF8100
 
 Memory Locations
 ----------------
+5801 - LED status
+	1: Green LED
+	0: Red LED
 5802
+5803 - LED blink mode
 5804
 5806
-580C
+580A - Bitfield
+	0: sub_E74 executing
+	2:
+	3:
+	4: Transfer to CDD finished
+	7: Initial setup finished
+580B - Bitfield
+	1:
+580C - Bitfield
+	5:
+	7:
+580D - Bitfield
+	0:
+	1:
+	2:
+	4: Something useful in CDD STATUS 0
+	5:
+	6:
+	7:
+580E - Bitfield
+	0: Accessing TOC table ($5858)
+	1: Reading $59EC
+	2: Reading $59F0
+	4: Something useful in CDD STATUS 1
+	5: Lead-out start time valid
+	6: TOC valid
+580F - Bitfield
+	0: Absolute time (BCD) valid
+	1: Relative time (BCD) valid
+	2: Disk control code/track number valid
+5810
 5811
 5812
+5822
 582A
+583A - CDD COMMAND buffer
+5844 - CDD STATUS cache
+584E - CDD STATUS cache #2 ?
+5850 - First track number (BCD)
+5851 - Last track number (BCD)
+5852 - Drive version/flags
+5854 - Lead-out start time (BCD?)
+5858 - TOC table (4 bytes/entry)
+59E8 - Most recent TOC entry
+59EC - CDD STATUS 2-8 (Absolute time (BCD) [minutes:seconds:frames:flag])
+59F0 - (Relative time (BCD) [minutes:seconds:frames:flag])
+59F4 - CDD STATUS 2+3 (Current track number)
+59F5 - CDD STATUS 6 (Disc control code)
+59F7
+59F8 - CDD STATUS 2-8
+59FC
+5A00
+5A01 - CDD STATUS 6
+5A02
 5A04
-5A06
-....
-5A44
-....
-5A83
-5AB6
-....
+5A05
+5A06 - Bitfield
+	1:
+5A3A - Frame header
+5A84 - Bitfield
+	1: sub_21F8 executing
+	5: ??? valid
+5A85
+5A90
+5A94
+5A96
+5A9A
+5AB6 - Bitfield
+	0: sub_2850 executing
+	1:
+	2:
+	3:
+	6:
+	7: ??? valid
+5AB8 - Master Volume
+5ABA - System Volume
+5ABB - Bitfield
+	2:
+5ABE
+5ABF - Bitfield
+	2:
+5AC0
+5AC1 - Bitfield
+	2:
+5AC3 - Bitfield
+	2:
 5AC7
-5AD2
-5AE0
-5AE2
-5B0C
+5AC8 - Bitfield
+	0-3: Command waiting
+	7: CD-BIOS busy/pending
+5ACA - Command argument #1
+5ACE - Command argument #2
+5AD2 - CD-BIOS status/drive control status
+5AD4 - Jump address from sub_2A66
+5ADC
+5AE0 - CD-BIOS command cache
+5AE2 - CD-BIOS argument #1 cache
+5AE6 - CD-BIOS argument #2 cache
+5AFE
+5B00
+5B02
+5B0C - Max frames before spinning down drive
+5B18
+5B22
+5E80 - CD-BIOS status
+	5E80 - bios_status
+	5E82 - led
+	5E84 - cdd_status
+		0 - status code
+		1 - report code
+		2 - disk control code
+		3 - song number
+		4-7 - absolute time (BCD)
+		8-11 - relative time (BCD)
+		12 - first song number
+		13 - last song number
+		14 - drive version
+		15 - flags
+		16-19 - start of lead-out
+	5E98 - volume
+	5E9C - header
 5EA4
 5EE0 - Jump table (16 entries)
 5EE6

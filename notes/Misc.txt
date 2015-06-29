@@ -11,7 +11,7 @@ SUB CPU
 
 Sub-CPU Segments
 ----------------
-PRG_RAM      [$000000-$07FFFF] ($0000-$29FF write-protected)
+PRG_RAM      [$000000-$07FFFF] ($0000-$53FF write-protected)
 WORD_RAM_2M  [$080000-$0BFFFF]
 WORD_RAM_1M  [$0C0000-$0DFFFF]
 BATTERY_SRAM [$FE0000-$FE3FFF] (Odd bytes)
@@ -44,12 +44,29 @@ Subroutines
 		5F16 - $443A
 		5F1C - $3904
 		5F22 - $2928 (_cdbios)
+		
+F3E - Transfer command to CDD
 
 30C  - clears 8 kB of RAM between BIOS end and BOOT start [$5800-$5FFF]
 
 3D4 - Enable INT2/INT4 (MD/CDD), activate CDD clock
 
 5E2 - Spin until something (interrupt) clears $5EA4 bit 0
+
+D6C - Get disk control code
+D54 - Get current track number
+
+7D2 - Convert BCD to binary
+
+0DAE - writeCddStatus
+1840 - Get frame header?
+
+0E74 - Called from CDD interrupt handler
+21F8 - Called from CDD interrupt handler
+2850 - Called from CDD interrupt handler
+2A66 - Called from CDD interrupt handler
+
+2A76 - Copy 10 bytes from a0 to a1
 
 1CBC - Initialize CDC
 	Reset CDC
@@ -63,6 +80,8 @@ Subroutines
 	Write WAL: 0
 	Write PTL: 0
 	Write PTL: 0
+	
+17EE - Called from MD interrupt handler
 
 MAIN CPU
 ========
