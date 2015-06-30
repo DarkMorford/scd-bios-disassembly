@@ -85,14 +85,19 @@ GA_SUBCODE_ADDRESS: equ	$FFFF8069
 GA_SUBCODE_BUFFER: equ $FFFF8100
 
 Memory Locations
-----------------
+================
+---- LED ----
+5800 - LED bitfield
+	7: LED timer(s) need updating
 5801 - LED status
 	1: Green LED
 	0: Red LED
-5802
-5803 - LED blink mode
-5804
-5806
+5802 - LED blink mode
+5804 - User-set blink mode
+5806 - LED mode last update
+5808 - Green LED blink timer
+5809 - Red LED blink timer
+--------
 580A - Bitfield
 	0: sub_E74 executing
 	2:
@@ -102,6 +107,8 @@ Memory Locations
 580B - Bitfield
 	1:
 580C - Bitfield
+	0:
+	3:
 	5:
 	7:
 580D - Bitfield
@@ -126,6 +133,7 @@ Memory Locations
 5810
 5811
 5812
+5818
 5822
 582A
 583A - CDD COMMAND buffer
@@ -149,9 +157,24 @@ Memory Locations
 5A02
 5A04
 5A05
+---- CDC ----
 5A06 - Bitfield
 	1:
+	4:
+	7:
+5A07 - Bitfield
+	1:
+	2:
+	4:
+	5:
+	6:
+	7:
+5A08 - Register storage
+5A24
 5A3A - Frame header
+5A44
+5A82
+--------
 5A84 - Bitfield
 	1: sub_21F8 executing
 	5: ??? valid
@@ -160,26 +183,34 @@ Memory Locations
 5A94
 5A96
 5A9A
+---- Volume ----
 5AB6 - Bitfield
-	0: sub_2850 executing
+	0: updateVolume executing
 	1:
 	2:
 	3:
 	6:
-	7: ??? valid
+	7: Volume params valid
 5AB8 - Master Volume
 5ABA - System Volume
 5ABB - Bitfield
 	2:
+5ABC
+5ABD
 5ABE
 5ABF - Bitfield
 	2:
 5AC0
 5AC1 - Bitfield
 	2:
+5AC2
 5AC3 - Bitfield
 	2:
+5AC4
+5AC5
+5AC6
 5AC7
+--------
 5AC8 - Bitfield
 	0-3: Command waiting
 	7: CD-BIOS busy/pending
@@ -214,7 +245,9 @@ Memory Locations
 		16-19 - start of lead-out
 	5E98 - volume
 	5E9C - header
-5EA4
+5EA0 - _BOOTSTAT
+5EA4 - VBlank flag
+5EA6 - _USERMODE
 5EE0 - Jump table (16 entries)
 5EE6
 5EEC
