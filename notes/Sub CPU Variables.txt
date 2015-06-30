@@ -175,6 +175,7 @@ Memory Locations
 5A44
 5A82
 --------
+---- Subcode (SCD) ----
 5A84 - Bitfield
 	1: sub_21F8 executing
 	5: ??? valid
@@ -183,6 +184,8 @@ Memory Locations
 5A94
 5A96
 5A9A
+5AB4
+--------
 ---- Volume ----
 5AB6 - Bitfield
 	0: updateVolume executing
@@ -211,6 +214,7 @@ Memory Locations
 5AC6
 5AC7
 --------
+---- CDD ----
 5AC8 - Bitfield
 	0-3: Command waiting
 	7: CD-BIOS busy/pending
@@ -226,9 +230,42 @@ Memory Locations
 5B00
 5B02
 5B0C - Max frames before spinning down drive
-5B18
+5B18 - Bitfield
+5B19 - Bitfield
 5B22
-5E80 - CD-BIOS status
+--------
+---- CDBOOT ----
+5B24 - Bitfield
+5B2E
+5B32
+5B38
+5B3C
+5B42
+5B46
+5B4A
+5B4E
+5B52
+--------
+---- BURAM ----
+5B54
+5B58
+5B5C
+5B60
+5B64
+5B68
+5B6C
+5B70
+5B84
+5B88
+5B8C
+5B9E
+5BAE
+5BBA
+5BBE
+--------
+5C00 - Bottom of stack
+5E80 - Top of stack
+5E80 - _CDSTAT
 	5E80 - bios_status
 	5E82 - led
 	5E84 - cdd_status
@@ -255,15 +292,15 @@ Memory Locations
 5EF8
 5EFE
 5F04
-5F0A
-5F10
-5F16
-5F1C
+5F0A - _setjmptbl
+5F10 - _waitvsync
+5F16 - _buram
+5F1C - _cdboot
 5F22 - _cdbios
-5F28
-5F2E
-5F34
-5F3A
+5F28 - _usercall0
+5F2E - _usercall1
+5F34 - _usercall2
+5F3A - _usercall3
 5F40 - Address Error
 5F46 - Illegal Instruction
 5F4C - Zero Divide
