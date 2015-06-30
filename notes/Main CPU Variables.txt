@@ -1,3 +1,21 @@
+Gate Array Registers
+====================
+GA_INTERRUPT:    equ $A12000
+GA_RESET_HALT:	 equ $A12001
+GA_WRITE_PROTECT: equ $A12002
+GA_MEMORY_MODE:	 equ $A12003
+GA_CDC_TRANSFER: equ $A12004
+GA_HINT_VECTOR:	 equ $A12006
+GA_CDC_DATA:     equ $A12008
+GA_STOPWATCH:    equ $A1200C
+GA_COMM_MAINFLAGS: equ $A1200E
+GA_COMM_SUBFLAGS: equ $A1200F
+GA_COMM_MAINDATA: equ $A12010
+GA_COMM_SUBDATA: equ $A12020
+
+Memory Locations
+================
+FFFFC0FF
 FFFFC102
 FFFFC106
 FFFFC10A
@@ -58,7 +76,7 @@ FFFFEB4C
 FFFFF5C6
 FFFFF700
 FFFFF900
-FFFFFB80 - Color palettes (at least 2)
+FFFFFB80 - Color palettes (2)
 FFFFFBC6
 FFFFFD00 - Initial top of stack / Exception handler
 FFFFFD06 - INT6 autovector (V-blank)
@@ -88,7 +106,7 @@ FFFFFD90 - A-line emulator
 FFFFFD96 - F-line emulator
 FFFFFD9C - Privilege violation error
 FFFFFDA2 - Trace
-FFFFFDA8
+FFFFFDA8 - Called from sub_904
 FFFFFDAE
 FFFFFDB4 - VdpRegisterCache (Reg0)
 FFFFFDB6 - VdpRegisterCache (Reg1)
@@ -113,22 +131,51 @@ FFFFFDDA - Next main-loop state
 FFFFFDDC
 FFFFFDDD
 FFFFFDDE - Main CPU communication flags
+	0:
+	1:
+	2:
+	3:
+	4:
+	5:
+	6:
+	7:
+FFFFFDDF - Sub-CPU communication flags
+	0:
+	1:
+	2:
+	3:
+	4:
+	5:
+	6:
+	7:
 FFFFFDE0 - Main CPU communication data
 FFFFFDF0 - Sub-CPU communication data
+FFFFFE00
+FFFFFE0C
 FFFFFE18
 FFFFFE19
+FFFFFE1A
 FFFFFE20 - Joypad 1 status (buttons down)
 FFFFFE21 - Joypad 1 status (buttons triggered)
 FFFFFE22 - Joypad 2 status (buttons down)
 FFFFFE23 - Joypad 2 status (buttons triggered)
-FFFFFE26 - V-blank operation code (?)
+FFFFFE26 - V-blank operation code (Bitfield) ?
 FFFFFE27
 FFFFFE28
-FFFFFE29
+FFFFFE29 - Bitfield
+	0: Palette reset pending
 FFFFFE2A - RNG storage
 FFFFFE2C
-FFFFFE2E
+FFFFFE2E - VDP address step counter
 FFFFFE3A
+FFFFFE3C
+FFFFFE3E
+FFFFFE40
+FFFFFE42
+FFFFFE43
+FFFFFE44
 FFFFFE4E
 FFFFFE50
-FFFFFE54
+FFFFFE53
+FFFFFE54 - Cartridge boot flag
+FFFFFE57

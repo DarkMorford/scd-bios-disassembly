@@ -47,6 +47,8 @@ Subroutines
 		
 F3E - Transfer command to CDD
 
+0AEC - InitCDD
+
 30C  - clears 8 kB of RAM between BIOS end and BOOT start [$5800-$5FFF]
 
 3D4 - Enable INT2/INT4 (MD/CDD), activate CDD clock
@@ -56,15 +58,31 @@ F3E - Transfer command to CDD
 D6C - Get disk control code
 D54 - Get current track number
 
-7D2 - Convert BCD to binary
+0ED0 - Copy CDD status to cache
 
-0DAE - writeCddStatus
+113E - Build cddAbsFrameTime
+118C - Build cddRelFrameTime
+11DA - Pack 6 nybbles into 3 bytes
+11EA - Pack 2 nybbles into 1 byte
+
+12CE - Generate CDD command
+	1488 - Write command to buffer
+
 1840 - Get frame header?
 
+1CE6 - Write CDC CTRL0
+	Enable DECEN, E01RQ
+	Disable AUTORQ, ERAMRQ, WRRQ, QRQ, PRQ
+	Enable SYIEN, SYDEN, DSCREN, COWREN, MODRQ
+	Disable FORMRQ, MBCKRQ, SHDREN
+	Sets Mode2/Form1
+	Header data on HEAD0-3
+
 0E74 - Called from CDD interrupt handler
-21F8 - Called from CDD interrupt handler
-2850 - Called from CDD interrupt handler
-2A66 - Called from CDD interrupt handler
+21F8 - updateSubcodes
+
+2A60 - Store jump target
+2A66 - Go to jump target
 
 2A76 - Copy 10 bytes from a0 to a1
 
@@ -93,6 +111,11 @@ Subroutines:
 5F0 - Set up Genesis hardware
 904 - V-blank handler
 970 - Seed RNG (?)
+098A - Set HINT handler
+09A4 - Reset (?) HINT handler
+0D16 - Display On
+0D1E - Black screen, Display off
+0D30 - Display Off
 15BE - Clear main CPU comm registers
 21F4 - First state after boot
 6DCE - Look for bootable cartridge
@@ -121,18 +144,3 @@ Load VDP Registers (0x09D0)
 8F02 - Address auto-increment 2
 9100 - Window H position 0
 9200 - Window V position 0
-
-MAIN CPU GATE ARRAY
--------------------
-GA_INTERRUPT:    equ $A12000
-GA_RESET_HALT:	 equ $A12001
-GA_WRITE_PROTECT: equ $A12002
-GA_MEMORY_MODE:	 equ $A12003
-GA_CDC_TRANSFER: equ $A12004
-GA_HINT_VECTOR:	 equ $A12006
-GA_CDC_DATA:     equ $A12008
-GA_STOPWATCH:    equ $A1200C
-GA_COMM_MAINFLAGS: equ $A1200E
-GA_COMM_SUBFLAGS: equ $A1200F
-GA_COMM_MAINDATA: equ $A12010
-GA_COMM_SUBDATA: equ $A12020
