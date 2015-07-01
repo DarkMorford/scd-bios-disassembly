@@ -1,5 +1,6 @@
 Common instructions:
 --------------------
+4E71 - NOP
 4E73 - RTE
 4E75 - RTS
 4EF9 - JMP to long address

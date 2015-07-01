@@ -58,6 +58,7 @@ FFFFD039
 FFFFD03A
 FFFFD052
 FFFFD058
+FFFFD060
 FFFFD1CE
 FFFFD1D0
 FFFFD300
@@ -130,6 +131,7 @@ FFFFFDD8 - VdpRegisterCache (Reg18)
 FFFFFDDA - Next main-loop state
 FFFFFDDC
 FFFFFDDD
+---- INTER-CPU COMM ----
 FFFFFDDE - Main CPU communication flags
 	0:
 	1:
@@ -150,8 +152,10 @@ FFFFFDDF - Sub-CPU communication flags
 	7:
 FFFFFDE0 - Main CPU communication data
 FFFFFDF0 - Sub-CPU communication data
+--------
 FFFFFE00
 FFFFFE0C
+---- JOYPAD ----
 FFFFFE18
 FFFFFE19
 FFFFFE1A
@@ -159,14 +163,15 @@ FFFFFE20 - Joypad 1 status (buttons down)
 FFFFFE21 - Joypad 1 status (buttons triggered)
 FFFFFE22 - Joypad 2 status (buttons down)
 FFFFFE23 - Joypad 2 status (buttons triggered)
+--------
 FFFFFE26 - V-blank operation code (Bitfield) ?
 FFFFFE27
 FFFFFE28
 FFFFFE29 - Bitfield
 	0: Palette reset pending
 FFFFFE2A - RNG storage
-FFFFFE2C
-FFFFFE2E - VDP address step counter
+FFFFFE2C - Font tile offset
+FFFFFE2E - Scroll map line increment
 FFFFFE3A
 FFFFFE3C
 FFFFFE3E
@@ -174,8 +179,14 @@ FFFFFE40
 FFFFFE42
 FFFFFE43
 FFFFFE44
+FFFFFE46
+FFFFFE47
+FFFFFE48
+FFFFFE4A
 FFFFFE4E
 FFFFFE50
 FFFFFE53
 FFFFFE54 - Cartridge boot flag
 FFFFFE57
+FFFFFF0A
+FFFFFF0C
