@@ -37,6 +37,9 @@ FFFFC12E
 FFFFC132 - Jump table index
 FFFFC134 - Jump table index
 FFFFC136 - Jump table index
+FFFFC13A
+FFFFC83A
+FFFFCF3A
 FFFFD000
 FFFFD002
 FFFFD003
@@ -62,7 +65,8 @@ FFFFD060
 FFFFD1CE
 FFFFD1D0
 FFFFD300
-FFFFE000
+FFFFD63A
+FFFFE000 - Decompression work space
 FFFFE0A2
 FFFFE0B6
 FFFFE0EA
@@ -75,10 +79,11 @@ FFFFEB1E
 FFFFEB4A
 FFFFEB4C
 FFFFF5C6
-FFFFF700
+FFFFF700 - Nemesis code table
 FFFFF900
-FFFFFB80 - Color palettes (2)
-FFFFFBC6
+FFFFFB80 - Color palettes
+FFFFFC00
+---- JUMP TABLE ----
 FFFFFD00 - Initial top of stack / Exception handler
 FFFFFD06 - INT6 autovector (V-blank)
 FFFFFD0C - INT4 autovector (H-blank)
@@ -109,6 +114,7 @@ FFFFFD9C - Privilege violation error
 FFFFFDA2 - Trace
 FFFFFDA8 - Called from sub_904
 FFFFFDAE
+--------
 FFFFFDB4 - VdpRegisterCache (Reg0)
 FFFFFDB6 - VdpRegisterCache (Reg1)
 FFFFFDB8 - VdpRegisterCache (Reg2)
@@ -128,6 +134,7 @@ FFFFFDD2 - VdpRegisterCache (Reg15)
 FFFFFDD4 - VdpRegisterCache (Reg16)
 FFFFFDD6 - VdpRegisterCache (Reg17)
 FFFFFDD8 - VdpRegisterCache (Reg18)
+--------
 FFFFFDDA - Next main-loop state
 FFFFFDDC
 FFFFFDDD
@@ -168,7 +175,7 @@ FFFFFE26 - V-blank operation code (Bitfield) ?
 FFFFFE27
 FFFFFE28
 FFFFFE29 - Bitfield
-	0: Palette reset pending
+	0: Palette update needed
 FFFFFE2A - RNG storage
 FFFFFE2C - Font tile offset
 FFFFFE2E - Scroll map line increment

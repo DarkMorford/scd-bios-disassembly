@@ -121,6 +121,60 @@ Subroutines:
 21F4 - First state after boot
 6DCE - Look for bootable cartridge
 
+copyTilemapToVram ($0C2E)
+	- d0: VDP address
+	- d1: Columns
+	- d2: Lines
+	- a1: Source data
+	
+fillTilemap ($0CF2)
+	- d0: VDP address
+	- d1:
+	- d2:
+	- d3: Tile data (word)
+	
+sub_2354 ($2354)
+	- d1: Multiply by $40 for bytes transferred (0-$1C)
+	- a0: Source data
+	- a1: Dest address
+	- Clear $700 bytes starting at a1
+
+NemDec ($0E84)
+	- Nemesis decompressor
+	- a1: Source data
+NemDecToRam ($0E94)
+	- Nemesis decompressor
+	- a1: Source data
+	- a2: Write target
+	
+EniDec ($1AA0)
+	- Enigma decompressor
+	- d0: Start tile
+	- a1: Source data
+	- a2: Write target
+
+sub_199C ($199C)
+	- d0: VDP address
+	- d1: Columns
+	- d2: Lines
+	- d3: Starting tile #
+	
+hexToBcd ($19F8)
+	- d1.w: Input value (hex)
+	- d1.w(out): BCD value
+	- Really only works up to $270F (9999)
+
+writeTextToScreen ($1928)
+	- Uses palette 0
+	- d0: VDP address to start
+	- a1: Text address
+	- Char $FF end-of text
+	- Char $00 newline
+
+loadDefaultFont ($1940)
+	- VRAM write address $0400
+	- Font data at $15000-$15300
+
 dmaFillVramWithByte (0x0ABA) clobbers d3, a6
 clearSubCpuPrg (0x06D4) clobbers a5, a6, d5, d7
 clearWordRam2M (0x077E)
