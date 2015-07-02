@@ -1,0 +1,57 @@
+
+SN 68k version 2.53
+
+Copyright (c) 1988-1997 S.N. Systems Software Limited,  all rights reserved
+
+Edited by Nemesis on 1/11/2007. Increased the maximum path length, and added
+support for filenames and paths which contain spaces. Spaces are also supported
+with the /j option, however include paths specified with /j must now always be
+terminated by an asterisk. Eg, use asm68k /j "c:\include\*".
+
+USAGE : asm68k /options source,object,symbol,listing,temporary file
+
+Options :
+	/c		enable listing of conditioned out lines
+	/d		debug mode - do not run
+	/e symb=value{;symb=value}	equate symbol(s)
+	/g		write non-global symbols to linker object file
+	/i		display information window
+	/j path		specify include file search path
+	/k		allow use of ifeq, etc.
+	/l		produce linkable output file
+	/m		expand macros in listing file
+	/o opts		set assembler options/optimisations
+	/p		produce pure binary output file
+	/ps		produce binary file in s-record format
+	/q		run quietly
+	/w		write equates to symbol/linker file
+	/x		treat undefined symbols as XREFs
+	/z		include line number info in linker file
+	/zd		generate source level debug info
+Assembler options (first of +/- specified is default) :
+	ae+/-		automatic even on dc/dcb/ds/rs .w/l
+	an-/+		allow alternate number format
+	c-/+		case sensitivity
+	d-/+		descope local labels on equ, set, etc.
+	e+/-		print lines containing errors
+	l-/+		use '.' as leading character for local labels
+	l<char>	make <char> the local label character (not + or -)
+	p<processor>	allow opcodes for specified processor
+	r-/+		make external word offsets section relative
+	s-/+		treat equated symbols as labels
+	w+/-		print warnings
+	ws-/+		allow white space in operands
+	v-/+		write local labels to symbol file
+	x-/+		assume xrefs are in the section they are declared in
+Processor types supported :
+	68000 (default)
+	68010
+	68020
+Optimisations (first of +/- specified is default) :
+	op-/+		pc relative optimisation
+	os-/+		short branch optimisation
+	ow-/+		absolute word addressing optimisation
+	oz-/+		zero offset optimisation
+	oaq-/+	addq optimisation
+	osq-/+	subq optimisation
+	omq-/+	moveq optimisation
