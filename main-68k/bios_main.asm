@@ -281,7 +281,7 @@ loc_3D2:				; CODE XREF: installErrorVectors+32j
 		move.l	#$40C,(a0)+
 		move.w	d0,(a0)+
 		move.l	#$88F0,(a0)
-		lea	asc_40E,a1	; "RAM_CARTRIDG"
+		lea	asc_40E(pc),a1	; "RAM_CARTRIDG"
 		lea	(byte_400001).l,a2
 		tst.b	(a2)
 		bpl.s	locret_40C
@@ -333,7 +333,7 @@ _start:					; CODE XREF: ROM:00000214j
 
 loc_434:				; CODE XREF: ROM:0000042Cj
 		bne.w	loc_4C8
-		lea	InitData,a5
+		lea	InitData(pc),a5
 		movem.w	(a5)+,d5-d7
 		movem.l	(a5)+,a0-a4
 		move.b	-$10FF(a1),d0
@@ -515,8 +515,8 @@ bootCartridge:				; CODE XREF: ROM:000005B4j
 ; ---------------------------------------------------------------------------
 
 loc_598:				; CODE XREF: ROM:00000552j
-		jsr	loadDefaultVdpRegs
-		jsr	clearAllVram
+		jsr	(loadDefaultVdpRegs).w
+		jsr	(clearAllVram).w
 		bsr.w	checkRegion
 		bsr.w	clearSubCpuPrg
 		bsr.w	clearWordRam2M
@@ -528,7 +528,7 @@ loc_5AC:				; CODE XREF: ROM:00000578j sub_640+38j
 		bsr.s	sub_5F0
 		moveq	#1,d0
 		moveq	#4,d1
-		jsr	sub_1800
+		jsr	(sub_1800).w
 		moveq	#4,d0
 		bsr.w	setNextState
 
@@ -563,7 +563,7 @@ sub_5F0:				; CODE XREF: ROM:000005B6p
 		lea	(_EXCPT).w,a0
 		move.w	#$4EF9,(a0)+
 		move.l	#$640,(a0)+
-		jsr	waitForVblank
+		jsr	(waitForVblank).w
 		bsr.w	clearCommRegisters
 		lea	(GA_COMM_SUBFLAGS).l,a4
 
@@ -580,7 +580,7 @@ loc_60E:				; CODE XREF: sub_5F0+20j
 setupGenHardware:			; CODE XREF: ROM:00000580p sub_5F0p
 		jsr	installErrorVectors
 		bsr.w	setupJoypads
-		jsr	loadZ80Prg
+		jsr	(loadZ80Prg).w
 		bsr.w	loadSubCpuPrg
 		bsr.w	loadDefaultVdpRegs
 		clr.w	(paletteBuffer0).w
@@ -606,8 +606,8 @@ sub_640:				; CODE XREF: ROM:00000280j
 		nop
 		nop
 		move.b	#$FF,(PSG_CTRL).l
-		jsr	loadDefaultVdpRegs
-		jsr	clearAllVram
+		jsr	(loadDefaultVdpRegs).w
+		jsr	(clearAllVram).w
 		bra.w	loc_5AC
 ; End of function sub_640
 
@@ -619,14 +619,14 @@ loc_67C:				; CODE XREF: ROM:0000028Cj
 
 loc_684:				; CODE XREF: ROM:00000288j
 		ori	#$700,sr
-		jsr	loadDefaultVdpRegs
-		jsr	clearAllVram
-		jsr	installErrorVectors
+		jsr	(loadDefaultVdpRegs).w
+		jsr	(clearAllVram).w
+		jsr	(installErrorVectors).w
 		bsr.w	setupJoypads
-		jsr	loadZ80Prg
+		jsr	(loadZ80Prg).w
 		bsr.w	sub_118C
 		bsr.w	loadSubCpuPrg
-		jsr	waitForVblank
+		jsr	(waitForVblank).w
 		bsr.w	clearCommRegisters
 		lea	(GA_COMM_SUBFLAGS).l,a4
 
@@ -636,7 +636,7 @@ loc_6B2:				; CODE XREF: ROM:000006B4j
 		bsr.w	sub_16C4
 		moveq	#1,d0
 		moveq	#8,d1
-		jsr	sub_1800
+		jsr	(sub_1800).w
 		moveq	#8,d0
 		bsr.s	setNextState
 		bra.w	mainLoop
@@ -712,13 +712,13 @@ loc_72A:				; CODE XREF: loadSubCpuPrg+Aj
 		move.w	d5,(a6)
 		lea	(unk_16000).l,a0
 		lea	(SubCPU_Base0).l,a1
-		bsr.w	KosDec
+		bsr.w	decompressKosinski
 		lea	(unk_13400).l,a0
 		lea	(SubCPU_Base1).l,a1
-		bsr.w	KosDec
+		bsr.w	decompressKosinski
 		lea	(unk_1A000).l,a0
 		lea	(SubCPU_Base2).l,a1
-		bsr.w	KosDec
+		bsr.w	decompressKosinski
 		move.b	#$2A,(a6) ; '*' ; Write-protect sub-CPU PRG_RAM $0-$5400
 
 loc_770:				; CODE XREF: loadSubCpuPrg+50j
@@ -768,14 +768,14 @@ checkRegion:				; CODE XREF: ROM:00000564p
 
 RegionMismatch:				; CODE XREF: checkRegion+Ej
 		ori	#$700,sr
-		jsr	loadDefaultVdpRegs
-		jsr	loadDefaultFont
-		lea	regionErrorText,a1
+		jsr	(loadDefaultVdpRegs).w
+		jsr	(loadDefaultFont).w
+		lea	regionErrorText(pc),a1
 		move.l	#$C0000000,(VDP_CONTROL).l
 		move.l	(a1)+,(VDP_DATA).l
 		move.l	#$46060003,d0
-		jsr	writeTextToScreen
-		jsr	displayOn
+		jsr	(writeTextToScreen).w
+		jsr	(displayOn).w
 
 loc_7E0:				; CODE XREF: checkRegion:loc_7E0j
 		bra.s	loc_7E0		; Infinite loop	while displaying error
@@ -793,104 +793,7 @@ regionErrorText:dc.w $EE0		; DATA XREF: checkRegion+1Eo
 ; =============== S U B	R O U T	I N E =======================================
 
 ; Decompression	routine	for Kosinski data format.
-
-KosDec:					; CODE XREF: loadSubCpuPrg+24p
-					; loadSubCpuPrg+34p ...
-
-DescField	= -2
-
-		subq.l	#2,sp
-		move.b	(a0)+,1(sp)
-		move.b	(a0)+,(sp)
-		move.w	(sp),d5
-		moveq	#$F,d4
-
-loc_86E:				; CODE XREF: KosDec+24j KosDec+8Aj ...
-		lsr.w	#1,d5
-		move	sr,d6
-		dbf	d4,loc_880
-		move.b	(a0)+,1(sp)
-		move.b	(a0)+,(sp)
-		move.w	(sp),d5
-		moveq	#$F,d4
-
-loc_880:				; CODE XREF: KosDec+10j
-		move	d6,ccr
-		bcc.s	loc_888
-		move.b	(a0)+,(a1)+
-		bra.s	loc_86E
-; ---------------------------------------------------------------------------
-
-loc_888:				; CODE XREF: KosDec+20j
-		moveq	#0,d3
-		lsr.w	#1,d5
-		move	sr,d6
-		dbf	d4,loc_89C
-		move.b	(a0)+,1(sp)
-		move.b	(a0)+,(sp)
-		move.w	(sp),d5
-		moveq	#$F,d4
-
-loc_89C:				; CODE XREF: KosDec+2Cj
-		move	d6,ccr
-		bcs.s	loc_8CC
-		lsr.w	#1,d5
-		dbf	d4,loc_8B0
-		move.b	(a0)+,1(sp)
-		move.b	(a0)+,(sp)
-		move.w	(sp),d5
-		moveq	#$F,d4
-
-loc_8B0:				; CODE XREF: KosDec+40j
-		roxl.w	#1,d3
-		lsr.w	#1,d5
-		dbf	d4,loc_8C2
-		move.b	(a0)+,1(sp)
-		move.b	(a0)+,(sp)
-		move.w	(sp),d5
-		moveq	#$F,d4
-
-loc_8C2:				; CODE XREF: KosDec+52j
-		roxl.w	#1,d3
-		addq.w	#1,d3
-		moveq	#$FFFFFFFF,d2
-		move.b	(a0)+,d2
-		bra.s	loc_8E2
-; ---------------------------------------------------------------------------
-
-loc_8CC:				; CODE XREF: KosDec+3Cj
-		move.b	(a0)+,d0
-		move.b	(a0)+,d1
-		moveq	#$FFFFFFFF,d2
-		move.b	d1,d2
-		lsl.w	#5,d2
-		move.b	d0,d2
-		andi.w	#7,d1
-		beq.s	loc_8EE
-		move.b	d1,d3
-		addq.w	#1,d3
-
-loc_8E2:				; CODE XREF: KosDec+68j KosDec+86j ...
-		move.b	(a1,d2.w),d0
-		move.b	d0,(a1)+
-		dbf	d3,loc_8E2
-		bra.s	loc_86E
-; ---------------------------------------------------------------------------
-
-loc_8EE:				; CODE XREF: KosDec+7Aj
-		move.b	(a0)+,d1
-		beq.s	loc_8FE
-		cmpi.b	#1,d1
-		beq.w	loc_86E
-		move.b	d1,d3
-		bra.s	loc_8E2
-; ---------------------------------------------------------------------------
-
-loc_8FE:				; CODE XREF: KosDec+8Ej
-		addq.l	#2,sp
-		rts
-; End of function KosDec
-
+	include "compression\kosinski.asm"
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -1007,7 +910,7 @@ disableHInt:				; CODE XREF: ROM:00000318j
 
 loadDefaultVdpRegs:			; CODE XREF: ROM:000002ACj
 					; ROM:loc_598p	...
-		lea	word_9FC,a1
+		lea	word_9FC(pc),a1
 		move.w	#$80,(vdpLineIncrement).w ; '€'
 
 loadVdpRegs:				; CODE XREF: ROM:000002B0j
@@ -1683,223 +1586,9 @@ loc_E78:				; CODE XREF: sub_E20+52j
 ; =============== S U B	R O U T	I N E =======================================
 
 ; Nemesis decompressor
-
-NemDec:					; CODE XREF: ROM:000002ECj
-					; sub_1CFA+4Cp	...
-		movem.l	d0-d7/a1-a5,-(sp)
-		lea	sub_F0A,a3
-		lea	(VDP_DATA).l,a2
-		bra.s	loc_E9C
-; ---------------------------------------------------------------------------
-
-NemDecToRam:				; CODE XREF: ROM:000002F0j sub_238C+Ap ...
-		movem.l	d0-d7/a1-a5,-(sp)
-		lea	loc_F20,a3
-
-loc_E9C:				; CODE XREF: NemDec+Ej
-		lea	(nemesisCodeTable).w,a4
-		move.w	(a1)+,d2
-		add.w	d2,d2
-		bcc.s	loc_EAA
-		adda.w	#$A,a3
-
-loc_EAA:				; CODE XREF: NemDec+20j
-		lsl.w	#2,d2
-		movea.w	d2,a5
-		moveq	#8,d3
-		moveq	#0,d2
-		moveq	#0,d4
-		bsr.w	sub_F3A
-		move.b	(a1)+,d5
-		asl.w	#8,d5
-		move.b	(a1)+,d5
-		moveq	#$10,d6
-
-loc_EC0:				; CODE XREF: NemDec+76j
-		moveq	#8,d0
-		bsr.w	sub_F9C
-		cmpi.w	#$FC,d1	; 'ü'
-		bcc.s	loc_EFC
-		add.w	d1,d1
-		move.b	(a4,d1.w),d0
-		ext.w	d0
-		bsr.w	sub_FB0
-		move.b	1(a4,d1.w),d1
-
-loc_EDC:				; CODE XREF: NemDec+84j
-		move.w	d1,d0
-		andi.w	#$F,d1
-		andi.w	#$F0,d0	; 'ð'
-		lsr.w	#4,d0
-
-loc_EE8:				; CODE XREF: NemDec:loc_EF6j
-		lsl.l	#4,d4
-		or.b	d1,d4
-		subq.w	#1,d3
-		bne.s	loc_EF6
-		jmp	(a3)
-; ---------------------------------------------------------------------------
-
-loc_EF2:				; CODE XREF: sub_F0A+6j sub_F0A+12j ...
-		moveq	#0,d4
-		moveq	#8,d3
-
-loc_EF6:				; CODE XREF: NemDec+6Aj
-		dbf	d0,loc_EE8
-		bra.s	loc_EC0
-; ---------------------------------------------------------------------------
-
-loc_EFC:				; CODE XREF: NemDec+46j
-		moveq	#6,d0
-		bsr.w	sub_FB0
-		moveq	#7,d0
-		bsr.w	sub_FAC
-		bra.s	loc_EDC
-; End of function NemDec
-
+	include "compression\nemesis.asm"
 
 ; =============== S U B	R O U T	I N E =======================================
-
-
-sub_F0A:				; DATA XREF: NemDec+4o
-		move.l	d4,(a2)
-		subq.w	#1,a5
-		move.w	a5,d4
-		bne.s	loc_EF2
-		bra.s	loc_F34
-; ---------------------------------------------------------------------------
-		eor.l	d4,d2
-		move.l	d2,(a2)
-		subq.w	#1,a5
-		move.w	a5,d4
-		bne.s	loc_EF2
-		bra.s	loc_F34
-; ---------------------------------------------------------------------------
-
-loc_F20:				; DATA XREF: NemDec+14o
-		move.l	d4,(a2)+
-		subq.w	#1,a5
-		move.w	a5,d4
-		bne.s	loc_EF2
-		bra.s	loc_F34
-; ---------------------------------------------------------------------------
-		eor.l	d4,d2
-		move.l	d2,(a2)+
-		subq.w	#1,a5
-		move.w	a5,d4
-		bne.s	loc_EF2
-
-loc_F34:				; CODE XREF: sub_F0A+8j sub_F0A+14j ...
-		movem.l	(sp)+,d0-d7/a1-a5
-		rts
-; End of function sub_F0A
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_F3A:				; CODE XREF: NemDec+30p
-		move.b	(a1)+,d0
-
-loc_F3C:				; CODE XREF: sub_F3A+Ej
-		cmpi.b	#$FF,d0
-		bne.s	loc_F44
-		rts
-; ---------------------------------------------------------------------------
-
-loc_F44:				; CODE XREF: sub_F3A+6j
-		move.w	d0,d7
-
-loc_F46:				; CODE XREF: sub_F3A+34j
-					; sub_F3A:loc_F8Aj
-		move.b	(a1)+,d0
-		bmi.s	loc_F3C
-		move.b	d0,d1
-		andi.w	#$F,d7
-		andi.w	#$70,d1	; 'p'
-		or.w	d1,d7
-		andi.w	#$F,d0
-		move.b	d0,d1
-		lsl.w	#8,d1
-		or.w	d1,d7
-		moveq	#8,d1
-		sub.w	d0,d1
-		bne.s	loc_F70
-		move.b	(a1)+,d0
-		add.w	d0,d0
-		move.w	d7,(a4,d0.w)
-		bra.s	loc_F46
-; ---------------------------------------------------------------------------
-
-loc_F70:				; CODE XREF: sub_F3A+2Aj
-		move.b	(a1)+,d0
-		lsl.w	d1,d0
-		add.w	d0,d0
-		moveq	#1,d5
-		lsl.w	d1,d5
-		subq.w	#1,d5
-		lea	(a4,d0.w),a4
-
-loc_F80:				; CODE XREF: sub_F3A+48j
-		move.w	d7,(a4)+
-		dbf	d5,loc_F80
-		lea	(nemesisCodeTable).w,a4
-
-loc_F8A:
-		bra.s	loc_F46
-; End of function sub_F3A
-
-; ---------------------------------------------------------------------------
-		dc.w 1
-		dc.w 3
-		dc.w 7
-		dc.w $F
-		dc.w $1F
-		dc.w $3F
-		dc.w $7F
-		dc.w $FF
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_F9C:				; CODE XREF: NemDec+3Ep sub_FACp
-		move.w	d6,d7
-		sub.w	d0,d7
-		move.w	d5,d1
-		lsr.w	d7,d1
-		add.w	d0,d0
-		and.w	loc_F8A(pc,d0.w),d1
-		rts
-; End of function sub_F9C
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_FAC:				; CODE XREF: NemDec+80p
-		bsr.s	sub_F9C
-		lsr.w	#1,d0
-; End of function sub_FAC
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_FB0:				; CODE XREF: NemDec+50p NemDec+7Ap
-		sub.w	d0,d6
-		cmpi.w	#9,d6
-		bcc.s	locret_FBE
-		addq.w	#8,d6
-		asl.w	#8,d5
-		move.b	(a1)+,d5
-
-locret_FBE:				; CODE XREF: sub_FB0+6j
-		rts
-; End of function sub_FB0
-
-
-; =============== S U B	R O U T	I N E =======================================
-
 
 loadZ80Prg:				; CODE XREF: setupGenHardware+8p
 					; ROM:00000698p
