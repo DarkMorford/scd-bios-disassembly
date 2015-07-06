@@ -487,7 +487,7 @@ InitData:	dc.w $8000		; DATA XREF: ROM:00000438o
 
 loc_536:				; CODE XREF: ROM:loc_4C8j
 		tst.w	(VDP_CONTROL).l
-		ori	#$700,sr
+		m_disableInterrupts
 		moveq	#$FFFFFFFF,d1
 		bsr.w	sub_183A
 		clr.b	(byte_FFFFFE54).w
@@ -522,7 +522,7 @@ loc_598:				; CODE XREF: ROM:00000552j
 		bsr.w	clearWordRam2M
 
 loc_5AC:				; CODE XREF: ROM:00000578j sub_640+38j
-		ori	#$700,sr
+		m_disableInterrupts
 		bsr.w	testCartBootBlock
 		beq.s	bootCartridge
 		bsr.s	sub_5F0
@@ -595,7 +595,7 @@ setupGenHardware:			; CODE XREF: ROM:00000580p sub_5F0p
 
 sub_640:				; CODE XREF: ROM:00000280j
 					; ROM:00000570j
-		ori	#$700,sr
+		m_disableInterrupts
 		move.b	#$9F,(PSG_CTRL).l
 		nop
 		nop
@@ -614,11 +614,11 @@ sub_640:				; CODE XREF: ROM:00000280j
 ; ---------------------------------------------------------------------------
 
 loc_67C:				; CODE XREF: ROM:0000028Cj
-		ori	#$700,sr
+		m_disableInterrupts
 		movea.l	(InitialSSP).w,sp
 
 loc_684:				; CODE XREF: ROM:00000288j
-		ori	#$700,sr
+		m_disableInterrupts
 		jsr	(loadDefaultVdpRegs).w
 		jsr	(clearAllVram).w
 		jsr	(installErrorVectors).w
@@ -767,7 +767,7 @@ checkRegion:				; CODE XREF: ROM:00000564p
 ; ---------------------------------------------------------------------------
 
 RegionMismatch:				; CODE XREF: checkRegion+Ej
-		ori	#$700,sr
+		m_disableInterrupts
 		jsr	(loadDefaultVdpRegs).w
 		jsr	(loadDefaultFont).w
 		lea	regionErrorText(pc),a1
@@ -856,7 +856,7 @@ loc_962:				; CODE XREF: altVblankHandler+Cj
 
 
 waitForVblank:				; CODE XREF: ROM:00000308j sub_5F0+10p ...
-		ori	#$700,sr
+		m_disableInterrupts
 		moveq	#3,d0
 
 loc_976:				; CODE XREF: ROM:00000304j
@@ -1453,7 +1453,7 @@ dmaTransferPalettes:			; CODE XREF: ROM:000002E8j
 		bset	#4,d4
 		move.w	d4,(a4)
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		m_z80RequestBus
 		move.l	#$94009340,(a4)
 		move.l	#$96FD95C0,(a4)
@@ -1594,7 +1594,7 @@ loadZ80Prg:				; CODE XREF: setupGenHardware+8p
 					; ROM:00000698p
 		lea	(Z80_BUSREQ).l,a4
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		move.w	#$100,(a4)
 		move.w	#$100,$100(a4)
 
@@ -1636,7 +1636,7 @@ loc_1018:				; CODE XREF: loadZ80Prg+5Aj
 loadZ80Prg0:				; CODE XREF: sub_68C4+A6p
 		lea	(Z80_BUSREQ).l,a4
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		move.w	#$100,(a4)
 		move.w	#$100,$100(a4)
 
@@ -1663,7 +1663,7 @@ loc_105E:				; CODE XREF: loadZ80Prg0+2Ej
 
 sub_1078:				; CODE XREF: sub_68C4+A2p
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		m_z80RequestBus
 
 loc_1086:				; CODE XREF: sub_1078+10j
@@ -1684,7 +1684,7 @@ sub_1098:				; CODE XREF: sub_1CFA+8p sub_30C2+18p	...
 loc_109C:				; CODE XREF: sub_1CFA+478p
 					; sub_21F4+F2p	...
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		m_z80RequestBus
 
 loc_10AA:				; CODE XREF: sub_1098+1Aj
@@ -1764,7 +1764,7 @@ setupJoypads:				; CODE XREF: setupGenHardware+4p
 sub_1134:				; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 		movem.l	d1-d3,-(sp)
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		m_z80RequestBus
 		m_z80WaitForBus
 
@@ -1991,7 +1991,7 @@ sub_12F4:				; CODE XREF: sub_11CC+2p sub_11D8+80p	...
 		adda.w	d1,a6
 		andi.w	#7,d0
 		add.w	d0,d0
-		lea	word_1318,a0
+		lea	word_1318(pc), a0
 		adda.w	(a0,d0.w),a0
 		jsr	(a0)
 		movem.l	(sp)+,d1-a6
@@ -2801,7 +2801,7 @@ dmaSendSpriteTable:			; CODE XREF: ROM:0000030Cj
 		bset	#4,d4
 		move.w	d4,(a4)
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		m_z80RequestBus
 		move.l	#$94019340,(a4)
 		move.l	#$96FC9580,(a4)
@@ -3158,262 +3158,7 @@ loc_1A9C:				; CODE XREF: sub_1A76+Aj sub_1A76+1Cj
 ; =============== S U B	R O U T	I N E =======================================
 
 ; Enigma decompressor
-
-EniDec:					; CODE XREF: ROM:00000330j
-					; sub_1CFA+5Ep	...
-		movem.l	d0-d7/a3-a6,-(sp)
-		movea.w	d0,a3
-		move.b	(a1)+,d0
-		ext.w	d0
-		movea.w	d0,a5
-		move.b	(a1)+,d0
-		ext.w	d0
-		ext.l	d0
-		ror.l	#1,d0
-		ror.w	#1,d0
-		move.l	d0,d4
-		movea.w	(a1)+,a6
-		adda.w	a3,a6
-		movea.w	(a1)+,a4
-		adda.w	a3,a4
-		move.b	(a1)+,d5
-		asl.w	#8,d5
-		move.b	(a1)+,d5
-		moveq	#$10,d6
-
-loc_1AC8:				; CODE XREF: sub_1AF2+8j sub_1AFC+6j ...
-		moveq	#7,d0
-		move.w	d6,d7
-		sub.w	d0,d7
-		move.w	d5,d1
-		lsr.w	d7,d1
-		andi.w	#$7F,d1	; ''
-		move.w	d1,d2
-		cmpi.w	#$40,d1	; '@'
-		bcc.s	loc_1AE2
-		moveq	#6,d0
-		lsr.w	#1,d2
-
-loc_1AE2:				; CODE XREF: EniDec+3Cj
-		bsr.w	sub_1BEA
-		andi.w	#$F,d2
-		lsr.w	#4,d1
-		add.w	d1,d1
-		jmp	loc_1B3E(pc,d1.w)
-; End of function EniDec
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1AF2:				; CODE XREF: sub_1AF2+4j
-					; sub_1B2C:loc_1B3Ej ...
-		move.w	a6,(a2)+
-		addq.w	#1,a6
-		dbf	d2,sub_1AF2
-		bra.s	loc_1AC8
-; End of function sub_1AF2
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1AFC:				; CODE XREF: sub_1AFC+2j sub_1B2C+16j	...
-		move.w	a4,(a2)+
-		dbf	d2,sub_1AFC
-		bra.s	loc_1AC8
-; End of function sub_1AFC
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1B04:				; CODE XREF: sub_1B2C+1Aj
-		bsr.w	sub_1B66
-
-loc_1B08:				; CODE XREF: sub_1B04+6j
-		move.w	d1,(a2)+
-		dbf	d2,loc_1B08
-		bra.s	loc_1AC8
-; End of function sub_1B04
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1B10:				; CODE XREF: sub_1B2C+1Cj
-		bsr.w	sub_1B66
-
-loc_1B14:				; CODE XREF: sub_1B10+8j
-		move.w	d1,(a2)+
-		addq.w	#1,d1
-		dbf	d2,loc_1B14
-		bra.s	loc_1AC8
-; End of function sub_1B10
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1B1E:				; CODE XREF: sub_1B2C+1Ej
-		bsr.w	sub_1B66
-
-loc_1B22:				; CODE XREF: sub_1B1E+8j
-		move.w	d1,(a2)+
-		subq.w	#1,d1
-		dbf	d2,loc_1B22
-		bra.s	loc_1AC8
-; End of function sub_1B1E
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1B2C:				; CODE XREF: sub_1B2C+20j
-		cmpi.w	#$F,d2
-		beq.s	loc_1B4E
-
-loc_1B32:				; CODE XREF: sub_1B2C+Cj
-		bsr.w	sub_1B66
-		move.w	d1,(a2)+
-		dbf	d2,loc_1B32
-		bra.s	loc_1AC8
-; ---------------------------------------------------------------------------
-
-loc_1B3E:
-		bra.s	sub_1AF2
-; ---------------------------------------------------------------------------
-		bra.s	sub_1AF2
-; ---------------------------------------------------------------------------
-		bra.s	sub_1AFC
-; ---------------------------------------------------------------------------
-		bra.s	sub_1AFC
-; ---------------------------------------------------------------------------
-		bra.s	sub_1B04
-; ---------------------------------------------------------------------------
-		bra.s	sub_1B10
-; ---------------------------------------------------------------------------
-		bra.s	sub_1B1E
-; ---------------------------------------------------------------------------
-		bra.s	sub_1B2C
-; ---------------------------------------------------------------------------
-
-loc_1B4E:				; CODE XREF: sub_1B2C+4j
-		subq.w	#1,a1
-		cmpi.w	#$10,d6
-		bne.s	loc_1B58
-		subq.w	#1,a1
-
-loc_1B58:				; CODE XREF: sub_1B2C+28j
-		move.w	a1,d0
-		lsr.w	#1,d0
-		bcc.s	loc_1B60
-		addq.w	#1,a1
-
-loc_1B60:				; CODE XREF: sub_1B2C+30j
-		movem.l	(sp)+,d0-d7/a3-a6
-		rts
-; End of function sub_1B2C
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1B66:				; CODE XREF: sub_1B04p	sub_1B10p ...
-		move.w	a3,d3
-		swap	d4
-		bpl.s	loc_1B76
-		subq.w	#1,d6
-		btst	d6,d5
-		beq.s	loc_1B76
-		ori.w	#$1000,d3
-
-loc_1B76:				; CODE XREF: sub_1B66+4j sub_1B66+Aj
-		swap	d4
-		bpl.s	loc_1B84
-		subq.w	#1,d6
-		btst	d6,d5
-		beq.s	loc_1B84
-		ori.w	#$800,d3
-
-loc_1B84:				; CODE XREF: sub_1B66+12j sub_1B66+18j
-		move.w	d5,d1
-		move.w	d6,d7
-		sub.w	a5,d7
-		bcc.s	loc_1BB4
-		move.w	d7,d6
-		addi.w	#$10,d6
-		neg.w	d7
-		lsl.w	d7,d1
-		move.b	(a1),d5
-		rol.b	d7,d5
-		add.w	d7,d7
-		and.w	loc_1BC8(pc,d7.w),d5
-		add.w	d5,d1
-
-loc_1BA2:				; CODE XREF: sub_1B66:loc_1BC8j
-		move.w	a5,d0
-		add.w	d0,d0
-		and.w	loc_1BC8(pc,d0.w),d1
-		add.w	d3,d1
-		move.b	(a1)+,d5
-		lsl.w	#8,d5
-		move.b	(a1)+,d5
-		rts
-; ---------------------------------------------------------------------------
-
-loc_1BB4:				; CODE XREF: sub_1B66+24j
-		beq.s	loc_1BC6
-		lsr.w	d7,d1
-		move.w	a5,d0
-		add.w	d0,d0
-		and.w	loc_1BC8(pc,d0.w),d1
-		add.w	d3,d1
-		move.w	a5,d0
-		bra.s	sub_1BEA
-; ---------------------------------------------------------------------------
-
-loc_1BC6:				; CODE XREF: sub_1B66:loc_1BB4j
-		moveq	#$10,d6
-
-loc_1BC8:
-		bra.s	loc_1BA2
-; End of function sub_1B66
-
-; ---------------------------------------------------------------------------
-		dc.w 1
-		dc.w 3
-		dc.w 7
-		dc.w $F
-		dc.w $1F
-		dc.w $3F
-		dc.w $7F
-		dc.w $FF
-		dc.w $1FF
-		dc.w $3FF
-		dc.w $7FF
-		dc.w $FFF
-		dc.w $1FFF
-		dc.w $3FFF
-		dc.w $7FFF
-		dc.w $FFFF
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-sub_1BEA:				; CODE XREF: EniDec:loc_1AE2p
-					; sub_1B66+5Ej
-		sub.w	d0,d6
-		cmpi.w	#9,d6
-		bcc.s	locret_1BF8
-		addq.w	#8,d6
-		asl.w	#8,d5
-		move.b	(a1)+,d5
-
-locret_1BF8:				; CODE XREF: sub_1BEA+6j
-		rts
-; End of function sub_1BEA
-
+	include "compression\enigma.asm"
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -3588,7 +3333,7 @@ sub_1CFA:				; CODE XREF: sub_21F4p
 		bsr.w	sub_16C4
 		lea	word_217A,a1
 		jsr	loadVdpRegs
-		ori	#$700,sr
+		m_disableInterrupts
 		lea	(byte_218A).l,a1
 		bsr.w	loadPalettesToBuffer
 		move.l	#$66600002,(VDP_CONTROL).l
@@ -12845,7 +12590,7 @@ sub_62E4:				; CODE XREF: sub_3040+Cp sub_62E4+8j
 		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
 		bne.s	sub_62E4
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		lea	(WordRAM_Bank0).l,a1
 		move.w	$400(a1),(word_FFFFD020).w
 		move.w	$402(a1),(word_FFFFD022).w
@@ -12871,7 +12616,7 @@ sub_6342:				; CODE XREF: sub_3040+56p sub_30C2+52p ...
 		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
 		bne.s	sub_6342
 		move	sr,-(sp)
-		ori	#$700,sr
+		m_disableInterrupts
 		lea	(WordRAM_Bank0).l,a1
 		move.w	(word_FFFFD020).w,$400(a1)
 		move.w	(byte_FFFFD008).w,$42C(a1)
