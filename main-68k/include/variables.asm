@@ -14,6 +14,9 @@
 	; Joypad and other system I/O
 	include "variables\joypad.asm"
 
+	; Haven't quite figured these out yet
+	include "variables\unknown.asm"
+
 ; Next state for main state machine
 nextState   equ $FFFFFDDA
 
