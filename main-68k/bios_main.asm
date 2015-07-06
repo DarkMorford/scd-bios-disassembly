@@ -14627,7 +14627,7 @@ loc_76A8:				; CODE XREF: sub_769C+6j
 		move.w	(word_FFFFFF0A).w,d0
 		btst	d0,(byte_FFFFFF06).w
 		bne.s	loc_76C4
-		moveq	#unk_FFFFFF92,d7
+		moveq	#$FFFFFF92,d7
 		bsr.w	loc_109C
 		bra.s	locret_76D6
 ; ---------------------------------------------------------------------------
@@ -14637,7 +14637,7 @@ loc_76C4:				; CODE XREF: sub_769C+1Ej
 		lsl.w	#2,d0
 		addq.w	#8,d0
 		move.w	d0,(word_FFFFFF02).w
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 
 locret_76D6:				; CODE XREF: sub_769C+14j sub_769C+26j
@@ -15321,7 +15321,7 @@ sub_7BBA:				; CODE XREF: ROM:00007A80j
 		beq.s	locret_7BFA
 		tst.w	(word_FFFFFF0A).w
 		bne.s	loc_7BFC
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 		move.w	#8,(word_FFFFFF04).w
 
@@ -15330,7 +15330,7 @@ locret_7BFA:				; CODE XREF: sub_7BBA+2Cj
 ; ---------------------------------------------------------------------------
 
 loc_7BFC:				; CODE XREF: sub_7BBA+32j
-		moveq	#unk_FFFFFF90,d7
+		moveq	#$FFFFFF90,d7
 		bsr.w	loc_109C
 		move.w	#$10,(word_FFFFFF04).w
 		rts
@@ -15358,7 +15358,7 @@ loc_7C24:				; CODE XREF: sub_7C0A+10j sub_7C0A+16j
 		move.w	d1,(word_FFFFFF0A).w
 		cmp.w	d1,d2
 		beq.s	locret_7C32
-		moveq	#unk_FFFFFF90,d7
+		moveq	#$FFFFFF90,d7
 		bsr.w	loc_109C
 
 locret_7C32:				; CODE XREF: sub_7C0A+20j
@@ -16027,7 +16027,7 @@ loc_81AA:				; CODE XREF: sub_8192+6j
 		bsr.s	sub_81C0
 		bsr.w	sub_7A1E
 		beq.s	locret_81BE
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 		move.w	#8,(word_FFFFFF04).w
 
@@ -16228,7 +16228,7 @@ loc_832C:				; CODE XREF: sub_82F2+30j sub_866A+30j
 ; ---------------------------------------------------------------------------
 
 loc_8340:				; CODE XREF: sub_82F2+44j
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 		move.w	#8,(word_FFFFFF04).w
 		rts
@@ -16268,7 +16268,7 @@ loc_83B2:				; CODE XREF: sub_834E+6j
 		beq.s	locret_83CE
 		tst.w	(word_FFFFFF0A).w
 		bne.s	loc_83D0
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 		move.w	#$C,(word_FFFFFF04).w
 
@@ -16277,7 +16277,7 @@ locret_83CE:				; CODE XREF: sub_834E+6Cj
 ; ---------------------------------------------------------------------------
 
 loc_83D0:				; CODE XREF: sub_834E+72j
-		moveq	#unk_FFFFFF90,d7
+		moveq	#$FFFFFF90,d7
 		bsr.w	loc_109C
 		move.w	#$14,(word_FFFFFF04).w
 		rts
@@ -16319,7 +16319,7 @@ sub_83FC:				; CODE XREF: ROM:00008264j
 loc_842C:				; CODE XREF: sub_83FC+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_843E
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 		move.w	#$14,(word_FFFFFF04).w
 
@@ -16459,14 +16459,14 @@ sub_8562:				; CODE XREF: ROM:00008274j
 		move.w	#$410,d0
 		move.w	#(loc_7FFE+2),d1
 		bsr.w	sub_783E
-		moveq	#unk_FFFFFF92,d7
+		moveq	#$FFFFFF92,d7
 		bsr.w	loc_109C
 
 loc_85A8:				; CODE XREF: sub_8562+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_85BA
 		move.w	#$14,(word_FFFFFF04).w
-		moveq	#unk_FFFFFF91,d7
+		moveq	#$FFFFFF91,d7
 		bsr.w	loc_109C
 
 locret_85BA:				; CODE XREF: sub_8562+4Aj
