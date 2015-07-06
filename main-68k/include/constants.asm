@@ -3,7 +3,7 @@
 ;   ======================================================================
 
 	; "Vanilla" SEGA Genesis registers
-	include "Constants\Registers.asm"
+	include "constants\registers.asm"
 
 	; Gate Array (SEGA CD) registers
-	include "Constants\GateArray.asm"
+	include "constants\gateArray.asm"
