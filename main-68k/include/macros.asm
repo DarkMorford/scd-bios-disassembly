@@ -19,3 +19,8 @@ m_z80WaitForBus:    macro
 m_z80ReleaseBus:    macro
 	move.w #0, (Z80_BUSREQ).l
 	endm
+
+;   Interrupt masking
+m_disableInterrupts:    macro
+	ori	#$700, sr
+	endm

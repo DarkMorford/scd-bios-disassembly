@@ -6,6 +6,9 @@ GA_INTERRUPT    equ $A12000
 GA_RESET_HALT   equ $A12001
 GA_PROTECT      equ $A12002
 GA_MEM_MODE     equ $A12003
+	GA_MEM_MODE_MODE:   equ 2
+	GA_MEM_MODE_DMNA:   equ 1
+	GA_MEM_MODE_RET:    equ 0
 
 ;   CDC
 GA_CDC_MODE     equ $A12004 ; Read-only
