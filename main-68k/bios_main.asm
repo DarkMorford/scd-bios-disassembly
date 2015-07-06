@@ -83,8 +83,8 @@ InitialSSP:
 		dc.b 'BR 000006-2.00'
 		dc.w $AEE0
 		dc.b 'JM4             '
-		dc.l 0
-		dc.l $1FFFF
+		dc.l $000000
+		dc.l $01FFFF
 		dc.l $FF0000
 		dc.l $FFFFFF
 		dc.b '            '
@@ -910,7 +910,7 @@ disableHInt:				; CODE XREF: ROM:00000318j
 
 loadDefaultVdpRegs:			; CODE XREF: ROM:000002ACj
 					; ROM:loc_598p	...
-		lea	word_9FC(pc),a1
+		lea	defaultVdpRegs(pc),a1
 		move.w	#$80,(vdpLineIncrement).w ; '€'
 
 loadVdpRegs:				; CODE XREF: ROM:000002B0j
@@ -937,22 +937,23 @@ locret_9FA:				; CODE XREF: loadDefaultVdpRegs+12j
 ; End of function loadDefaultVdpRegs
 
 ; ---------------------------------------------------------------------------
-word_9FC:	dc.w $8004		; DATA XREF: loadDefaultVdpRegso
-		dc.w $8124
-		dc.w $9011
-		dc.w $8B00
-		dc.w $8C81
-		dc.w $8328
-		dc.w $8230
-		dc.w $8407
-		dc.w $855C
-		dc.w $8D2F
-		dc.w $8700
-		dc.w $8A00
-		dc.w $8F02
-		dc.w $9100
-		dc.w $9200
-		dc.w 0
+defaultVdpRegs:
+	dc.w $8004
+	dc.w $8124
+	dc.w $9011
+	dc.w $8B00
+	dc.w $8C81
+	dc.w $8328
+	dc.w $8230
+	dc.w $8407
+	dc.w $855C
+	dc.w $8D2F
+	dc.w $8700
+	dc.w $8A00
+	dc.w $8F02
+	dc.w $9100
+	dc.w $9200
+	dc.w 0
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -14215,7 +14216,7 @@ locret_6DEC:				; CODE XREF: testCartBootBlock+Ej
 
 ; ---------------------------------------------------------------------------
 CartBootBlock:		; DATA XREF: testCartBootBlock+10o
-	incbin "incbin\cart_boot_block.bin"
+	incbin "cart_boot_block.bin"
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -14307,7 +14308,7 @@ loc_73E2:				; CODE XREF: sub_73CA+20j
 loc_73F6:				; CODE XREF: ROM:loc_739Cj
 		move.w	#1,d0
 		bsr.s	sub_73CA
-		lea	($210000).l,a2
+		lea	(unk_210000).l,a2
 		lea	$4010(a2),a0
 		lea	$4000(a2),a1
 		move.w	#0,d0
