@@ -10,3 +10,6 @@
 
 	; Coprocessor (Z80/Sub-CPU) memory locations
 	include "constants\coprocessors.asm"
+
+	; Commands for the Z80 driver
+	include "constants\z80Commands.asm"
