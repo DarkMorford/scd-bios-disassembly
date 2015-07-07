@@ -1442,7 +1442,7 @@ dmaTransferPalettes:			; CODE XREF: ROM:000002E8j
 		move.w	(vdpRegCache+2).w,d4
 		bset	#4,d4
 		move.w	d4,(a4)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		m_z80RequestBus
 		move.l	#$94009340,(a4)
@@ -1458,7 +1458,7 @@ dmaTransferPalettes:			; CODE XREF: ROM:000002E8j
 		move.w	(vdpRegCache+2).w,(a4)
 		move.l	#$C0000000,(a4)
 		move.w	(paletteBuffer0).w,-4(a4)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 
 locret_DC2:				; CODE XREF: dmaTransferPalettes+6j
 		rts
@@ -1583,7 +1583,7 @@ loc_E78:				; CODE XREF: sub_E20+52j
 loadZ80Prg:				; CODE XREF: setupGenHardware+8p
 					; ROM:00000698p
 		lea	(Z80_BUSREQ).l,a4
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		move.w	#$100,(a4)
 		move.w	#$100,$100(a4)
@@ -1615,7 +1615,7 @@ loc_1018:				; CODE XREF: loadZ80Prg+5Aj
 		move.w	#0,$100(a4)
 		move.w	#0,(a4)
 		move.w	#$100,$100(a4)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		rts
 ; End of function loadZ80Prg
 
@@ -1625,7 +1625,7 @@ loc_1018:				; CODE XREF: loadZ80Prg+5Aj
 
 loadZ80Prg0:				; CODE XREF: sub_68C4+A6p
 		lea	(Z80_BUSREQ).l,a4
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		move.w	#$100,(a4)
 		move.w	#$100,$100(a4)
@@ -1643,7 +1643,7 @@ loc_105E:				; CODE XREF: loadZ80Prg0+2Ej
 		move.w	#0,$100(a4)
 		move.w	#0,(a4)
 		move.w	#$100,$100(a4)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		rts
 ; End of function loadZ80Prg0
 
@@ -1652,15 +1652,16 @@ loc_105E:				; CODE XREF: loadZ80Prg0+2Ej
 
 
 sub_1078:				; CODE XREF: sub_68C4+A2p
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		m_z80RequestBus
 
 loc_1086:				; CODE XREF: sub_1078+10j
 		move.b	(a1)+,(a0)+
 		dbf	d0,loc_1086
+
 		m_z80ReleaseBus
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		rts
 ; End of function sub_1078
 
@@ -1669,21 +1670,19 @@ loc_1086:				; CODE XREF: sub_1078+10j
 
 
 sub_1098:				; CODE XREF: sub_1CFA+8p sub_30C2+18p	...
-		move.b	#$E3,d7
+	move.b	#$E3,d7
 
 loc_109C:				; CODE XREF: sub_1CFA+478p
-					; sub_21F4+F2p	...
-		move	sr,-(sp)
-		m_disableInterrupts
-		m_z80RequestBus
+	m_saveStatusRegister
+	m_disableInterrupts
+	m_z80RequestBus
+	m_z80WaitForBus
 
-loc_10AA:				; CODE XREF: sub_1098+1Aj
-		btst	#0,(Z80_BUSREQ).l
-		bne.s	loc_10AA
-		move.b	d7,(byte_A01C0A).l
-		m_z80ReleaseBus
-		move	(sp)+,sr
-		rts
+	move.b	d7,(byte_A01C0A).l
+
+	m_z80ReleaseBus
+	m_restoreStatusRegister
+	rts
 ; End of function sub_1098
 
 
@@ -1752,7 +1751,7 @@ setupJoypads:
 
 sub_1134:				; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 		movem.l	d1-d3,-(sp)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		m_z80RequestBus
 		m_z80WaitForBus
@@ -1765,8 +1764,9 @@ sub_1134:				; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 		move.b	#0,(a6)
 		add.w	d7,d7
 		bsr.s	sub_1174
+
 		m_z80ReleaseBus
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		movem.l	(sp)+,d1-d3
 		rts
 ; End of function sub_1134
@@ -1877,12 +1877,11 @@ loc_1218:				; CODE XREF: sub_11D8+6j
 		lea	(joy1Down).w,a5
 		lea	(JOYDATA1).l,a6
 		m_z80RequestBus
+		m_z80WaitForBus
 
-loc_1232:				; CODE XREF: sub_11D8+62j
-		btst	#0,(Z80_BUSREQ).l
-		bne.s	loc_1232
 		move.b	#$40,6(a6) ; '@'
 		bsr.w	readSingleJoypad
+
 		m_z80ReleaseBus
 		bra.s	loc_1264
 ; ---------------------------------------------------------------------------
@@ -1908,12 +1907,11 @@ loc_1276:				; CODE XREF: sub_11D8+9Aj
 		lea	(joy2Down).w,a5
 		lea	(JOYDATA2).l,a6
 		m_z80RequestBus
+		m_z80WaitForBus
 
-loc_1288:				; CODE XREF: sub_11D8+B8j
-		btst	#0,(Z80_BUSREQ).l
-		bne.s	loc_1288
 		move.b	#$40,6(a6) ; '@'
 		bsr.w	readSingleJoypad
+
 		m_z80ReleaseBus
 		bra.s	loc_12BA
 ; ---------------------------------------------------------------------------
@@ -2008,6 +2006,7 @@ sub_1324:
 		move.b	#$40,(a6) ; '@'
 		bsr.w	loc_1452
 		bcs.s	loc_1356
+
 		m_z80ReleaseBus
 		rts
 ; ---------------------------------------------------------------------------
@@ -2209,6 +2208,7 @@ sub_1484:				; CODE XREF: sub_11D8+14p
 		bsr.s	sub_1522
 		move.b	#$60,(a6) ; '`'
 		bsr.w	loc_1452
+
 		m_z80ReleaseBus
 		movem.l	(sp)+,d1-a0/a3-a6
 		rts
@@ -2789,9 +2789,10 @@ dmaSendSpriteTable:			; CODE XREF: ROM:0000030Cj
 		move.w	(vdpRegCache+2).w,d4
 		bset	#4,d4
 		move.w	d4,(a4)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		m_z80RequestBus
+
 		move.l	#$94019340,(a4)
 		move.l	#$96FC9580,(a4)
 		move.w	#$977F,(a4)
@@ -2805,7 +2806,7 @@ dmaSendSpriteTable:			; CODE XREF: ROM:0000030Cj
 		move.w	(vdpRegCache+2).w,(a4)
 		move.l	#$78000002,(a4)
 		move.w	(spriteTable).w,-4(a4)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 
 locret_18CC:				; CODE XREF: dmaSendSpriteTable+6j
 		rts
@@ -3103,12 +3104,12 @@ sub_1A4E:				; CODE XREF: ROM:000003A0j sub_4C74+Cp
 		move	#4,ccr
 		sbcd	-(a1),-(a0)
 		sbcd	-(a1),-(a0)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		bcc.s	loc_1A6E
 		subi.b	#$40,(a0) ; '@'
 
 loc_1A6E:				; CODE XREF: sub_1A4E+1Aj
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		sbcd	-(a1),-(a0)
 		move.w	(a0),d0
 		rts
@@ -3134,9 +3135,9 @@ sub_1A76:				; CODE XREF: ROM:0000039Cj
 ; ---------------------------------------------------------------------------
 
 loc_1A94:				; CODE XREF: sub_1A76+4j
-		move	sr,-(sp)
+		m_saveStatusRegister
 		addi.b	#$40,(a1) ; '@'
-		move	(sp)+,sr
+		m_restoreStatusRegister
 
 loc_1A9C:				; CODE XREF: sub_1A76+Aj sub_1A76+1Cj
 		abcd	-(a2),-(a1)
@@ -3446,13 +3447,9 @@ loc_1ED8:				; CODE XREF: sub_1CFA+1E4j
 		clr.b	(byte_FFFFC0FF).w
 		clr.b	(unk_FFFFFE53).w
 
-loc_1F20:				; CODE XREF: sub_1CFA+22Ej
-		btst	#GA_MEM_MODE_MODE,(GA_MEM_MODE).l
-		bne.s	loc_1F20
+		m_waitForWordRam2M
+		m_waitForWordRamReturn
 
-loc_1F2A:				; CODE XREF: sub_1CFA+238j
-		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
-		beq.s	loc_1F2A
 		clr.w	(word_219C00).l
 		lea	(WordRAM_Bank1).l,a0
 		move.w	#$7FFF,d7
@@ -3969,9 +3966,7 @@ loc_24CC:				; CODE XREF: sub_2424+AAj
 		move.w	(a0)+,(a1)+
 		dbf	d7,loc_24CC
 
-loc_24D2:				; CODE XREF: sub_2424+B6j
-		bset	#1,(GA_MEM_MODE).l
-		beq.s	loc_24D2
+		m_giveWordRamToSubCpu
 
 loc_24DC:				; CODE XREF: sub_2424+10j
 		jsr	displayOn
@@ -5521,54 +5516,59 @@ loc_2FC0:				; CODE XREF: sub_2FAC+Ej
 ; End of function sub_2FAC
 
 ; ---------------------------------------------------------------------------
-word_2FE0:	dc.w $ACC
-		dc.w $8AA
-		dc.w $688
-		dc.w $466
-		dc.w $244
-		dc.w $466
-		dc.w $688
-		dc.w $8AA
-		dc.w $ACC
-		dc.w $8AA
-		dc.w $688
-		dc.w $466
-		dc.w $244
-		dc.w $466
-		dc.w $688
-		dc.w $8AA
-word_3000:	dc.w $688
-		dc.w $466
-		dc.w $244
-		dc.w $466
-		dc.w $688
-		dc.w $8AA
-		dc.w $ACC
-		dc.w $8AA
-		dc.w $688
-		dc.w $466
-		dc.w $244
-		dc.w $466
-		dc.w $688
-		dc.w $8AA
-		dc.w $ACC
-		dc.w $8AA
-word_3020:	dc.w $466
-		dc.w $244
-		dc.w $466
-		dc.w $688
-		dc.w $8AA
-		dc.w $ACC
-		dc.w $8AA
-		dc.w $688
-		dc.w $466
-		dc.w $244
-		dc.w $466
-		dc.w $688
-		dc.w $8AA
-		dc.w $ACC
-		dc.w $8AA
-		dc.w $688
+word_2FE0:
+	dc.w $ACC
+	dc.w $8AA
+	dc.w $688
+	dc.w $466
+	dc.w $244
+	dc.w $466
+	dc.w $688
+	dc.w $8AA
+	dc.w $ACC
+	dc.w $8AA
+	dc.w $688
+	dc.w $466
+	dc.w $244
+	dc.w $466
+	dc.w $688
+	dc.w $8AA
+
+word_3000:
+	dc.w $688
+	dc.w $466
+	dc.w $244
+	dc.w $466
+	dc.w $688
+	dc.w $8AA
+	dc.w $ACC
+	dc.w $8AA
+	dc.w $688
+	dc.w $466
+	dc.w $244
+	dc.w $466
+	dc.w $688
+	dc.w $8AA
+	dc.w $ACC
+	dc.w $8AA
+
+word_3020:
+	dc.w $466
+	dc.w $244
+	dc.w $466
+	dc.w $688
+	dc.w $8AA
+	dc.w $ACC
+	dc.w $8AA
+	dc.w $688
+	dc.w $466
+	dc.w $244
+	dc.w $466
+	dc.w $688
+	dc.w $8AA
+	dc.w $ACC
+	dc.w $8AA
+	dc.w $688
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -6628,10 +6628,10 @@ sub_39AC:				; CODE XREF: sub_3710+14Cj
 		cmp.w	(word_FFFFD168).w,d0
 		bge.w	sub_38C0
 		bsr.w	sub_52CA
-		move	sr,-(sp)
+		m_saveStatusRegister
 		bsr.s	sub_39E8
 		bsr.w	sub_5C68
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		beq.s	loc_39DA
 		bsr.w	sub_392A
 		rts
@@ -12589,7 +12589,7 @@ loc_62D2:				; CODE XREF: sub_62C8+12j
 sub_62E4:				; CODE XREF: sub_3040+Cp sub_62E4+8j
 		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
 		bne.s	sub_62E4
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		lea	(WordRAM_Bank0).l,a1
 		move.w	$400(a1),(word_FFFFD020).w
@@ -12604,7 +12604,7 @@ sub_62E4:				; CODE XREF: sub_3040+Cp sub_62E4+8j
 		move.b	$440(a1),(byte_FFFFD050).w
 		move.w	$564(a1),d0
 		bsr.w	sub_53B6
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		rts
 ; End of function sub_62E4
 
@@ -12615,7 +12615,7 @@ sub_62E4:				; CODE XREF: sub_3040+Cp sub_62E4+8j
 sub_6342:				; CODE XREF: sub_3040+56p sub_30C2+52p ...
 		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
 		bne.s	sub_6342
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		lea	(WordRAM_Bank0).l,a1
 		move.w	(word_FFFFD020).w,$400(a1)
@@ -12632,7 +12632,7 @@ sub_6342:				; CODE XREF: sub_3040+56p sub_30C2+52p ...
 loc_638C:				; CODE XREF: sub_6342+4Cj
 		move.l	(a2)+,(a1)+
 		dbf	d0,loc_638C
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		rts
 ; End of function sub_6342
 
@@ -20118,9 +20118,9 @@ sub_9922:				; CODE XREF: ROM:00008F08p
 		move	#0,ccr
 
 loc_9954:				; CODE XREF: sub_9922+44j
-		move	sr,-(sp)
+		m_saveStatusRegister
 		bclr	#0,(a2)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		movem.l	(sp)+,d0/a1-a2
 		rts
 ; ---------------------------------------------------------------------------
@@ -23834,7 +23834,7 @@ unk_E882:	dc.b   0		; DATA XREF: sub_238C+38o
 		dc.b   5
 		dc.b $C8 ; È
 		dc.b   0
-		
+
 unk_E9F2:
 	incbin "misc\nemesis_E9F2.bin"
 

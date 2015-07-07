@@ -2,8 +2,8 @@
 ;       Macros
 ;   ======================================================================
 
-;   VDP-specific macros
-	include "macros\vdpMacros.asm"
+;   Word RAM macros
+	include "macros\wordRam.asm"
 
 ;   Dealing with the Z80
 m_z80RequestBus:    macro
@@ -23,4 +23,13 @@ m_z80ReleaseBus:    macro
 ;   Interrupt masking
 m_disableInterrupts:    macro
 	ori	#$700, sr
+	endm
+
+;   Status register
+m_saveStatusRegister:   macro
+	move sr, -(sp)
+	endm
+
+m_restoreStatusRegister:    macro
+	move (sp)+, sr
 	endm
