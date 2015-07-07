@@ -1,7 +1,7 @@
 @ECHO OFF
 
-SET ASM=..\bin\asm68k.exe
-SET ASMOPTS=/j "include\*" /j "incbin\*" /p /o c+,op+,os+,ow+,ws+ /m
+SET ASM=..\..\bin\asm68k.exe
+SET ASMOPTS=/j "include\*" /j "incbin\*" /j "..\common\*" /p /o c+,op+,os+,ow+,ws+ /m
 SET INFILE=sub_prog0.asm
 SET OUTFILE=sub_prog0
 
