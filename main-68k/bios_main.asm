@@ -938,21 +938,21 @@ locret_9FA:				; CODE XREF: loadDefaultVdpRegs+12j
 
 ; ---------------------------------------------------------------------------
 defaultVdpRegs:
-	dc.w $8004
-	dc.w $8124
-	dc.w $9011
-	dc.w $8B00
-	dc.w $8C81
-	dc.w $8328
-	dc.w $8230
-	dc.w $8407
-	dc.w $855C
-	dc.w $8D2F
-	dc.w $8700
-	dc.w $8A00
-	dc.w $8F02
-	dc.w $9100
-	dc.w $9200
+	dc.w $8004  ; Reg #00: H-int off, H/V counter active
+	dc.w $8124  ; Reg #01: Display/DMA off, V-int on, V28-cell (NTSC) mode
+	dc.w $9011  ; Reg #16: Scroll plane size 64x64 cells
+	dc.w $8B00  ; Reg #11: Ext. Int off, H/V full scroll mode
+	dc.w $8C81  ; Reg #12: H40-cell mode, Shadow/hilight off, no interlace
+	dc.w $8328  ; Reg #03: Window pattern table $A000
+	dc.w $8230  ; Reg #02: Scroll A pattern table $C000
+	dc.w $8407  ; Reg #04: Scroll B pattern table $E000
+	dc.w $855C  ; Reg #05: Sprite attribute table $B800
+	dc.w $8D2F  ; Reg #13: H-scroll table $BC00
+	dc.w $8700  ; Reg #07: Background color palette 0, color 0
+	dc.w $8A00  ; Reg #10: H-interrupt timing set to 0
+	dc.w $8F02  ; Reg #15: Auto-increment VDP set to 2
+	dc.w $9100  ; Reg #17: Window H position set to 0
+	dc.w $9200  ; Reg #18: Window V position set to 0
 	dc.w 0
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -3600,14 +3600,15 @@ loc_2076:				; CODE XREF: sub_1CFA+384j
 ; End of function sub_1CFA
 
 ; ---------------------------------------------------------------------------
-word_217A:	dc.w $8238		; DATA XREF: sub_1CFA+26o
-		dc.w $8300
-		dc.w $8406
-		dc.w $8500
-		dc.w $8B00
-		dc.w $8D00
-		dc.w $9011
-		dc.w 0
+word_217A:
+	dc.w $8238 ; Reg #02: Scroll A pattern table $E000
+	dc.w $8300 ; Reg #03: Window pattern table $0000
+	dc.w $8406 ; Reg #04: Scroll B pattern table $C000
+	dc.w $8500 ; Reg #05: Sprite attribute table $0000
+	dc.w $8B00 ; Reg #11: Ext. Int off, H/V full scroll mode
+	dc.w $8D00 ; Reg #13: H-scroll data table $0000
+	dc.w $9011 ; Reg #16: Scroll plane size 64x64 cells
+	dc.w 0
 byte_218A:	dc.b 0			; DATA XREF: sub_1CFA+32o
 		dc.b 51
 		dc.w 0
@@ -5685,15 +5686,16 @@ sub_30C2:				; CODE XREF: sub_3040p
 		dc.b   0
 		dc.b $42 ; B
 		dc.b $20
-word_318C:	dc.w $8334		; DATA XREF: sub_30C2+10o
-		dc.w $8230
-		dc.w $8407
-		dc.w $8568
-		dc.w $8D21
-		dc.w $8C81
-		dc.w $9100
-		dc.w $9200
-		dc.w 0
+word_318C:
+	dc.w $8334 ; Reg #03: Window pattern table $D000
+	dc.w $8230 ; Reg #02: Scroll A pattern table $C000
+	dc.w $8407 ; Reg #04: Scroll B pattern table $E000
+	dc.w $8568 ; Reg #05: Sprite attribute table $D000
+	dc.w $8D21 ; Reg #13: H-scroll data table $8400
+	dc.w $8C81 ; Reg #12: Shadow/hilight/interlace off, H40-cell mode
+	dc.w $9100 ; Reg #17: Window H position 0
+	dc.w $9200 ; Reg #18: Window V position 0
+	dc.w 0
 word_319E:	dc.w $49F9		; DATA XREF: sub_30C2+1Co
 		dc.w $C0
 		dc.w 4
@@ -16718,22 +16720,23 @@ loc_87EE:				; CODE XREF: sub_87EC+6j
 ; End of function sub_87EC
 
 ; ---------------------------------------------------------------------------
-word_87FE:	dc.w $8004		; DATA XREF: sub_873A+30o
-		dc.w $8124
-		dc.w $8230
-		dc.w $8334
-		dc.w $8407
-		dc.w $857A
-		dc.w $8700
-		dc.w $8A00
-		dc.w $8B02
-		dc.w $8C81
-		dc.w $8D3C
-		dc.w $8F02
-		dc.w $9001
-		dc.w $9100
-		dc.w $9200
-		dc.w 0
+word_87FE:
+	dc.w $8004 ; Reg #00: H-int off, H/V counter active
+	dc.w $8124 ; Reg #01: Display/DMA off, V-int on, V28-cell (NTSC) mode
+	dc.w $8230 ; Reg #02: Scroll A pattern table $C000
+	dc.w $8334 ; Reg #03: Window pattern table $D000
+	dc.w $8407 ; Reg #04: Scroll B pattern table $E000
+	dc.w $857A ; Reg #05: Sprite attribute table $F400
+	dc.w $8700 ; Reg #07: Background color palette 0, color 0
+	dc.w $8A00 ; Reg #10: H-interrupt timing set to 0
+	dc.w $8B02 ; Reg #11: Ext. Int off, H full scroll, V 2-cell scroll
+	dc.w $8C81 ; Reg #12: H40-cell mode, Shadow/hilight off, no interlace
+	dc.w $8D3C ; Reg #13: H-scroll data table $F000
+	dc.w $8F02 ; Reg #15: Auto-increment VDP set to 2
+	dc.w $9001 ; Reg #16: Scroll plane size 32V x 64H cells
+	dc.w $9100 ; Reg #17: Window H position set to 0
+	dc.w $9200 ; Reg #18: Window V position set to 0
+	dc.w 0
 byte_881E:	dc.b 0			; DATA XREF: sub_873A+88o
 		dc.b $2F
 		dc.w 0
