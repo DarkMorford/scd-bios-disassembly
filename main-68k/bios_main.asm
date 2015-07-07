@@ -3197,6 +3197,10 @@ loc_1C0A:				; CODE XREF: sub_1C06+8j
 
 ; =============== S U B	R O U T	I N E =======================================
 
+; Inputs:
+;	a0:
+;	a2:
+;	d6:
 
 sub_1C18:				; CODE XREF: ROM:00000300j
 					; sub_1CA2+30p
@@ -3278,7 +3282,7 @@ sub_1C90:				; CODE XREF: sub_1CA2+22p
 ; d0:
 ; d1:
 ; a0:
-; a1:
+; a1: Address of sprite table
 
 sub_1CA2:				; CODE XREF: ROM:000002F4j
 					; sub_3040+2Cp	...
@@ -3426,35 +3430,37 @@ loc_1DFA:				; CODE XREF: sub_1CFA+108j
 		jsr	fillVramTilemap
 
 		move.l	#$60000003,(VDP_CONTROL).l
+
 		lea	(word_EB12).l,a0
 		move.w	#$AF,d6	; '¯'
-
 loc_1E62:				; CODE XREF: sub_1CFA+16Ej
 		move.w	(a0)+,(VDP_DATA).l
 		dbf	d6,loc_1E62
+
 		move.w	#$E700,d0
 		moveq	#$A,d7
 		move.l	#$53280003,(VDP_CONTROL).l
-
 loc_1E7C:				; CODE XREF: sub_1CFA+18Aj
 		move.w	d0,(VDP_DATA).l
 		addq.w	#1,d0
 		dbf	d7,loc_1E7C
+
 		move.l	#$61600003,(VDP_CONTROL).l
+
 		lea	(dword_EC72).l,a0
 		move.w	#$1F,d7
-
 loc_1E9C:				; CODE XREF: sub_1CFA+1A8j
 		move.l	(a0)+,(VDP_DATA).l
 		dbf	d7,loc_1E9C
+
 		move.w	#$E70B,d0
 		moveq	#3,d7
 		move.l	#$53400003,(VDP_CONTROL).l
-
 loc_1EB6:				; CODE XREF: sub_1CFA+1C4j
 		move.w	d0,(VDP_DATA).l
 		addq.w	#1,d0
 		dbf	d7,loc_1EB6
+
 		moveq	#9,d7
 		move.l	#$52600003,d0
 		lea	(word_ECF2).l,a0
@@ -5729,14 +5735,9 @@ sub_30C2:				; CODE XREF: sub_3040p
 ; End of function sub_30C2
 
 ; ---------------------------------------------------------------------------
-		dc.b   0
-		dc.b   0
-		dc.b $32 ; 2
-		dc.b $DC ; Ü
-		dc.b   0
-		dc.b   0
-		dc.b $42 ; B
-		dc.b $20
+	dc.l $32DC
+	dc.l $4220
+
 word_318C:
 	dc.w $8334 ; Reg #03: Window pattern table $D000
 	dc.w $8230 ; Reg #02: Scroll A pattern table $C000
@@ -5876,6 +5877,7 @@ loc_32D4:				; CODE XREF: sub_329A+26j sub_329A+34j
 		clr.w	$24(a0)
 		bra.w	loc_35CA
 ; ---------------------------------------------------------------------------
+loc_32DC:
 		bsr.w	sub_40AE
 		bsr.w	sub_42B8
 		lea	$44(a0),a1
@@ -13570,10 +13572,7 @@ loc_6B06:				; CODE XREF: sub_6AF0+Cj
 ; End of function sub_6AF0
 
 ; ---------------------------------------------------------------------------
-		dc.b   0
-		dc.b   0
-		dc.b $6D ; m
-		dc.b $68 ; h
+		dc.l $6D68
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -14101,6 +14100,7 @@ unk_6B88:	dc.b $80 ; €		; DATA XREF: sub_6B14+8o
 		dc.b $BE ; ¾
 		dc.b $85 ; …
 		dc.b $68 ; h
+loc_6D68:
 		dc.b $4A ; J
 		dc.b $68 ; h
 		dc.b   0
@@ -14788,8 +14788,8 @@ sub_77EA:				; CODE XREF: sub_78D8+2Cp
 
 ; Inputs:
 ;   d0:
-;   d1:
-;   d2:
+;   d1: Byte offset into WordRAM bank 1 ($220000)
+;   d2: Index into lookup table at $15920
 
 sub_77FA:				; CODE XREF: sub_754E+Ap sub_754E+14p	...
 		lea	(WordRAM_Bank1).l,a1
@@ -16670,50 +16670,59 @@ loc_8734:				; CODE XREF: sub_8704+Ej sub_8704+28j
 
 
 sub_873A:				; CODE XREF: sub_7374p
-		st	(byte_FFFFFE28).w
-		bsr.w	displayOff
+	st	(byte_FFFFFE28).w
+	bsr.w	displayOff
 
-loc_8742:				; CODE XREF: sub_873A+10j
-		btst	#GA_MEM_MODE_MODE,(GA_MEM_MODE).l
-		bne.s	loc_8742
+	m_waitForWordRam2M
+	m_giveWordRamToSubCpu
 
-loc_874C:				; CODE XREF: sub_873A+1Aj
-		bset	#GA_MEM_MODE_DMNA,(GA_MEM_MODE).l
-		beq.s	loc_874C
-		bsr.w	waitForWordRam
-		lea	sub_86A6,a1
-		jsr	setVblankJumpTarget
-		move.l	#0,(mainCommData+8).w
-		lea	vdpReg_87FE(pc),a1
-		bsr.w	loadVdpRegs
-		bsr.w	clearAllVram
-		bsr.w	sub_7876
-		clr.l	(dword_220E00).l
-		move.l	#$60000000,(VDP_CONTROL).l
-		lea	(unk_15300).l,a1
-		jsr	NemDec(pc)
-		move.l	#$61C00000,(VDP_CONTROL).l
-		lea	(unk_1546E).l,a1
-		jsr	NemDec(pc)
-		move.l	#$44000000,d0
-		move.w	#0,(fontTileOffset).w
-		move.l	#$EE0EE,d1
-		bsr.w	loc_1952
-		bsr.w	sub_7854
-		lea	palette_881E(pc),a1
-		bsr.w	loadPalettesToBuffer
-		bsr.w	sub_1098
-		lea	(word_FFFFFF00).w,a0
-		moveq	#0,d0
-		moveq	#3,d1
+	bsr.w	waitForWordRam
 
+	lea	sub_86A6,a1
+	jsr	setVblankJumpTarget
+
+	move.l	#0,(mainCommData+8).w
+
+	lea	vdpReg_87FE(pc),a1
+	bsr.w	loadVdpRegs
+
+	bsr.w	clearAllVram
+
+	bsr.w	sub_7876
+
+	clr.l	(dword_220E00).l
+
+	move.l	#$60000000,(VDP_CONTROL).l
+	lea	(unk_15300).l,a1
+	jsr	NemDec(pc)
+
+	move.l	#$61C00000,(VDP_CONTROL).l
+	lea	(unk_1546E).l,a1
+	jsr	NemDec(pc)
+
+	move.l	#$44000000,d0
+	move.w	#0,(fontTileOffset).w
+	move.l	#$EE0EE,d1
+	bsr.w	loc_1952
+
+	bsr.w	sub_7854
+
+	lea	palette_881E(pc),a1
+	bsr.w	loadPalettesToBuffer
+
+	bsr.w	sub_1098
+
+	lea	(word_FFFFFF00).w,a0
+	moveq	#0,d0
+	moveq	#3,d1
 loc_87D6:				; CODE XREF: sub_873A+9Ej
-		move.l	d0,(a0)+
-		dbf	d1,loc_87D6
-		clr.w	(unk_FFFFFE0A).w
-		clr.w	(unk_FFFFFE16).w
-		clr.b	(byte_FFFFFE28).w
-		bra.w	displayOn
+	move.l	d0,(a0)+
+	dbf	d1,loc_87D6
+
+	clr.w	(unk_FFFFFE0A).w
+	clr.w	(unk_FFFFFE16).w
+	clr.b	(byte_FFFFFE28).w
+	bra.w	displayOn
 ; End of function sub_873A
 
 
@@ -22261,6 +22270,7 @@ unk_15DC6:	dc.b   0		; DATA XREF: sub_77EA+6o sub_77FA+Co
 		dc.b   0
 		dc.b $8C ; Œ
 
+fill_15ECE:
 	dcb.b 306, $FF
 
 unk_16000:			; DATA XREF: loadSubCpuPrg+18o
