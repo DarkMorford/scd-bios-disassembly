@@ -6486,7 +6486,7 @@ locret_38BE:				; CODE XREF: sub_3710+154j
 
 
 sub_38C0:				; CODE XREF: sub_3950+4j sub_3950+Cj ...
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		jsr	sendCommandToZ80(pc)
 		rts
 ; End of function sub_38C0
@@ -6684,7 +6684,7 @@ sub_3A08:				; CODE XREF: sub_3710+2Aj sub_39AC+36p
 		tst.w	(word_FFFFD168).w
 		bne.s	loc_3A34
 		clr.w	$3C(a0)
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		jsr	sendCommandToZ80(pc)
 		rts
 ; ---------------------------------------------------------------------------
@@ -7716,7 +7716,7 @@ sub_4054:				; CODE XREF: sub_329A+D0j
 		move.w	$30(a0),d0
 		bpl.s	loc_4066
 		move.w	d7,-(sp)
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		jsr	sendCommandToZ80(pc)
 		move.w	(sp)+,d7
 		rts
@@ -7801,22 +7801,23 @@ locret_40D2:				; CODE XREF: sub_40AE+6j
 ; End of function sub_40AE
 
 ; ---------------------------------------------------------------------------
-word_40D4:	dc.w 0
-		dc.w $22
-		dc.w $44
-		dc.w $66
-		dc.w $88
-		dc.w $AA
-		dc.w $CC
-		dc.w $EE
-		dc.w $CC
-		dc.w $AA
-		dc.w $88
-		dc.w $66
-		dc.w $44
-		dc.w $22
-		dc.w 0
-		dc.w 0
+word_40D4:
+	dc.w $000
+	dc.w $022
+	dc.w $044
+	dc.w $066
+	dc.w $088
+	dc.w $0AA
+	dc.w $0CC
+	dc.w $0EE
+	dc.w $0CC
+	dc.w $0AA
+	dc.w $088
+	dc.w $066
+	dc.w $044
+	dc.w $022
+	dc.w $000
+	dc.w $000
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -13278,7 +13279,7 @@ sub_68C4:				; CODE XREF: ROM:00000364j
 		clr.l	(spriteTable).w
 		clr.l	(spriteTable+4).w
 		jsr	loadDefaultFont(pc)
-		lea	byte_6A38(pc),a1
+		lea	palette_6A38(pc),a1
 		jsr	loadPalettesNoUpdate
 		move.l	#$40200000,(VDP_CONTROL).l
 		jsr	NemDec
@@ -13335,7 +13336,7 @@ loc_69C4:				; CODE XREF: sub_68C4+FAj
 
 loc_69C6:				; CODE XREF: sub_68C4+FEj
 		dbf	d7,loc_69B6
-		move.w	#$81,d7	; ''
+		move.w	#Z80CMD_81,d7	; ''
 		jsr	sendCommandToZ80
 		move.w	#3,d7
 
@@ -13390,56 +13391,62 @@ loc_6A2A:				; CODE XREF: sub_6A20+4j
 ; End of function sub_6A26
 
 ; ---------------------------------------------------------------------------
-byte_6A38:	dc.b 0			; DATA XREF: sub_68C4+42o
-		dc.b $2F
-		dc.w 0
-		dc.w $EE8
-		dc.w 0
-		dc.w $EE4
-		dc.w $EE0
-		dc.w $EC0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w $EC0
-		dc.w 0
-		dc.w $EE0
-		dc.w $EC0
-		dc.w $EA0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w $E80
-		dc.w 0
-		dc.w $EC0
-		dc.w $EA0
-		dc.w $E80
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
-		dc.w 0
+palette_6A38:
+	dc.b 0
+	dc.b 47
+
+	dc.w $000
+	dc.w $EE8
+	dc.w $000
+	dc.w $EE4
+	dc.w $EE0
+	dc.w $EC0
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+
+	dc.w $000
+	dc.w $EC0
+	dc.w $000
+	dc.w $EE0
+	dc.w $EC0
+	dc.w $EA0
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+
+	dc.w $000
+	dc.w $E80
+	dc.w $000
+	dc.w $EC0
+	dc.w $EA0
+	dc.w $E80
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+	dc.w $000
+
+byte_6A9A:
 		dc.b   0
 		dc.b   4
 		dc.b $80 ; €
@@ -14303,7 +14310,7 @@ loc_73F6:				; CODE XREF: ROM:loc_739Cj
 loc_7416:				; CODE XREF: ROM:00007412j
 		add.w	d1,d1
 		move.w	word_7432(pc,d1.w),0(a2)
-		moveq	#$FFFFFF93,d7
+		moveq	#Z80CMD_FF93,d7
 		bsr.w	sendCommandToZ80
 		move.w	#4,(word_FFFFFF00).w
 		move.b	#0,$C(a1)
@@ -14612,7 +14619,7 @@ loc_76A8:				; CODE XREF: sub_769C+6j
 		move.w	(word_FFFFFF0A).w,d0
 		btst	d0,(byte_FFFFFF06).w
 		bne.s	loc_76C4
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		bsr.w	sendCommandToZ80
 		bra.s	locret_76D6
 ; ---------------------------------------------------------------------------
@@ -14622,7 +14629,7 @@ loc_76C4:				; CODE XREF: sub_769C+1Ej
 		lsl.w	#2,d0
 		addq.w	#8,d0
 		move.w	d0,(word_FFFFFF02).w
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 
 locret_76D6:				; CODE XREF: sub_769C+14j sub_769C+26j
@@ -14935,7 +14942,7 @@ loc_78F4:				; CODE XREF: sub_78D8+16j
 		dbf	d0,loc_78EC
 		move.l	(sp)+,d1
 		lea	(unk_FFFFFF0E).w,a2
-		move.w	#(dword_C0FE+2),d0
+		move.w	#$C100,d0
 		bsr.w	sub_77EA
 		rts
 ; End of function sub_78D8
@@ -15260,7 +15267,7 @@ sub_7B4A:				; CODE XREF: ROM:00007A88j
 loc_7B7A:				; CODE XREF: sub_7B4A+22j
 		movem.w	word_7BB4(pc),d0-d2
 		bsr.w	sub_77FA
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		bsr.w	sendCommandToZ80
 
 loc_7B8A:				; CODE XREF: sub_7B4A+2Ej
@@ -15270,7 +15277,7 @@ loc_7B8A:				; CODE XREF: sub_7B4A+2Ej
 loc_7B94:				; CODE XREF: sub_7B4A+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_7BA6
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$10,(word_FFFFFF04).w
 
@@ -15310,7 +15317,7 @@ sub_7BBA:				; CODE XREF: ROM:00007A80j
 		beq.s	locret_7BFA
 		tst.w	(word_FFFFFF0A).w
 		bne.s	loc_7BFC
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#8,(word_FFFFFF04).w
 
@@ -15319,7 +15326,7 @@ locret_7BFA:				; CODE XREF: sub_7BBA+2Cj
 ; ---------------------------------------------------------------------------
 
 loc_7BFC:				; CODE XREF: sub_7BBA+32j
-		moveq	#$FFFFFF90,d7
+		moveq	#Z80CMD_FF90,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$10,(word_FFFFFF04).w
 		rts
@@ -15347,7 +15354,7 @@ loc_7C24:				; CODE XREF: sub_7C0A+10j sub_7C0A+16j
 		move.w	d1,(word_FFFFFF0A).w
 		cmp.w	d1,d2
 		beq.s	locret_7C32
-		moveq	#$FFFFFF90,d7
+		moveq	#Z80CMD_FF90,d7
 		bsr.w	sendCommandToZ80
 
 locret_7C32:				; CODE XREF: sub_7C0A+20j
@@ -15596,7 +15603,7 @@ loc_7E56:				; CODE XREF: sub_7E3E+6j
 		bsr.s	sub_7E6C
 		bsr.w	sub_7A1E
 		beq.s	locret_7E6A
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#8,(word_FFFFFF04).w
 
@@ -15855,7 +15862,7 @@ loc_8066:				; CODE XREF: sub_800C+6j
 		beq.s	locret_8082
 		tst.w	(word_FFFFFF0A).w
 		bne.s	loc_8084
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$C,(word_FFFFFF04).w
 
@@ -15864,7 +15871,7 @@ locret_8082:				; CODE XREF: sub_800C+62j
 ; ---------------------------------------------------------------------------
 
 loc_8084:				; CODE XREF: sub_800C+68j
-		moveq	#$FFFFFF90,d7
+		moveq	#Z80CMD_FF90,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$14,(word_FFFFFF04).w
 		rts
@@ -15903,7 +15910,7 @@ sub_80AA:				; CODE XREF: ROM:00007D9Ej
 loc_80DA:				; CODE XREF: sub_80AA+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_80EC
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$14,(word_FFFFFF04).w
 
@@ -16016,7 +16023,7 @@ loc_81AA:				; CODE XREF: sub_8192+6j
 		bsr.s	sub_81C0
 		bsr.w	sub_7A1E
 		beq.s	locret_81BE
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#8,(word_FFFFFF04).w
 
@@ -16217,7 +16224,7 @@ loc_832C:				; CODE XREF: sub_82F2+30j sub_866A+30j
 ; ---------------------------------------------------------------------------
 
 loc_8340:				; CODE XREF: sub_82F2+44j
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#8,(word_FFFFFF04).w
 		rts
@@ -16257,7 +16264,7 @@ loc_83B2:				; CODE XREF: sub_834E+6j
 		beq.s	locret_83CE
 		tst.w	(word_FFFFFF0A).w
 		bne.s	loc_83D0
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$C,(word_FFFFFF04).w
 
@@ -16266,7 +16273,7 @@ locret_83CE:				; CODE XREF: sub_834E+6Cj
 ; ---------------------------------------------------------------------------
 
 loc_83D0:				; CODE XREF: sub_834E+72j
-		moveq	#$FFFFFF90,d7
+		moveq	#Z80CMD_FF90,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$14,(word_FFFFFF04).w
 		rts
@@ -16308,7 +16315,7 @@ sub_83FC:				; CODE XREF: ROM:00008264j
 loc_842C:				; CODE XREF: sub_83FC+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_843E
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 		move.w	#$14,(word_FFFFFF04).w
 
@@ -16349,14 +16356,14 @@ sub_844C:				; CODE XREF: ROM:0000826Cj
 		bsr.w	sub_783E
 		lea	word_84DA(pc),a0
 		bsr.w	loc_7846
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		bsr.w	sendCommandToZ80
 
 loc_84AE:				; CODE XREF: sub_844C+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_84C0
 		move.w	#$14,(word_FFFFFF04).w
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 
 locret_84C0:				; CODE XREF: sub_844C+66j
@@ -16401,14 +16408,14 @@ sub_84DC:				; CODE XREF: ROM:00008270j
 		move.w	#$412,d0
 		move.w	#(loc_7FFE+2),d1
 		bsr.w	sub_783E
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		bsr.w	sendCommandToZ80
 
 loc_8536:				; CODE XREF: sub_84DC+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_8548
 		move.w	#$14,(word_FFFFFF04).w
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 
 locret_8548:				; CODE XREF: sub_84DC+5Ej
@@ -16448,14 +16455,14 @@ sub_8562:				; CODE XREF: ROM:00008274j
 		move.w	#$410,d0
 		move.w	#(loc_7FFE+2),d1
 		bsr.w	sub_783E
-		moveq	#$FFFFFF92,d7
+		moveq	#Z80CMD_FF92,d7
 		bsr.w	sendCommandToZ80
 
 loc_85A8:				; CODE XREF: sub_8562+6j
 		bsr.w	sub_7A1E
 		beq.s	locret_85BA
 		move.w	#$14,(word_FFFFFF04).w
-		moveq	#$FFFFFF91,d7
+		moveq	#Z80CMD_FF91,d7
 		bsr.w	sendCommandToZ80
 
 locret_85BA:				; CODE XREF: sub_8562+4Aj
@@ -16659,7 +16666,7 @@ loc_874C:				; CODE XREF: sub_873A+1Aj
 		lea	sub_86A6,a1
 		jsr	setVblankJumpTarget
 		move.l	#0,(mainCommData+8).w
-		lea	word_87FE(pc),a1
+		lea	vdpReg_87FE(pc),a1
 		bsr.w	loadVdpRegs
 		bsr.w	clearAllVram
 		bsr.w	sub_7876
@@ -16675,7 +16682,7 @@ loc_874C:				; CODE XREF: sub_873A+1Aj
 		move.l	#$EE0EE,d1
 		bsr.w	loc_1952
 		bsr.w	sub_7854
-		lea	byte_881E(pc),a1
+		lea	palette_881E(pc),a1
 		bsr.w	loadPalettesToBuffer
 		bsr.w	sub_1098
 		lea	(word_FFFFFF00).w,a0
@@ -16706,7 +16713,7 @@ loc_87EE:				; CODE XREF: sub_87EC+6j
 ; End of function sub_87EC
 
 ; ---------------------------------------------------------------------------
-word_87FE:
+vdpReg_87FE:
 	dc.w $8004 ; Reg #00: H-int off, H/V counter active
 	dc.w $8124 ; Reg #01: Display/DMA off, V-int on, V28-cell (NTSC) mode
 	dc.w $8230 ; Reg #02: Scroll A pattern table $C000
@@ -16723,56 +16730,63 @@ word_87FE:
 	dc.w $9100 ; Reg #17: Window H position set to 0
 	dc.w $9200 ; Reg #18: Window V position set to 0
 	dc.w 0
-byte_881E:	dc.b 0			; DATA XREF: sub_873A+88o
-		dc.b $2F
-		dc.w 0
-		dc.w 0
-		dc.w $C86
-		dc.w $CCC
-		dc.w $888
-		dc.w $444
-		dc.w $222
-		dc.w $EEE
-		dc.w $AC
-		dc.w $666
-		dc.w 0
-		dc.w $444
-		dc.w $888
-		dc.w $EEE
-		dc.w $EEE
-		dc.w $A40
-		dc.w 0
-		dc.w 0
-		dc.w $C86
-		dc.w $888
-		dc.w $666
-		dc.w $222
-		dc.w 0
-		dc.w $AAA
-		dc.w $AC
-		dc.w $666
-		dc.w 0
-		dc.w $222
-		dc.w $444
-		dc.w $666
-		dc.w $4EE
-		dc.w 0
-		dc.w 0
-		dc.w $666
-		dc.w $444
-		dc.w $888
-		dc.w $444
-		dc.w 0
-		dc.w 0
-		dc.w 4
-		dc.w $68
-		dc.w 0
-		dc.w 0
-		dc.w $288
-		dc.w $4AA
-		dc.w $6CC
-		dc.w $4EE
-		dc.w 0
+
+palette_881E:
+	dc.b 0
+	dc.b 47
+
+	dc.w $000
+	dc.w $000
+	dc.w $C86
+	dc.w $CCC
+	dc.w $888
+	dc.w $444
+	dc.w $222
+	dc.w $EEE
+	dc.w $0AC
+	dc.w $666
+	dc.w $000
+	dc.w $444
+	dc.w $888
+	dc.w $EEE
+	dc.w $EEE
+	dc.w $A40
+
+	dc.w $000
+	dc.w $000
+	dc.w $C86
+	dc.w $888
+	dc.w $666
+	dc.w $222
+	dc.w $000
+	dc.w $AAA
+	dc.w $0AC
+	dc.w $666
+	dc.w $000
+	dc.w $222
+	dc.w $444
+	dc.w $666
+	dc.w $4EE
+	dc.w $000
+
+	dc.w $000
+	dc.w $666
+	dc.w $444
+	dc.w $888
+	dc.w $444
+	dc.w $000
+	dc.w $000
+	dc.w $004
+	dc.w $068
+	dc.w $000
+	dc.w $000
+	dc.w $288
+	dc.w $4AA
+	dc.w $6CC
+	dc.w $4EE
+	dc.w $000
+
+byte_8880:
 		dc.b   0
 		dc.b   0
 		dc.b   0
@@ -16821,22 +16835,7 @@ aSega_cd_rom:	dc.b 'SEGA_CD_ROM',0    ; DATA XREF: ROM:00008F6Eo
 		dc.b   0
 		dc.b   0
 		dc.b   0
-		dc.b $52 ; R
-		dc.b $41 ; A
-		dc.b $4D ; M
-		dc.b $5F ; _
-		dc.b $43 ; C
-		dc.b $41 ; A
-		dc.b $52 ; R
-		dc.b $54 ; T
-		dc.b $52 ; R
-		dc.b $49 ; I
-		dc.b $44 ; D
-		dc.b $47 ; G
-		dc.b $45 ; E
-		dc.b $5F ; _
-		dc.b $5F ; _
-		dc.b $5F ; _
+		dc.b 'RAM_CARTRIDGE___'
 off_88D6:	dc.l unk_600000		; DATA XREF: sub_98B2+38r sub_9922+Cr
 off_88DA:	dc.l unk_7FFFFF		; DATA XREF: ROM:00008F10r sub_9922+4r
 		dc.b $21 ; !
@@ -20621,12 +20620,12 @@ dword_C0FE:	dc.l $FFFFEEEE
 		dc.l $BAFEEEEE
 		dc.l $BAFEEEEE
 		dc.l $AAFFEEEE
-		dc.l $AFFEEEE
-		dc.l $AFFFEEE
-		dc.l $AFFFEEE
-		dc.l $AFFFFEE
-		dc.l $AFFFFEE
-		dc.l $AFFFFFE
+		dc.l $0AFFEEEE
+		dc.l $0AFFFEEE
+		dc.l $0AFFFEEE
+		dc.l $0AFFFFEE
+		dc.l $0AFFFFEE
+		dc.l $0AFFFFFE
 		dc.l $AAFFFFFE
 		dc.l $DDDDDCCC
 		dc.l $DDDDDAAA
@@ -20772,10 +20771,10 @@ dword_C0FE:	dc.l $FFFFEEEE
 		dc.l $A0000AEE
 		dc.l $A0000AEE
 		dc.l $A000AEEE
-		dc.l $ACCCCC
-		dc.l $ADCCCC
-		dc.l $ADDCCCC
-		dc.l $ADDDCCC
+		dc.l $00ACCCCC
+		dc.l $00ADCCCC
+		dc.l $0ADDCCCC
+		dc.l $0ADDDCCC
 		dc.l $ADDDDCCC
 		dc.l $ADDDDDCC
 		dc.l $ADDDDDCC
@@ -21557,8 +21556,8 @@ dword_D046:	dc.l 1			; DATA XREF: sub_1CFA+27Co
 		dc.l $1B001C
 		dc.l $1D001E
 		dc.l $1F0020
-		dc.l unk_210022
-		dc.l unk_230024
+		dc.l $210022
+		dc.l $230024
 		dc.l $250026
 		dc.l $270028
 		dc.l $29002A
@@ -24297,6 +24296,7 @@ word_ECF2:	dc.w 1			; DATA XREF: sub_1CFA+1D0o
 		dc.b   0
 		dc.b   0
 
+fill_EE32:
 	dcb.b 462, $FF
 
 Z80_PRG_Base0:
@@ -24308,6 +24308,7 @@ Z80_PRG_Base1:
 Z80_PRG_Base2:
 	incbin "programs\z80_prog2.bin"
 
+fill_102D4:
 	dcb.b 1324, $FF
 
 data_10800:
@@ -24317,6 +24318,7 @@ data_10890:
 data_12626:
 	incbin "misc\nemesis_12626.bin"
 
+unk_12674:
 		dc.b   0
 		dc.b $38 ; 8
 		dc.b $44 ; D
