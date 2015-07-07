@@ -14199,7 +14199,7 @@ testCartBootBlock:			; CODE XREF: ROM:0000056Cp
 		lea	(cartBoot).l,a0
 		cmpi.l	#'SEGA',-$100(a0)
 		bne.s	locret_6DEC	; Bail if it doesn't start with SEGA
-		lea	CartBootBlock(pc),a1
+		lea	RegionBootBlock(pc),a1
 		move.w	#706,d0
 
 loc_6DE6:				; CODE XREF: testCartBootBlock+1Aj
@@ -14211,8 +14211,8 @@ locret_6DEC:				; CODE XREF: testCartBootBlock+Ej
 ; End of function testCartBootBlock
 
 ; ---------------------------------------------------------------------------
-CartBootBlock:		; DATA XREF: testCartBootBlock+10o
-	incbin "cart_boot_block.bin"
+RegionBootBlock:		; DATA XREF: testCartBootBlock+10o
+	incbin "us_boot_block.bin"
 
 ; =============== S U B	R O U T	I N E =======================================
 
