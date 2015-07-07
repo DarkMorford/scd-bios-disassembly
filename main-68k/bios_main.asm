@@ -138,11 +138,11 @@ errorReset:
 ; ---------------------------------------------------------------------------
 	bra.w	dmaFillVramSegment
 ; ---------------------------------------------------------------------------
-	bra.w	sub_C2E
+	bra.w	writeTilemapToVram
 ; ---------------------------------------------------------------------------
 	bra.w	sub_C52
 ; ---------------------------------------------------------------------------
-	bra.w	sub_CF2
+	bra.w	fillVramTilemap
 ; ---------------------------------------------------------------------------
 	bra.w	dmaTransferToVram
 ; ---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ errorReset:
 ; ---------------------------------------------------------------------------
 	bra.w	writeTextToScreen
 ; ---------------------------------------------------------------------------
-	bra.w	loc_195E
+	bra.w	loadFont
 ; ---------------------------------------------------------------------------
 	bra.w	loc_1952
 ; ---------------------------------------------------------------------------
@@ -702,19 +702,24 @@ loadSubCpuPrg:				; CODE XREF: setupGenHardware+Cp
 loc_72A:				; CODE XREF: loadSubCpuPrg+Aj
 		bclr	#0,(a5)		; Place	sub-CPU	in RESET state
 		bne.s	loc_72A
+
 		lea	1(a5),a6
 		move.w	(a6),d5
 		andi.w	#2,d5
 		move.w	d5,(a6)
+
 		lea	(unk_16000).l,a0
 		lea	(SubCPU_Base0).l,a1
 		bsr.w	decompressKosinski
+
 		lea	(unk_13400).l,a0
 		lea	(SubCPU_Base1).l,a1
 		bsr.w	decompressKosinski
+
 		lea	(unk_1A000).l,a0
 		lea	(SubCPU_Base2).l,a1
 		bsr.w	decompressKosinski
+
 		move.b	#$2A,(a6) ; '*' ; Write-protect sub-CPU PRG_RAM $0-$5400
 
 loc_770:				; CODE XREF: loadSubCpuPrg+50j
@@ -740,12 +745,11 @@ clearWordRam2M:				; CODE XREF: ROM:000005A8p
 		moveq	#$FFFFFFFF,d0
 		moveq	#0,d7
 
-loc_798:				; CODE XREF: clearWordRam2M+1Cj
+loc_798:
 		move.l	d7,(a0)+
 		dbf	d0,loc_798
 
-locret_79E:				; CODE XREF: clearWordRam2M+6j
-					; clearWordRam2M+Ej
+locret_79E:
 		rts
 ; End of function clearWordRam2M
 
@@ -861,6 +865,7 @@ loc_976:				; CODE XREF: ROM:00000304j
 loc_97E:				; CODE XREF: waitForVblank+12j
 		tst.b	(vblankCode).w
 		bne.s	loc_97E
+
 		bsr.w	rand
 		rts
 ; End of function waitForVblank
@@ -1081,10 +1086,10 @@ dmaFillVramSegment:			; CODE XREF: ROM:000002C0j
 		move.l	d0,(a6)
 		move.b	d2,-4(a6)
 
-@DmaWaitLoop:				; CODE XREF: dmaFillVramSegment+3Cj
+@dmaWaitLoop:				; CODE XREF: dmaFillVramSegment+3Cj
 		move.w	(a6),d3		; Wait for DMA to finish
 		btst	#1,d3
-		bne.s	@DmaWaitLoop
+		bne.s	@dmaWaitLoop
 		move.w	(vdpRegCache+2).w,(a6)
 		move.w	#$8F02,(a6)
 		rts
@@ -1223,12 +1228,13 @@ dmaCopyVram:				; CODE XREF: ROM:00000374j
 
 
 readFromVram:
-		move.l	d0,(VDP_CONTROL).l
+	move.l	d0,(VDP_CONTROL).l
 
-@loc_C22:				; CODE XREF: readFromVram+Cj
+	@loc_C22:
 		move.w	(VDP_DATA).l,(a2)+
 		dbf	d1,@loc_C22
-		rts
+
+	rts
 ; End of function readFromVram
 
 
@@ -1240,24 +1246,24 @@ readFromVram:
 ; d2: Line count
 ; a1: Data source
 
-sub_C2E:				; CODE XREF: ROM:000002C4j
+writeTilemapToVram:				; CODE XREF: ROM:000002C4j
 					; sub_1CFA+70p	...
 		lea	(VDP_DATA).l,a5
 		move.w	#0,-(sp)
 		move.w	(vdpLineIncrement).w,-(sp)
 
-loc_C3C:				; CODE XREF: sub_C2E+1Cj
+loc_C3C:				; CODE XREF: writeTilemapToVram+1Cj
 		move.l	d0,4(a5)
 		move.w	d1,d3
 
-loc_C42:				; CODE XREF: sub_C2E+16j
+loc_C42:				; CODE XREF: writeTilemapToVram+16j
 		move.w	(a1)+,(a5)
 		dbf	d3,loc_C42
 		add.l	(sp),d0
 		dbf	d2,loc_C3C
 		addq.w	#4,sp
 		rts
-; End of function sub_C2E
+; End of function writeTilemapToVram
 
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -1370,25 +1376,30 @@ loc_CE0:				; CODE XREF: sub_CC6+1Cj
 
 ; =============== S U B	R O U T	I N E =======================================
 
+; Inputs:
+; d0: VDP-formatted address
+; d1: Column count
+; d2: Line count
+; d3: Fill word
 
-sub_CF2:				; CODE XREF: ROM:000002CCj
+fillVramTilemap:				; CODE XREF: ROM:000002CCj
 					; sub_1CFA+11Ap ...
 		lea	(VDP_DATA).l,a5
 		move.w	#0,-(sp)
 		move.w	(vdpLineIncrement).w,-(sp)
 
-loc_D00:				; CODE XREF: sub_CF2+1Cj
+loc_D00:				; CODE XREF: fillVramTilemap+1Cj
 		move.l	d0,4(a5)
 		move.w	d1,d5
 
-loc_D06:				; CODE XREF: sub_CF2+16j
+loc_D06:				; CODE XREF: fillVramTilemap+16j
 		move.w	d3,(a5)
 		dbf	d5,loc_D06
 		add.l	(sp),d0
 		dbf	d2,loc_D00
 		addq.w	#4,sp
 		rts
-; End of function sub_CF2
+; End of function fillVramTilemap
 
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -2803,7 +2814,7 @@ dmaSendSpriteTable:			; CODE XREF: ROM:0000030Cj
 		move.l	#$96FC9580,(a4)
 		move.w	#$977F,(a4)
 		move.w	#$7800,(a4)
-		move.w	#$82,-(sp) ; '‚'
+		move.w	#$0082,-(sp) ; '‚'
 
 		m_z80WaitForBus
 
@@ -2822,7 +2833,7 @@ locret_18CC:				; CODE XREF: dmaSendSpriteTable+6j
 ; =============== S U B	R O U T	I N E =======================================
 
 ; Inputs:
-; d1: Joypad 0/1
+; d0: Joypad 0/1
 ; a1:
 
 sub_18CE:				; CODE XREF: ROM:0000032Cj
@@ -2922,7 +2933,7 @@ loc_1952:				; CODE XREF: ROM:00000324j
 		lea	(defaultFontData).l,a1
 		move.w	#$60,d2	; '`'
 
-loc_195E:				; CODE XREF: ROM:00000320j
+loadFont:				; CODE XREF: ROM:00000320j
 					; sub_5FBE+18p	...
 		asl.w	#2,d2
 		subq.w	#1,d2
@@ -3338,7 +3349,7 @@ sub_1CFA:				; CODE XREF: sub_21F4p
 		moveq	#$15,d2
 		move.l	#$53800003,d0
 		lea	(decompScratch).w,a1
-		jsr	sub_C2E
+		jsr	writeTilemapToVram
 		move.l	#$50C00003,(VDP_CONTROL).l
 		lea	(unk_BAAE).l,a1
 		jsr	NemDec
@@ -3350,7 +3361,7 @@ sub_1CFA:				; CODE XREF: sub_21F4p
 		moveq	#2,d2
 		move.l	#$54920003,d0
 		lea	(decompScratch).w,a1
-		jsr	sub_C2E
+		jsr	writeTilemapToVram
 		move.w	#$4686,d0
 		lea	(unk_BAEC).l,a1
 		lea	(decompScratch).w,a2
@@ -3359,7 +3370,7 @@ sub_1CFA:				; CODE XREF: sub_21F4p
 		moveq	#3,d2
 		move.l	#$56140003,d0
 		lea	(decompScratch).w,a1
-		jsr	sub_C2E
+		jsr	writeTilemapToVram
 		move.w	#$4686,d0
 		lea	(unk_BB06).l,a1
 		lea	(decompScratch).w,a2
@@ -3368,7 +3379,7 @@ sub_1CFA:				; CODE XREF: sub_21F4p
 		moveq	#$A,d2
 		move.l	#$58020003,d0
 		lea	(decompScratch).w,a1
-		jsr	sub_C2E
+		jsr	writeTilemapToVram
 		moveq	#$F,d7
 		move.l	#$61E00003,(VDP_CONTROL).l
 
@@ -3379,22 +3390,22 @@ loc_1DFA:				; CODE XREF: sub_1CFA+108j
 		moveq	#2,d2
 		move.l	#$64000003,d0
 		move.w	#$670F,d3
-		jsr	sub_CF2
+		jsr	fillVramTilemap
 		moveq	#$27,d1	; '''
 		moveq	#2,d2
 		move.l	#$70800003,d0
 		move.w	#$670F,d3
-		jsr	sub_CF2
+		jsr	fillVramTilemap
 		moveq	#$27,d1	; '''
 		moveq	#2,d2
 		move.l	#$72000003,d0
 		move.w	#$670F,d3
-		jsr	sub_CF2
+		jsr	fillVramTilemap
 		moveq	#$27,d1	; '''
 		moveq	#2,d2
 		move.l	#$7E800003,d0
 		move.w	#$670F,d3
-		jsr	sub_CF2
+		jsr	fillVramTilemap
 		move.l	#$60000003,(VDP_CONTROL).l
 		lea	(word_EB12).l,a0
 		move.w	#$AF,d6	; '¯'
@@ -10793,7 +10804,7 @@ loc_5746:				; CODE XREF: sub_5732+10j
 		lea	(unk_FFFFE438).w,a1
 		moveq	#9,d1
 		move.w	#6,d2
-		bra.w	sub_C2E
+		bra.w	writeTilemapToVram
 ; End of function sub_5732
 
 
@@ -10804,7 +10815,7 @@ sub_5754:				; CODE XREF: sub_5732+Aj sub_5DFA+18p	...
 		lea	(unk_FFFFE4C4).w,a1
 		moveq	#9,d1
 		move.w	#6,d2
-		bra.w	sub_C2E
+		bra.w	writeTilemapToVram
 ; End of function sub_5754
 
 ; ---------------------------------------------------------------------------
@@ -11430,7 +11441,7 @@ sub_5A64:				; CODE XREF: sub_59DE+32p
 		moveq	#9,d1
 		moveq	#1,d2
 		move.l	#$45BE0003,d0
-		bsr.w	sub_C2E
+		bsr.w	writeTilemapToVram
 		move.w	(sp)+,d1
 		rts
 ; End of function sub_5A64
@@ -11470,7 +11481,7 @@ loc_5ABC:				; CODE XREF: sub_5A90+10j
 		movea.w	locret_5ACA(pc,d1.w),a1
 		moveq	#9,d1
 		moveq	#1,d2
-		bsr.w	sub_C2E
+		bsr.w	writeTilemapToVram
 
 locret_5ACA:				; CODE XREF: sub_5A90+4j
 		rts
@@ -11504,12 +11515,12 @@ sub_5AEC:				; CODE XREF: sub_5FA2+16p
 		lea	(decompScratch).w,a1
 		moveq	#$19,d1
 		moveq	#$E,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		move.l	#$46D80003,d0
 		lea	(unk_FFFFE30C).w,a1
 		moveq	#9,d1
 		moveq	#$E,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		bsr.w	sub_5732
 		bsr.s	sub_5AD0
 		bsr.s	sub_5B22
@@ -11590,7 +11601,7 @@ sub_5B82:				; CODE XREF: sub_4C8E+6p sub_4E9E+8p
 		lea	(unk_FFFFE550).w,a1
 		moveq	#$19,d1
 		moveq	#8,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		lea	unk_5BE2(pc),a2
 		move.w	(byte_FFFFD008).w,d2
 		moveq	#$F,d1
@@ -11649,7 +11660,7 @@ sub_5BEC:				; CODE XREF: sub_4E48+3Ap
 		lea	(unk_FFFFE724).w,a1
 		moveq	#$19,d1
 		moveq	#8,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		move.w	#$2000,d0
 		moveq	#$18,d1
 		bsr.w	sub_5764
@@ -11674,7 +11685,7 @@ sub_5C20:				; CODE XREF: sub_3B28+4p sub_3BAE+4p ...
 		moveq	#$19,d1
 		moveq	#8,d2
 		move.w	#0,d3
-		jsr	sub_CF2(pc)
+		jsr	fillVramTilemap(pc)
 		moveq	#6,d1
 		bsr.w	sub_59DE
 		clr.w	(word_FFFFD052).w
@@ -11940,7 +11951,7 @@ sub_5DFA:				; CODE XREF: sub_30C2+ACp
 		lea	(unk_FFFFE30C).w,a1
 		moveq	#9,d1
 		moveq	#$E,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		move.l	#$51380003,d0
 		bsr.w	sub_5754
 		move.w	#$2000,d0
@@ -11998,7 +12009,7 @@ loc_5E74:				; CODE XREF: sub_3B28+3Ep sub_5E6C+4j
 		lea	(unk_FFFFF5C6).w,a1
 		moveq	#9,d1
 		moveq	#$15,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		rts
 ; End of function sub_5E6C
 
@@ -12036,7 +12047,7 @@ sub_5EA8:				; CODE XREF: sub_329A+23Cj
 		moveq	#9,d1
 		move.w	#$15,d2
 		move.w	#0,d3
-		jsr	sub_CF2(pc)
+		jsr	fillVramTilemap(pc)
 		bsr.s	sub_5E88
 		rts
 ; End of function sub_5EA8
@@ -12143,7 +12154,7 @@ sub_5FA2:				; CODE XREF: sub_30C2+7Ap
 		move.l	#$70000003,d0
 		moveq	#$27,d1	; '''
 		moveq	#$1B,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		bsr.w	sub_5AEC
 		rts
 ; End of function sub_5FA2
@@ -12165,7 +12176,7 @@ loc_5FCC:				; CODE XREF: sub_5FBE+1Cj
 		movea.l	(a0)+,a1
 		move.l	(a0)+,d1
 		move.w	(a0)+,d2
-		jsr	loc_195E(pc)
+		jsr	loadFont(pc)
 		bra.s	loc_5FCC
 ; ---------------------------------------------------------------------------
 
@@ -12199,7 +12210,7 @@ loc_5FFE:				; CODE XREF: sub_5FBE+48j
 
 sub_6010:				; CODE XREF: sub_5FBE:loc_5FFEp
 		moveq	#1,d2
-		jsr	loc_195E(pc)
+		jsr	loadFont(pc)
 		rts
 ; End of function sub_6010
 
@@ -12240,90 +12251,48 @@ off_602C:		; DATA XREF: sub_5FBEo
 	dc.l $11188188
 	dc.w $11
 
-	dc.b $7E ; ~
-	dc.b $A0 ;  
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $2B ; +
-	dc.b $E0 ; à
-	dc.b   0
-	dc.b  $B
-	dc.b $B0 ; °
-	dc.b $BB ; »
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b $E0 ; à
-	dc.b   0
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $27 ; '
-	dc.b   4
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $27 ; '
-	dc.b $B0 ; °
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $28 ; (
-	dc.b $62 ; b
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $29 ; )
-	dc.b $C2 ; Â
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $2A ; *
-	dc.b  $E
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $2A ; *
-	dc.b $78 ; x
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $2A ; *
-	dc.b $86 ; †
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $2A ; *
-	dc.b $9E ; ž
-	dc.b $84 ; „
-	dc.b $21 ; !
-	dc.b   0
-	dc.b   1
-	dc.b $2A ; *
-	dc.b $B4 ; ´
-	dc.b $46 ; F
-	dc.b   9
-	dc.b   0
-	dc.b   1
-	dc.b $2B ; +
-	dc.b $6C ; l
-	dc.b   0
-	dc.b   0
-	dc.b $4E ; N
-	dc.b $75 ; u
+	dc.l $7EA00003
+	dc.l $12BE0
+	dc.l $000BB0BB
+	dc.w $3
+
+	dc.l 0
+
+	dc.w $E000
+
+	dc.w $8421
+	dc.l $12704
+
+	dc.w $8421
+	dc.l $127B0
+
+	dc.w $8421
+	dc.l $12862
+
+	dc.w $8421
+	dc.l $129C2
+
+	dc.w $8421
+	dc.l $12A0E
+
+	dc.w $8421
+	dc.l $12A78
+
+	dc.w $8421
+	dc.l $12A86
+
+	dc.w $8421
+	dc.l $12A9E
+
+	dc.w $8421
+	dc.l $12AB4
+
+	dc.w $4609
+	dc.l $12B6C
+
+	dc.w 0
+
+	rts
 
 palette_60AE:
 	dc.b 0
@@ -12461,7 +12430,7 @@ loc_61D2:				; CODE XREF: sub_6130+52j
 		moveq	#$19,d1
 		moveq	#2,d2
 		move.w	#$8000,d3
-		jsr	sub_CF2(pc)
+		jsr	fillVramTilemap(pc)
 
 locret_61DE:				; CODE XREF: sub_6130+14j sub_6130+42j ...
 		rts
@@ -13153,7 +13122,7 @@ loc_67E6:				; CODE XREF: sub_6816+4j
 sub_6806:				; CODE XREF: sub_67DC+20p
 		moveq	#1,d1
 		moveq	#$17,d2
-		bra.w	sub_CF2
+		bra.w	fillVramTilemap
 ; End of function sub_6806
 
 
@@ -13163,7 +13132,7 @@ sub_6806:				; CODE XREF: sub_67DC+20p
 sub_680E:				; CODE XREF: sub_67DC+Cp sub_67DC+16p
 		moveq	#$27,d1	; '''
 		moveq	#1,d2
-		bra.w	sub_CF2
+		bra.w	fillVramTilemap
 ; End of function sub_680E
 
 
@@ -13312,7 +13281,7 @@ sub_68C4:				; CODE XREF: ROM:00000364j
 		move.l	#$451A0003,d0
 		moveq	#$11,d1
 		moveq	#5,d2
-		jsr	sub_C2E(pc)
+		jsr	writeTilemapToVram(pc)
 		bsr.w	sub_6A20
 		clr.b	(byte_FFFFFE28).w
 		jsr	displayOn(pc)
@@ -13393,7 +13362,7 @@ loc_6A2A:				; CODE XREF: sub_6A20+4j
 		move.l	#$45900003,d0
 		moveq	#2,d1
 		moveq	#4,d2
-		jmp	sub_C2E(pc)
+		jmp	writeTilemapToVram(pc)
 ; End of function sub_6A26
 
 ; ---------------------------------------------------------------------------
@@ -24324,1361 +24293,26 @@ data_10890:
 data_12626:
 	incbin "misc\nemesis_12626.bin"
 
-unk_12674:
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $44 ; D
-		dc.b $44 ; D
-		dc.b $44 ; D
-		dc.b $44 ; D
-		dc.b $38 ; 8
-		dc.b   0
-		dc.b   0
-		dc.b   8
-		dc.b $18
-		dc.b   8
-		dc.b   8
-		dc.b   8
-		dc.b $1C
-		dc.b   0
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $44 ; D
-		dc.b   4
-		dc.b   8
-		dc.b $30 ; 0
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $78 ; x
-		dc.b   4
-		dc.b $38 ; 8
-		dc.b   4
-		dc.b   4
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $48 ; H
-		dc.b $48 ; H
-		dc.b $48 ; H
-		dc.b $7C ; |
-		dc.b   8
-		dc.b   8
-		dc.b   0
-		dc.b   0
-		dc.b $7C ; |
-		dc.b $40 ; @
-		dc.b $78 ; x
-		dc.b $44 ; D
-		dc.b   4
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $40 ; @
-		dc.b $78 ; x
-		dc.b $44 ; D
-		dc.b $44 ; D
-		dc.b $38 ; 8
-		dc.b   0
-		dc.b   0
-		dc.b $7C ; |
-		dc.b   4
-		dc.b   8
-		dc.b   8
-		dc.b $10
-		dc.b $10
-		dc.b   0
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $44 ; D
-		dc.b $38 ; 8
-		dc.b $44 ; D
-		dc.b $44 ; D
-		dc.b $38 ; 8
-		dc.b   0
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $44 ; D
-		dc.b $44 ; D
-		dc.b $3C ; <
-		dc.b   4
-		dc.b $38 ; 8
-		dc.b   0
-		dc.b   0
-		dc.b $3E ; >
-		dc.b   8
-		dc.b   8
-		dc.b   8
-		dc.b   8
-		dc.b   8
-		dc.b   0
-		dc.b   0
-		dc.b $F0 ; ð
-		dc.b $88 ; ˆ
-		dc.b $88 ; ˆ
-		dc.b $F0 ; ð
-		dc.b $90 ; 
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $1C
-		dc.b $22 ; "
-		dc.b $20
-		dc.b $20
-		dc.b $22 ; "
-		dc.b $1C
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b $88 ; ˆ
-		dc.b $F8 ; ø
-		dc.b $88 ; ˆ
-		dc.b $88 ; ˆ
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b $D8 ; Ø
-		dc.b $A8 ; ¨
-		dc.b $A8 ; ¨
-		dc.b $88 ; ˆ
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $18
-		dc.b $18
-		dc.b   0
-		dc.b $18
-		dc.b $18
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $7E ; ~
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   6
-		dc.b   3
-		dc.b   0
-		dc.b   1
-		dc.b   0
-		dc.b $12
-		dc.b  $E
-		dc.b $78 ; x
-		dc.b $24 ; $
-		dc.b $30 ; 0
-		dc.b $4C ; L
-		dc.b $28 ; (
-		dc.b $41 ; A
-		dc.b $CF ; Ï
-		dc.b   8
-		dc.b $84 ; „
-		dc.b $11
-		dc.b $89 ; ‰
-		dc.b $1C
-		dc.b $39 ; 9
-		dc.b $41 ; A
-		dc.b $80 ; €
-		dc.b $46 ; F
-		dc.b  $D
-		dc.b   3
-		dc.b  $A
-		dc.b $50 ; P
-		dc.b $6C ; l
-		dc.b $80 ; €
-		dc.b $B8 ; ¸
-		dc.b $18
-		dc.b $54 ; T
-		dc.b $29 ; )
-		dc.b   7
-		dc.b $84 ; „
-		dc.b $80 ; €
-		dc.b $49 ; I
-		dc.b   3
-		dc.b $1C
-		dc.b $6F ; o
-		dc.b $90 ; 
-		dc.b $A2 ; ¢
-		dc.b $82 ; ‚
-		dc.b $7D ; }
-		dc.b $30 ; 0
-		dc.b $F5 ; õ
-		dc.b   0
-		dc.b $47 ; G
-		dc.b   8
-		dc.b $9B ; ›
-		dc.b $1C
-		dc.b $85 ; …
-		dc.b $14
-		dc.b $13
-		dc.b $E9 ; é
-		dc.b $87 ; ‡
-		dc.b $A9 ; ©
-		dc.b $C0 ; À
-		dc.b $75 ; u
-		dc.b $1C
-		dc.b $22 ; "
-		dc.b $6C ; l
-		dc.b $72 ; r
-		dc.b $14
-		dc.b $50 ; P
-		dc.b $4F ; O
-		dc.b $A4 ; ¤
-		dc.b $1F
-		dc.b $FB ; û
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $72 ; r
-		dc.b $6F ; o
-		dc.b $73 ; s
-		dc.b $BC ; ¼
-		dc.b $DE ; Þ
-		dc.b $E4 ; ä
-		dc.b $DE ; Þ
-		dc.b $E4 ; ä
-		dc.b $D8 ; Ø
-		dc.b $A2 ; ¢
-		dc.b $82 ; ‚
-		dc.b $7D ; }
-		dc.b $20
-		dc.b $FF
-		dc.b $DB ; Û
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $93 ; “
-		dc.b $7B ; {
-		dc.b $9E ; ž
-		dc.b $66 ; f
-		dc.b $F7 ; ÷
-		dc.b $26 ; &
-		dc.b $F7 ; ÷
-		dc.b $26 ; &
-		dc.b $C5 ; Å
-		dc.b $14
-		dc.b $13
-		dc.b $C3 ; Ã
-		dc.b $C4 ; Ä
-		dc.b   1
-		dc.b $9E ; ž
-		dc.b $3F ; ?
-		dc.b   8
-		dc.b $7C ; |
-		dc.b  $C
-		dc.b $2A ; *
-		dc.b $10
-		dc.b   3
-		dc.b $C3 ; Ã
-		dc.b $9C ; œ
-		dc.b $48 ; H
-		dc.b  $E
-		dc.b $26 ; &
-		dc.b $38 ; 8
-		dc.b   9
-		dc.b $E2 ; â
-		dc.b $4E ; N
-		dc.b $2B ; +
-		dc.b   7
-		dc.b $1B
-		dc.b $50 ; P
-		dc.b $73 ; s
-		dc.b $C9 ; É
-		dc.b   1
-		dc.b $C2 ; Â
-		dc.b $E3 ; ã
-		dc.b $C4 ; Ä
-		dc.b $BD ; ½
-		dc.b $B8 ; ¸
-		dc.b $29 ; )
-		dc.b $E5 ; å
-		dc.b $70 ; p
-		dc.b  $A
-		dc.b $C1 ; Á
-		dc.b $E0 ; à
-		dc.b $57 ; W
-		dc.b $89 ; ‰
-		dc.b $DA ; Ú
-		dc.b   0
-		dc.b   0
-		dc.b $53 ; S
-		dc.b $CE ; Î
-		dc.b $E1 ; á
-		dc.b $1D
-		dc.b $E1 ; á
-		dc.b $7A ; z
-		dc.b $80 ; €
-		dc.b   1
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   8
-		dc.b   1
-		dc.b   0
-		dc.b  $F
-		dc.b   0
-		dc.b $5D ; ]
-		dc.b $AA ; ª
-		dc.b $3C ; <
-		dc.b $C3 ; Ã
-		dc.b $3F ; ?
-		dc.b $E2 ; â
-		dc.b $3D ; =
-		dc.b $9E ; ž
-		dc.b $55 ; U
-		dc.b $21 ; !
-		dc.b $63 ; c
-		dc.b $A2 ; ¢
-		dc.b $D4 ; Ô
-		dc.b $24 ; $
-		dc.b $64 ; d
-		dc.b $A6 ; ¦
-		dc.b $54 ; T
-		dc.b $26 ; &
-		dc.b $E4 ; ä
-		dc.b $A8 ; ¨
-		dc.b $D4 ; Ô
-		dc.b $29 ; )
-		dc.b $64 ; d
-		dc.b $AB ; «
-		dc.b $54 ; T
-		dc.b $2B ; +
-		dc.b $E2 ; â
-		dc.b $AD ; ­
-		dc.b $F1 ; ñ
-		dc.b $2C ; ,
-		dc.b $55 ; U
-		dc.b $EB ; ë
-		dc.b $17
-		dc.b $39 ; 9
-		dc.b $57 ; W
-		dc.b $8B ; ‹
-		dc.b $B5 ; µ
-		dc.b $CA ; Ê
-		dc.b $C6 ; Æ
-		dc.b $3E ; >
-		dc.b $36 ; 6
-		dc.b $53 ; S
-		dc.b $25 ; %
-		dc.b $23 ; #
-		dc.b $54 ; T
-		dc.b $53 ; S
-		dc.b $65 ; e
-		dc.b $63 ; c
-		dc.b $6F ; o
-		dc.b  $B
-		dc.b $82 ; ‚
-		dc.b $34 ; 4
-		dc.b $4E ; N
-		dc.b $80 ; €
-		dc.b $54 ; T
-		dc.b $3B ; ;
-		dc.b $23 ; #
-		dc.b $44 ; D
-		dc.b $F7 ; ÷
-		dc.b $C0 ; À
-		dc.b $1F
-		dc.b $4C ; L
-		dc.b $E1 ; á
-		dc.b $C6 ; Æ
-		dc.b $E0 ; à
-		dc.b $5D ; ]
-		dc.b $A4 ; ¤
-		dc.b $7D ; }
-		dc.b $E0 ; à
-		dc.b  $F
-		dc.b $AE ; ®
-		dc.b $80 ; €
-		dc.b $E0 ; à
-		dc.b   0
-		dc.b $A4 ; ¤
-		dc.b $88 ; ˆ
-		dc.b $82 ; ‚
-		dc.b $8A ; Š
-		dc.b $A4 ; ¤
-		dc.b $8B ; ‹
-		dc.b $82 ; ‚
-		dc.b   0
-		dc.b $A2 ; ¢
-		dc.b $8E ; Ž
-		dc.b $84 ; „
-		dc.b $8F ; 
-		dc.b $A2 ; ¢
-		dc.b $90 ; 
-		dc.b $84 ; „
-		dc.b   0
-		dc.b $A4 ; ¤
-		dc.b $92 ; ’
-		dc.b $A6 ; ¦
-		dc.b $94 ; ”
-		dc.b $84 ; „
-		dc.b   0
-		dc.b $A4 ; ¤
-		dc.b $98 ; ˜
-		dc.b $A8 ; ¨
-		dc.b $9A ; š
-		dc.b $82 ; ‚
-		dc.b   0
-		dc.b $E0 ; à
-		dc.b $9F ; Ÿ
-		dc.b $A6 ; ¦
-		dc.b $70 ; p
-		dc.b $E1 ; á
-		dc.b $70 ; p
-		dc.b $A4 ; ¤
-		dc.b $A0 ;  
-		dc.b $E2 ; â
-		dc.b   0
-		dc.b   7
-		dc.b $D8 ; Ø
-		dc.b $51 ; Q
-		dc.b $F0 ; ð
-		dc.b   7
-		dc.b $D3 ; Ó
-		dc.b $38 ; 8
-		dc.b $70 ; p
-		dc.b $B8 ; ¸
-		dc.b $23 ; #
-		dc.b $45 ; E
-		dc.b $59 ; Y
-		dc.b $C0 ; À
-		dc.b $1F
-		dc.b $69 ; i
-		dc.b $5D ; ]
-		dc.b $14
-		dc.b $5F ; _
-		dc.b $45 ; E
-		dc.b $73 ; s
-		dc.b $49 ; I
-		dc.b $25 ; %
-		dc.b $4D ; M
-		dc.b $29 ; )
-		dc.b   8
-		dc.b   1
-		dc.b $49 ; I
-		dc.b $31 ; 1
-		dc.b $51 ; Q
-		dc.b $35 ; 5
-		dc.b   4
-		dc.b   1
-		dc.b $C1 ; Á
-		dc.b $3E ; >
-		dc.b $A5 ; ¥
-		dc.b $25 ; %
-		dc.b   7
-		dc.b $10
-		dc.b   0
-		dc.b $3D ; =
-		dc.b $5A ; Z
-		dc.b $4A ; J
-		dc.b $9E ; ž
-		dc.b   0
-		dc.b $FA ; ú
-		dc.b $CB ; Ë
-		dc.b $BA ; º
-		dc.b $2A ; *
-		dc.b $CE ; Î
-		dc.b   0
-		dc.b $FA ; ú
-		dc.b $AC ; ¬
-		dc.b $24 ; $
-		dc.b $29 ; )
-		dc.b $AD ; ­
-		dc.b $62 ; b
-		dc.b $8B ; ‹
-		dc.b $E8 ; è
-		dc.b $AE ; ®
-		dc.b $7F ; 
-		dc.b $80 ; €
-		dc.b   9
-		dc.b   3
-		dc.b   0
-		dc.b $5D ; ]
-		dc.b   0
-		dc.b $CC ; Ì
-		dc.b $A8 ; ¨
-		dc.b $32 ; 2
-		dc.b $1F
-		dc.b $43 ; C
-		dc.b $1A
-		dc.b $CB ; Ë
-		dc.b $BE ; ¾
-		dc.b $33 ; 3
-		dc.b $78 ; x
-		dc.b  $D
-		dc.b $6A ; j
-		dc.b $C3 ; Ã
-		dc.b $77 ; w
-		dc.b  $A
-		dc.b $CE ; Î
-		dc.b $BE ; ¾
-		dc.b $39 ; 9
-		dc.b $38 ; 8
-		dc.b  $E
-		dc.b $DA ; Ú
-		dc.b $C3 ; Ã
-		dc.b $D3 ; Ó
-		dc.b  $A
-		dc.b $E5 ; å
-		dc.b $A2 ; ¢
-		dc.b $3E ; >
-		dc.b $F8 ; ø
-		dc.b  $C
-		dc.b $FA ; ú
-		dc.b $83 ; ƒ
-		dc.b $F6 ; ö
-		dc.b $88 ; ˆ
-		dc.b $D5 ; Õ
-		dc.b $E0 ; à
-		dc.b $3F ; ?
-		dc.b $69 ; i
-		dc.b $90 ; 
-		dc.b $2A ; *
-		dc.b $23 ; #
-		dc.b $56 ; V
-		dc.b $91 ; ‘
-		dc.b   6
-		dc.b $A6 ; ¦
-		dc.b $38 ; 8
-		dc.b $30 ; 0
-		dc.b $AF ; ¯
-		dc.b $CE ; Î
-		dc.b $43 ; C
-		dc.b $EC ; ì
-		dc.b $84 ; „
-		dc.b $8E ; Ž
-		dc.b $6A ; j
-		dc.b $84 ; „
-		dc.b $2A ; *
-		dc.b $88 ; ˆ
-		dc.b $EC ; ì
-		dc.b $E0 ; à
-		dc.b $42 ; B
-		dc.b $A9 ; ©
-		dc.b $90 ; 
-		dc.b $FA ; ú
-		dc.b $23 ; #
-		dc.b $B2 ; ²
-		dc.b $91 ; ‘
-		dc.b $13
-		dc.b $A6 ; ¦
-		dc.b $3D ; =
-		dc.b $FA ; ú
-		dc.b $B0 ; °
-		dc.b $95 ; •
-		dc.b $F6 ; ö
-		dc.b $45 ; E
-		dc.b $88 ; ˆ
-		dc.b $B8 ; ¸
-		dc.b $CF ; Ï
-		dc.b $1F
-		dc.b $B4 ; ´
-		dc.b $C8 ; È
-		dc.b $C5 ; Å
-		dc.b $11
-		dc.b $AB ; «
-		dc.b $C0 ; À
-		dc.b $7E ; ~
-		dc.b $D3 ; Ó
-		dc.b $23 ; #
-		dc.b $94 ; ”
-		dc.b $46 ; F
-		dc.b $AF ; ¯
-		dc.b $11
-		dc.b $FA ; ú
-		dc.b $47 ; G
-		dc.b $69 ; i
-		dc.b $12
-		dc.b  $E
-		dc.b $63 ; c
-		dc.b $54 ; T
-		dc.b $71 ; q
-		dc.b $B1 ; ±
-		dc.b $76 ; v
-		dc.b $2D ; -
-		dc.b $48 ; H
-		dc.b $91 ; ‘
-		dc.b $F0 ; ð
-		dc.b $21 ; !
-		dc.b $54 ; T
-		dc.b $C9 ; É
-		dc.b $35 ; 5
-		dc.b $11
-		dc.b $D9 ; Ù
-		dc.b $C0 ; À
-		dc.b $85 ; …
-		dc.b $53 ; S
-		dc.b $25 ; %
-		dc.b $54 ; T
-		dc.b $47 ; G
-		dc.b $67 ; g
-		dc.b   2
-		dc.b $15
-		dc.b $4C ; L
-		dc.b $97 ; —
-		dc.b $73 ; s
-		dc.b $1D
-		dc.b $84 ; „
-		dc.b $C9 ; É
-		dc.b $92 ; ’
-		dc.b $32 ; 2
-		dc.b $3A ; :
-		dc.b $C4 ; Ä
-		dc.b $CE ; Î
-		dc.b $61 ; a
-		dc.b $39 ; 9
-		dc.b $C2 ; Â
-		dc.b $CE ; Î
-		dc.b $38 ; 8
-		dc.b $13
-		dc.b $AC ; ¬
-		dc.b $4C ; L
-		dc.b $D6 ; Ö
-		dc.b   8
-		dc.b   0
-		dc.b $A6 ; ¦
-		dc.b $4E ; N
-		dc.b $E7 ; ç
-		dc.b $13
-		dc.b $EC ; ì
-		dc.b $4C ; L
-		dc.b $F6 ; ö
-		dc.b   8
-		dc.b   0
-		dc.b $A8 ; ¨
-		dc.b $32 ; 2
-		dc.b $1F
-		dc.b $43 ; C
-		dc.b $1A
-		dc.b $CB ; Ë
-		dc.b $A4 ; ¤
-		dc.b $33 ; 3
-		dc.b $78 ; x
-		dc.b  $F
-		dc.b $DA ; Ú
-		dc.b $64 ; d
-		dc.b $FE ; þ
-		dc.b $88 ; ˆ
-		dc.b $D5 ; Õ
-		dc.b $E0 ; à
-		dc.b $3F ; ?
-		dc.b $69 ; i
-		dc.b $94 ; ”
-		dc.b $3A ; :
-		dc.b $23 ; #
-		dc.b $57 ; W
-		dc.b $88 ; ˆ
-		dc.b $FD ; ý
-		dc.b $23 ; #
-		dc.b $B4 ; ´
-		dc.b $89 ; ‰
-		dc.b   7
-		dc.b $31 ; 1
-		dc.b $AA ; ª
-		dc.b $38 ; 8
-		dc.b $D6 ; Ö
-		dc.b $72 ; r
-		dc.b $CD ; Í
-		dc.b $A4 ; ¤
-		dc.b $39 ; 9
-		dc.b $38 ; 8
-		dc.b $10
-		dc.b $AA ; ª
-		dc.b $65 ; e
-		dc.b $1E
-		dc.b $88 ; ˆ
-		dc.b $EC ; ì
-		dc.b $E0 ; à
-		dc.b $42 ; B
-		dc.b $A9 ; ©
-		dc.b $94 ; ”
-		dc.b $BA ; º
-		dc.b $23 ; #
-		dc.b $B3 ; ³
-		dc.b $81 ; 
-		dc.b  $A
-		dc.b $A6 ; ¦
-		dc.b $4B ; K
-		dc.b $BA ; º
-		dc.b $8E ; Ž
-		dc.b $C1 ; Á
-		dc.b $F4 ; ô
-		dc.b $B9 ; ¹
-		dc.b $57 ; W
-		dc.b $20
-		dc.b $FB ; û
-		dc.b $1F
-		dc.b $80 ; €
-		dc.b $7E ; ~
-		dc.b $C3 ; Ã
-		dc.b $90 ; 
-		dc.b $6F ; o
-		dc.b  $E
-		dc.b $41 ; A
-		dc.b $BC ; ¼
-		dc.b $39 ; 9
-		dc.b   6
-		dc.b $F0 ; ð
-		dc.b $E4 ; ä
-		dc.b $1B
-		dc.b $C3 ; Ã
-		dc.b $90 ; 
-		dc.b $6F ; o
-		dc.b  $E
-		dc.b $41 ; A
-		dc.b $BC ; ¼
-		dc.b $39 ; 9
-		dc.b   6
-		dc.b $F0 ; ð
-		dc.b $E7 ; ç
-		dc.b $B8 ; ¸
-		dc.b $37 ; 7
-		dc.b $87 ; ‡
-		dc.b $20
-		dc.b $DE ; Þ
-		dc.b $1C
-		dc.b $83 ; ƒ
-		dc.b $81 ; 
-		dc.b $75 ; u
-		dc.b $7E ; ~
-		dc.b $2F ; /
-		dc.b $B1 ; ±
-		dc.b $F6 ; ö
-		dc.b $42 ; B
-		dc.b $42 ; B
-		dc.b $E9 ; é
-		dc.b $4F ; O
-		dc.b $88 ; ˆ
-		dc.b $54 ; T
-		dc.b $2B ; +
-		dc.b $95 ; •
-		dc.b $18
-		dc.b $85 ; …
-		dc.b $43 ; C
-		dc.b $F3 ; ó
-		dc.b $4F ; O
-		dc.b  $B
-		dc.b $AC ; ¬
-		dc.b $25 ; %
-		dc.b $7D ; }
-		dc.b $91 ; ‘
-		dc.b $62 ; b
-		dc.b $2E ; .
-		dc.b $17
-		dc.b $70 ; p
-		dc.b $E4 ; ä
-		dc.b $1B
-		dc.b $C3 ; Ã
-		dc.b $90 ; 
-		dc.b $6F ; o
-		dc.b  $E
-		dc.b $41 ; A
-		dc.b $BC ; ¼
-		dc.b $39 ; 9
-		dc.b   6
-		dc.b $FF
-		dc.b $61 ; a
-		dc.b $C8 ; È
-		dc.b $37 ; 7
-		dc.b $87 ; ‡
-		dc.b $20
-		dc.b $DE ; Þ
-		dc.b $1C
-		dc.b $83 ; ƒ
-		dc.b $78 ; x
-		dc.b $72 ; r
-		dc.b  $D
-		dc.b $E1 ; á
-		dc.b $C8 ; È
-		dc.b $37 ; 7
-		dc.b $87 ; ‡
-		dc.b $20
-		dc.b $E0 ; à
-		dc.b $5D ; ]
-		dc.b $2B ; +
-		dc.b $2C ; ,
-		dc.b $5A ; Z
-		dc.b $89 ; ‰
-		dc.b $23 ; #
-		dc.b $A4 ; ¤
-		dc.b $56 ; V
-		dc.b $A7 ; §
-		dc.b $95 ; •
-		dc.b $CE ; Î
-		dc.b $85 ; …
-		dc.b $71 ; q
-		dc.b $AD ; ­
-		dc.b $95 ; •
-		dc.b $D2 ; Ò
-		dc.b $BC ; ¼
-		dc.b $C8 ; È
-		dc.b $E9 ; é
-		dc.b $13
-		dc.b $3E ; >
-		dc.b   5
-		dc.b $7E ; ~
-		dc.b $91 ; ‘
-		dc.b $37 ; 7
-		dc.b $98 ; ˜
-		dc.b $4E ; N
-		dc.b $70 ; p
-		dc.b $B3 ; ³
-		dc.b $8E ; Ž
-		dc.b  $D
-		dc.b $7F ; 
-		dc.b $13
-		dc.b $35 ; 5
-		dc.b $82 ; ‚
-		dc.b   0
-		dc.b $29 ; )
-		dc.b $93 ; “
-		dc.b $B9 ; ¹
-		dc.b $C4 ; Ä
-		dc.b $FB ; û
-		dc.b $13
-		dc.b $3D ; =
-		dc.b $82 ; ‚
-		dc.b   0
-		dc.b $3F ; ?
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   9
-		dc.b   1
-		dc.b   0
-		dc.b $3F ; ?
-		dc.b   0
-		dc.b $4D ; M
-		dc.b $A4 ; ¤
-		dc.b $38 ; 8
-		dc.b $85 ; …
-		dc.b $C2 ; Â
-		dc.b $3F ; ?
-		dc.b $A4 ; ¤
-		dc.b $22 ; "
-		dc.b $FE ; þ
-		dc.b $91 ; ‘
-		dc.b $44 ; D
-		dc.b $B1 ; ±
-		dc.b $32 ; 2
-		dc.b $4C ; L
-		dc.b $92 ; ’
-		dc.b $C5 ; Å
-		dc.b   1
-		dc.b $46 ; F
-		dc.b $51 ; Q
-		dc.b $94 ; ”
-		dc.b   5
-		dc.b $51 ; Q
-		dc.b $5A ; Z
-		dc.b $56 ; V
-		dc.b $95 ; •
-		dc.b $45 ; E
-		dc.b $A1 ; ¡
-		dc.b $6F ; o
-		dc.b  $C
-		dc.b $B6 ; ¶
-		dc.b $15
-		dc.b $21 ; !
-		dc.b $23 ; #
-		dc.b $14
-		dc.b $89 ; ‰
-		dc.b $8A ; Š
-		dc.b $4A ; J
-		dc.b $42 ; B
-		dc.b $88 ; ˆ
-		dc.b $9D ; 
-		dc.b $48 ; H
-		dc.b $52 ; R
-		dc.b $C5 ; Å
-		dc.b $27 ; '
-		dc.b $E2 ; â
-		dc.b $95 ; •
-		dc.b $2A ; *
-		dc.b  $B
-		dc.b $DC ; Ü
-		dc.b $25 ; %
-		dc.b $EA ; ê
-		dc.b $83 ; ƒ
-		dc.b $2F ; /
-		dc.b $C9 ; É
-		dc.b $94 ; ”
-		dc.b $4D ; M
-		dc.b $58 ; X
-		dc.b $16
-		dc.b $11
-		dc.b $49 ; I
-		dc.b $62 ; b
-		dc.b $58 ; X
-		dc.b $F6 ; ö
-		dc.b $15
-		dc.b $92 ; ’
-		dc.b $4D ; M
-		dc.b $59 ; Y
-		dc.b $56 ; V
-		dc.b $69 ; i
-		dc.b $4B ; K
-		dc.b $F8 ; ø
-		dc.b   9
-		dc.b   0
-		dc.b   0
-		dc.b $D0 ; Ð
-		dc.b   0
-		dc.b $D5 ; Õ
-		dc.b $E0 ; à
-		dc.b $FD ; ý
-		dc.b $A7 ; §
-		dc.b $3F ; ?
-		dc.b $43 ; C
-		dc.b $84 ; „
-		dc.b $2A ; *
-		dc.b $9D ; 
-		dc.b $1F
-		dc.b $8B ; ‹
-		dc.b $B1 ; ±
-		dc.b $FB ; û
-		dc.b $4E ; N
-		dc.b $86 ; †
-		dc.b $87 ; ‡
-		dc.b   8
-		dc.b $55 ; U
-		dc.b $3A ; :
-		dc.b $5F ; _
-		dc.b $27 ; '
-		dc.b $63 ; c
-		dc.b $F6 ; ö
-		dc.b $3B ; ;
-		dc.b $4A ; J
-		dc.b $40 ; @
-		dc.b $87 ; ‡
-		dc.b   8
-		dc.b $55 ; U
-		dc.b $39 ; 9
-		dc.b $74 ; t
-		dc.b   7
-		dc.b $60 ; `
-		dc.b $B5 ; µ
-		dc.b $5C ; \
-		dc.b $F5 ; õ
-		dc.b $5A ; Z
-		dc.b $F5 ; õ
-		dc.b $5D ; ]
-		dc.b $D5 ; Õ
-		dc.b $5B ; [
-		dc.b $B5 ; µ
-		dc.b $5E ; ^
-		dc.b $95 ; •
-		dc.b $1F
-		dc.b $A8 ; ¨
-		dc.b $54 ; T
-		dc.b $85 ; …
-		dc.b $71 ; q
-		dc.b $76 ; v
-		dc.b $3F ; ?
-		dc.b $69 ; i
-		dc.b $C0 ; À
-		dc.b $90 ; 
-		dc.b $E1 ; á
-		dc.b  $A
-		dc.b $A7 ; §
-		dc.b  $F
-		dc.b $E0 ; à
-		dc.b $EC ; ì
-		dc.b $A5 ; ¥
-		dc.b   6
-		dc.b $A4 ; ¤
-		dc.b $E0 ; à
-		dc.b $A5 ; ¥
-		dc.b $13
-		dc.b $A4 ; ¤
-		dc.b $F7 ; ÷
-		dc.b $E0 ; à
-		dc.b $FD ; ý
-		dc.b $A7 ; §
-		dc.b $18
-		dc.b $43 ; C
-		dc.b $84 ; „
-		dc.b $2A ; *
-		dc.b $9C ; œ
-		dc.b $9B ; ›
-		dc.b $8B ; ‹
-		dc.b $B1 ; ±
-		dc.b $FB ; û
-		dc.b $4E ; N
-		dc.b $38 ; 8
-		dc.b $87 ; ‡
-		dc.b   8
-		dc.b $55 ; U
-		dc.b $39 ; 9
-		dc.b $57 ; W
-		dc.b $27 ; '
-		dc.b $63 ; c
-		dc.b $F6 ; ö
-		dc.b $3B ; ;
-		dc.b $4A ; J
-		dc.b $40 ; @
-		dc.b $87 ; ‡
-		dc.b   8
-		dc.b $55 ; U
-		dc.b $39 ; 9
-		dc.b $74 ; t
-		dc.b   7
-		dc.b $67 ; g
-		dc.b $F0 ; ð
-		dc.b   9
-		dc.b   0
-		dc.b   0
-		dc.b $24 ; $
-		dc.b   0
-		dc.b $24 ; $
-		dc.b   1
-		dc.b $E8 ; è
-		dc.b $F6 ; ö
-		dc.b $78 ; x
-		dc.b $F6 ; ö
-		dc.b $8F ; 
-		dc.b $E0 ; à
-		dc.b   0
-		dc.b   9
-		dc.b   0
-		dc.b   0
-		dc.b $12
-		dc.b   0
-		dc.b $12
-		dc.b $A9 ; ©
-		dc.b $69 ; i
-		dc.b   2
-		dc.b $8D ; 
-		dc.b $BA ; º
-		dc.b $9D ; 
-		dc.b $AA ; ª
-		dc.b $9D ; 
-		dc.b $C1 ; Á
-		dc.b $1E
-		dc.b $36 ; 6
-		dc.b $EB ; ë
-		dc.b $A5 ; ¥
-		dc.b $2B ; +
-		dc.b $8A ; Š
-		dc.b $1F
-		dc.b $C0 ; À
-		dc.b   0
-		dc.b   9
-		dc.b   3
-		dc.b   0
-		dc.b $12
-		dc.b   0
-		dc.b $12
-		dc.b $E2 ; â
-		dc.b $5D ; ]
-		dc.b $7B ; {
-		dc.b $AD ; ­
-		dc.b $F2 ; ò
-		dc.b $ED ; í
-		dc.b $C6 ; Æ
-		dc.b $C0 ; À
-		dc.b $98 ; ˜
-		dc.b $60 ; `
-		dc.b $10
-		dc.b $E2 ; â
-		dc.b $61 ; a
-		dc.b $EC ; ì
-		dc.b $3F ; ?
-		dc.b $F0 ; ð
-		dc.b   9
-		dc.b   2
-		dc.b   0
-		dc.b $12
-		dc.b   0
-		dc.b $12
-		dc.b $B0 ; °
-		dc.b $CD ; Í
-		dc.b $81 ; 
-		dc.b $47 ; G
-		dc.b $9B ; ›
-		dc.b $AC ; ¬
-		dc.b $D2 ; Ò
-		dc.b $21 ; !
-		dc.b $45 ; E
-		dc.b $AB ; «
-		dc.b $E2 ; â
-		dc.b $CE ; Î
-		dc.b $B3 ; ³
-		dc.b $F4 ; ô
-		dc.b $DA ; Ú
-		dc.b $D4 ; Ô
-		dc.b $68 ; h
-		dc.b $F5 ; õ
-		dc.b $7D ; }
-		dc.b $5A ; Z
-		dc.b $46 ; F
-		dc.b $99 ; ™
-		dc.b $B1 ; ±
-		dc.b $6C ; l
-		dc.b $9A ; š
-		dc.b $56 ; V
-		dc.b $CD ; Í
-		dc.b $1A
-		dc.b $2D ; -
-		dc.b $A7 ; §
-		dc.b $36 ; 6
-		dc.b $B9 ; ¹
-		dc.b $B6 ; ¶
-		dc.b $6D ; m
-		dc.b $D9 ; Ù
-		dc.b $D4 ; Ô
-		dc.b $E8 ; è
-		dc.b $F6 ; ö
-		dc.b $9C ; œ
-		dc.b $DB ; Û
-		dc.b $26 ; &
-		dc.b $9D ; 
-		dc.b $B8 ; ¸
-		dc.b $69 ; i
-		dc.b $13
-		dc.b $E8 ; è
-		dc.b $D7 ; ×
-		dc.b $33 ; 3
-		dc.b $AC ; ¬
-		dc.b $FB ; û
-		dc.b $72 ; r
-		dc.b $D7 ; ×
-		dc.b $A2 ; ¢
-		dc.b   2
-		dc.b $3D ; =
-		dc.b $1B
-		dc.b $26 ; &
-		dc.b $91 ; ‘
-		dc.b $A6 ; ¦
-		dc.b $6E ; n
-		dc.b $9A ; š
-		dc.b $54 ; T
-		dc.b $70 ; p
-		dc.b $82 ; ‚
-		dc.b $68 ; h
-		dc.b $51 ; Q
-		dc.b $6E ; n
-		dc.b $FA ; ú
-		dc.b $B3 ; ³
-		dc.b $ED ; í
-		dc.b $13
-		dc.b $44 ; D
-		dc.b $D7 ; ×
-		dc.b $B3 ; ³
-		dc.b $C0 ; À
-		dc.b $9A ; š
-		dc.b $3D ; =
-		dc.b $DB ; Û
-		dc.b $A6 ; ¦
-		dc.b $99 ; ™
-		dc.b $A6 ; ¦
-		dc.b $6A ; j
-		dc.b $5A ; Z
-		dc.b $96 ; –
-		dc.b $95 ; •
-		dc.b $A5 ; ¥
-		dc.b   4
-		dc.b $D1 ; Ñ
-		dc.b $A2 ; ¢
-		dc.b $D0 ; Ð
-		dc.b $F2 ; ò
-		dc.b $6D ; m
-		dc.b $9B ; ›
-		dc.b $D6 ; Ö
-		dc.b $DD ; Ý
-		dc.b $1C
-		dc.b $20
-		dc.b $9A ; š
-		dc.b $14
-		dc.b $5A ; Z
-		dc.b $8E ; Ž
-		dc.b $4D ; M
-		dc.b $3B ; ;
-		dc.b $7C ; |
-		dc.b $DC ; Ü
-		dc.b $23 ; #
-		dc.b $84 ; „
-		dc.b $13
-		dc.b $43 ; C
-		dc.b $83 ; ƒ
-		dc.b $3B ; ;
-		dc.b $61 ; a
-		dc.b $BF ; ¿
-		dc.b $E0 ; à
-		dc.b $D2 ; Ò
-		dc.b $59 ; Y
-		dc.b $72 ; r
-		dc.b $38 ; 8
-		dc.b $82 ; ‚
-		dc.b $6D ; m
-		dc.b $ED ; í
-		dc.b $57 ; W
-		dc.b $4B ; K
-		dc.b $83 ; ƒ
-		dc.b $5F ; _
-		dc.b $6D ; m
-		dc.b $D8 ; Ø
-		dc.b $E0 ; à
-		dc.b $DE ; Þ
-		dc.b $D3 ; Ó
-		dc.b $74 ; t
-		dc.b $A8 ; ¨
-		dc.b $BC ; ¼
-		dc.b $9C ; œ
-		dc.b $19
-		dc.b $EA ; ê
-		dc.b $CE ; Î
-		dc.b $C5 ; Å
-		dc.b $17
-		dc.b $9B ; ›
-		dc.b $83 ; ƒ
-		dc.b $C2 ; Â
-		dc.b $97 ; —
-		dc.b $36 ; 6
-		dc.b $DD ; Ý
-		dc.b $9D ; 
-		dc.b $6B ; k
-		dc.b $DA ; Ú
-		dc.b $25 ; %
-		dc.b $79 ; y
-		dc.b $B7 ; ·
-		dc.b  $D
-		dc.b $23 ; #
-		dc.b $4A ; J
-		dc.b $D4 ; Ô
-		dc.b $A7 ; §
-		dc.b $D9 ; Ù
-		dc.b $A2 ; ¢
-		dc.b $6D ; m
-		dc.b $C1 ; Á
-		dc.b $26 ; &
-		dc.b $C1 ; Á
-		dc.b $A1 ; ¡
-		dc.b $6B ; k
-		dc.b $9B ; ›
-		dc.b $94 ; ”
-		dc.b $BB ; »
-		dc.b $35 ; 5
-		dc.b $2D ; -
-		dc.b $C0 ; À
-		dc.b $24 ; $
-		dc.b $D9 ; Ù
-		dc.b $B5 ; µ
-		dc.b  $D
-		dc.b $93 ; “
-		dc.b $74 ; t
-		dc.b $8F ; 
-		dc.b $F0 ; ð
-		dc.b   3
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   1
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $F7 ; ÷
-		dc.b $DF ; ß
-		dc.b $7D ; }
-		dc.b $E0 ; à
-		dc.b $27 ; '
-		dc.b $99 ; ™
-		dc.b $E6 ; æ
-		dc.b $31 ; 1
-		dc.b   2
-		dc.b $7A ; z
-		dc.b $9E ; ž
-		dc.b $A3 ; £
-		dc.b $20
-		dc.b $27 ; '
-		dc.b $B9 ; ¹
-		dc.b $EE ; î
-		dc.b $33 ; 3
-		dc.b   2
-		dc.b $7C ; |
-		dc.b $9F ; Ÿ
-		dc.b $23 ; #
-		dc.b $40 ; @
-		dc.b $27 ; '
-		dc.b $D9 ; Ù
-		dc.b $F6 ; ö
-		dc.b $35 ; 5
-		dc.b   2
-		dc.b $7E ; ~
-		dc.b $9F ; Ÿ
-		dc.b $A7 ; §
-		dc.b $E9 ; é
-		dc.b $FA ; ú
-		dc.b $7E ; ~
-		dc.b $9F ; Ÿ
-		dc.b $A7 ; §
-		dc.b $E9 ; é
-		dc.b $FA ; ú
-		dc.b $7E ; ~
-		dc.b $9F ; Ÿ
-		dc.b $A7 ; §
-		dc.b $E9 ; é
-		dc.b $FA ; ú
-		dc.b $36 ; 6
-		dc.b $FE ; þ
-unk_12BBD:	dc.b   2		; DATA XREF: sub_329A+Eo
+font_12674:
+	incbin "fonts\font_12674.bin"
+
+unk_126FC:
+		dc.l 0
+		dc.l 0
+
+enigma_12704:
+	incbin "misc\enigma_12704.bin"
+	incbin "misc\enigma_127B0.bin"
+	incbin "misc\enigma_12862.bin"
+	incbin "misc\enigma_129C2.bin"
+	incbin "misc\enigma_12A0E.bin"
+	incbin "misc\enigma_12A78.bin"
+	incbin "misc\enigma_12A86.bin"
+	incbin "misc\enigma_12A9E.bin"
+	incbin "misc\enigma_12AB4.bin"
+	incbin "misc\enigma_12B6C.bin"
+
+unk_12BBE:
 		dc.b   0
 		dc.b   0
 		dc.b   5
@@ -25713,31 +24347,11 @@ unk_12BBD:	dc.b   2		; DATA XREF: sub_329A+Eo
 		dc.b $F5 ; õ
 		dc.b $FE ; þ
 		dc.b $EA ; ê
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $FF
-		dc.b $80 ; €
-		dc.b $80 ; €
-		dc.b $80 ; €
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $FF
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $C0 ; À
-		dc.b $40 ; @
-		dc.b $40 ; @
-		dc.b $40 ; @
-		dc.b $40 ; @
 
+font_12BE0:
+	incbin "fonts\font_12BE0.bin"
+
+fill_12BF8:
 	dcb.b 2056, $FF
 
 unk_13400:			; DATA XREF: loadSubCpuPrg+28o
