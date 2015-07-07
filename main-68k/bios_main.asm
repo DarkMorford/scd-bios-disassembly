@@ -1075,10 +1075,10 @@ dmaFillVramSegment:			; CODE XREF: ROM:000002C0j
 		move.l	d0,(a6)
 		move.b	d2,-4(a6)
 
-DmaWaitLoop:				; CODE XREF: dmaFillVramSegment+3Cj
+@DmaWaitLoop:				; CODE XREF: dmaFillVramSegment+3Cj
 		move.w	(a6),d3		; Wait for DMA to finish
 		btst	#1,d3
-		bne.s	DmaWaitLoop
+		bne.s	@DmaWaitLoop
 		move.w	(vdpRegCache+2).w,(a6)
 		move.w	#$8F02,(a6)
 		rts
@@ -1203,10 +1203,10 @@ dmaCopyVram:				; CODE XREF: ROM:00000374j
 		ori.w	#$C0,d0	; 'À'
 		move.l	d0,(a6)
 
-dmaWaitLoop:				; CODE XREF: dmaCopyVram+48j
+@dmaWaitLoop:				; CODE XREF: dmaCopyVram+48j
 		move.w	(a6),d3		; Wait for DMA to finish
 		btst	#1,d3
-		bne.s	dmaWaitLoop
+		bne.s	@dmaWaitLoop
 		move.w	(vdpRegCache+2).w,(a6)
 		move.w	#$8F02,(a6)
 		rts
@@ -1219,9 +1219,9 @@ dmaWaitLoop:				; CODE XREF: dmaCopyVram+48j
 readFromVram:
 		move.l	d0,(VDP_CONTROL).l
 
-loc_C22:				; CODE XREF: readFromVram+Cj
+@loc_C22:				; CODE XREF: readFromVram+Cj
 		move.w	(VDP_DATA).l,(a2)+
-		dbf	d1,loc_C22
+		dbf	d1,@loc_C22
 		rts
 ; End of function readFromVram
 
@@ -3526,9 +3526,8 @@ loc_2058:				; CODE XREF: sub_1CFA+360j
 		clr.w	(word_219C18).l
 		move.w	#0,(word_FFFFC136).w
 
-loc_2076:				; CODE XREF: sub_1CFA+384j
-		bset	#GA_MEM_MODE_DMNA,(GA_MEM_MODE).l
-		beq.s	loc_2076
+		m_giveWordRamToSubCpu
+
 		andi	#$F8FF,sr
 		move.l	#$66020003,d0
 		move.w	#$25,d1	; '%'
@@ -5755,24 +5754,32 @@ locret_3210:				; CODE XREF: sub_31FE+6j
 ; ---------------------------------------------------------------------------
 
 loc_3212:				; CODE XREF: sub_31FE+Cj
-		jsr	displayOff(pc)
-		move.w	#(loc_900E+3),(VDP_CONTROL).l
-		move.w	#(loc_900E+3),(vdpRegCache+$20).w
-		move.w	#loc_8700,(VDP_CONTROL).l
-		move.w	#loc_8700,(vdpRegCache+$E).w
-		move.w	#(loc_90FE+2),(VDP_CONTROL).l
-		move.w	#(loc_90FE+2),(vdpRegCache+$22).w
-		move.w	#loc_9200,(VDP_CONTROL).l
-		move.w	#loc_9200,(vdpRegCache+$24).w
-		move.l	#$42200003,d6
-		bsr.w	sub_6816
-		bsr.w	sub_5DD8
-		clr.b	(byte_FFFFD061).w
-		move.l	#$40000010,(VDP_CONTROL).l
-		move.l	#$200100,(VDP_DATA).l
-		move.l	#$44000002,(VDP_CONTROL).l
-		move.l	#$FF800000,(VDP_DATA).l
-		jmp	displayOn(pc)
+	jsr	displayOff(pc)
+
+	move.w	#$9011,(VDP_CONTROL).l
+	move.w	#$9011,(vdpRegCache+$20).w
+
+	move.w	#$8700,(VDP_CONTROL).l
+	move.w	#$8700,(vdpRegCache+$0E).w
+
+	move.w	#$9100,(VDP_CONTROL).l
+	move.w	#$9100,(vdpRegCache+$22).w
+
+	move.w	#$9200,(VDP_CONTROL).l
+	move.w	#$9200,(vdpRegCache+$24).w
+
+	move.l	#$42200003,d6
+	bsr.w	sub_6816
+	bsr.w	sub_5DD8
+	clr.b	(byte_FFFFD061).w
+
+	move.l	#$40000010,(VDP_CONTROL).l
+	move.l	#$200100,(VDP_DATA).l
+
+	move.l	#$44000002,(VDP_CONTROL).l
+	move.l	#$FF800000,(VDP_DATA).l
+
+	jmp	displayOn(pc)
 ; End of function sub_31FE
 
 
