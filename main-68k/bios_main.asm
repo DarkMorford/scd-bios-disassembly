@@ -11,294 +11,290 @@
 	include "macros.asm"
 
 InitialSSP:
-		dc.l $FFFFFD00
-		dc.l _start
-		dc.l errorReset
-		dc.l _CODERR
-		dc.l _CODERR
-		dc.l _DEVERR
-		dc.l _CHKERR
-		dc.l _TRPERR
-		dc.l _SPVERR
-		dc.l _TRACE
-		dc.l _NOCOD0
-		dc.l _NOCOD1
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l _LEVEL2		; External interrupt
-		dc.l errorReset
-		dc.l _LEVEL4		; H-blank
-		dc.l errorReset
-		dc.l _LEVEL6		; V-blank
-		dc.l errorReset
-		dc.l _TRAP00
-		dc.l _TRAP01
-		dc.l _TRAP02
-		dc.l _TRAP03
-		dc.l _TRAP04
-		dc.l _TRAP05
-		dc.l _TRAP06
-		dc.l _TRAP07
-		dc.l _TRAP08
-		dc.l _TRAP09
-		dc.l _TRAP10
-		dc.l _TRAP11
-		dc.l _TRAP12
-		dc.l _TRAP13
-		dc.l _TRAP14
-		dc.l _TRAP15
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
-		dc.l errorReset
+	dc.l $FFFFFD00
+	dc.l _start
+	dc.l errorReset
+	dc.l _CODERR
+	dc.l _CODERR
+	dc.l _DEVERR
+	dc.l _CHKERR
+	dc.l _TRPERR
+	dc.l _SPVERR
+	dc.l _TRACE
+	dc.l _NOCOD0
+	dc.l _NOCOD1
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l _LEVEL2		; External interrupt
+	dc.l errorReset
+	dc.l _LEVEL4		; H-blank
+	dc.l errorReset
+	dc.l _LEVEL6		; V-blank
+	dc.l errorReset
+	dc.l _TRAP00
+	dc.l _TRAP01
+	dc.l _TRAP02
+	dc.l _TRAP03
+	dc.l _TRAP04
+	dc.l _TRAP05
+	dc.l _TRAP06
+	dc.l _TRAP07
+	dc.l _TRAP08
+	dc.l _TRAP09
+	dc.l _TRAP10
+	dc.l _TRAP11
+	dc.l _TRAP12
+	dc.l _TRAP13
+	dc.l _TRAP14
+	dc.l _TRAP15
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
+	dc.l errorReset
 
-		dc.b 'SEGA MEGA DRIVE '
-		dc.b '(C)SEGA 1993.JUN'
-		dc.b 'CD2 BOOT ROM     06/01-1993     20:00      2.00W'
-		dc.b 'CD2 BOOT ROM                                    '
-		dc.b 'BR 000006-2.00'
-		dc.w $AEE0
-		dc.b 'JM4             '
-		dc.l $000000
-		dc.l $01FFFF
-		dc.l $FF0000
-		dc.l $FFFFFF
-		dc.b '            '
-		dc.b '            '
-		dc.b '                                        '
-		dc.b 'U 2             '
+	dc.b 'SEGA MEGA DRIVE '
+	dc.b '(C)SEGA 1993.JUN'
+	dc.b 'CD2 BOOT ROM     06/01-1993     20:00      2.00W'
+	dc.b 'CD2 BOOT ROM                                    '
+	dc.b 'BR 000006-2.00'
+	dc.w $AEE0
+	dc.b 'JM4             '
+	dc.l $000000
+	dc.l $01FFFF
+	dc.l $FF0000
+	dc.l $FFFFFF
+	dc.b '            '
+	dc.b '            '
+	dc.b '                                        '
+	dc.b 'U 2             '
 ; ---------------------------------------------------------------------------
 
-errorReset:				; DATA XREF: ROM:00000008o
-					; ROM:00000030o ...
-		lea	(_EXCPT).w,a0
-		move.w	#$4EF9,d0
-		move.w	d0,(a0)+
-		move.l	#$640,(a0)+
-		movea.l	(InitialSSP).w,sp
-		bra.w	_start
+errorReset:
+	lea	(_EXCPT).w, a0
+	move.w	#$4EF9, d0
+	move.w	d0, (a0)+
+	move.l	#$640, (a0)+
+	movea.l	(InitialSSP).w, sp
+	bra.w	_start
+	rte
 ; ---------------------------------------------------------------------------
-		rte
+	dcb.b $66, $FF ; Fill with $FF up to $280
 ; ---------------------------------------------------------------------------
-		dcb.b $66,$FF
+	bra.w	sub_640
 ; ---------------------------------------------------------------------------
-		bra.w	sub_640
+	bra.w	_start
 ; ---------------------------------------------------------------------------
-		bra.w	_start
+	bra.w	loc_684
 ; ---------------------------------------------------------------------------
-		bra.w	loc_684
+	bra.w	loc_67C
 ; ---------------------------------------------------------------------------
-		bra.w	loc_67C
+	bra.w	altVblankHandler
 ; ---------------------------------------------------------------------------
-		bra.w	altVblankHandler
+	bra.w	enableDefaultHInt
 ; ---------------------------------------------------------------------------
-		bra.w	enableDefaultHInt
+	bra.w	readJoypads
 ; ---------------------------------------------------------------------------
-		bra.w	readJoypads
+	bra.w	sub_1134
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1134
+	bra.w	clearAllVram
 ; ---------------------------------------------------------------------------
-		bra.w	clearAllVram
+	bra.w	clearVdpPatternTables
 ; ---------------------------------------------------------------------------
-		bra.w	clearVdpPatternTables
+	bra.w	clearVsram
 ; ---------------------------------------------------------------------------
-		bra.w	clearVsram
+	bra.w	loadDefaultVdpRegs
 ; ---------------------------------------------------------------------------
-		bra.w	loadDefaultVdpRegs
+	bra.w	loadVdpRegs
 ; ---------------------------------------------------------------------------
-		bra.w	loadVdpRegs
+	bra.w	fillVramSegment
 ; ---------------------------------------------------------------------------
-		bra.w	fillVramSegment
+	bra.w	clearVramSegment
 ; ---------------------------------------------------------------------------
-		bra.w	clearVramSegment
+	bra.w	dmaClearVramSegment
 ; ---------------------------------------------------------------------------
-		bra.w	dmaClearVramSegment
+	bra.w	dmaFillVramSegment
 ; ---------------------------------------------------------------------------
-		bra.w	dmaFillVramSegment
+	bra.w	sub_C2E
 ; ---------------------------------------------------------------------------
-		bra.w	sub_C2E
+	bra.w	sub_C52
 ; ---------------------------------------------------------------------------
-		bra.w	sub_C52
+	bra.w	sub_CF2
 ; ---------------------------------------------------------------------------
-		bra.w	sub_CF2
+	bra.w	dmaTransferToVram
 ; ---------------------------------------------------------------------------
-		bra.w	dmaTransferToVram
+	bra.w	dmaTransferToVramWithRewrite
 ; ---------------------------------------------------------------------------
-		bra.w	dmaTransferToVramWithRewrite
+	bra.w	displayOn
 ; ---------------------------------------------------------------------------
-		bra.w	displayOn
+	bra.w	displayOff
 ; ---------------------------------------------------------------------------
-		bra.w	displayOff
+	bra.w	loadPalettesNoUpdate
 ; ---------------------------------------------------------------------------
-		bra.w	loadPalettesNoUpdate
+	bra.w	loadPalettesToBuffer
 ; ---------------------------------------------------------------------------
-		bra.w	loadPalettesToBuffer
+	bra.w	dmaTransferPalettes
 ; ---------------------------------------------------------------------------
-		bra.w	dmaTransferPalettes
+	bra.w	NemDec
 ; ---------------------------------------------------------------------------
-		bra.w	NemDec
+	bra.w	NemDecToRam
 ; ---------------------------------------------------------------------------
-		bra.w	NemDecToRam
+	bra.w	sub_1CA2
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1CA2
+	bra.w	clearRamSegment
 ; ---------------------------------------------------------------------------
-		bra.w	clearRamSegment
+	bra.w	sub_1C06
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1C06
+	bra.w	sub_1C18
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1C18
+	bra.w	loc_976
 ; ---------------------------------------------------------------------------
-		bra.w	loc_976
+	bra.w	waitForVblank
 ; ---------------------------------------------------------------------------
-		bra.w	waitForVblank
+	bra.w	dmaSendSpriteTable
 ; ---------------------------------------------------------------------------
-		bra.w	dmaSendSpriteTable
+	bra.w	sub_1904
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1904
+	bra.w	enableUserHInt
 ; ---------------------------------------------------------------------------
-		bra.w	enableUserHInt
+	bra.w	disableHInt
 ; ---------------------------------------------------------------------------
-		bra.w	disableHInt
+	bra.w	writeTextToScreen
 ; ---------------------------------------------------------------------------
-		bra.w	writeTextToScreen
+	bra.w	loc_195E
 ; ---------------------------------------------------------------------------
-		bra.w	loc_195E
+	bra.w	loc_1952
 ; ---------------------------------------------------------------------------
-		bra.w	loc_1952
+	bra.w	loadDefaultFont
 ; ---------------------------------------------------------------------------
-		bra.w	loadDefaultFont
+	bra.w	sub_18CE
 ; ---------------------------------------------------------------------------
-		bra.w	sub_18CE
+	bra.w	EniDec
 ; ---------------------------------------------------------------------------
-		bra.w	EniDec
+	bra.w	sub_199C
 ; ---------------------------------------------------------------------------
-		bra.w	sub_199C
+	bra.w	randWithModulo
 ; ---------------------------------------------------------------------------
-		bra.w	randWithModulo
+	bra.w	rand
 ; ---------------------------------------------------------------------------
-		bra.w	rand
+	bra.w	clearCommRegisters
 ; ---------------------------------------------------------------------------
-		bra.w	clearCommRegisters
+	bra.w	sub_15EE
 ; ---------------------------------------------------------------------------
-		bra.w	sub_15EE
+	bra.w	sub_1658
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1658
+	bra.w	sub_16D2
 ; ---------------------------------------------------------------------------
-		bra.w	sub_16D2
+	bra.w	sub_17E2
 ; ---------------------------------------------------------------------------
-		bra.w	sub_17E2
+	bra.w	sub_17EC
 ; ---------------------------------------------------------------------------
-		bra.w	sub_17EC
+	bra.w	sub_17F6
 ; ---------------------------------------------------------------------------
-		bra.w	sub_17F6
+	bra.w	sub_1800
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1800
+	bra.w	sendInt2ToSubCpu
 ; ---------------------------------------------------------------------------
-		bra.w	sendInt2ToSubCpu
+	bra.w	sub_68C4
 ; ---------------------------------------------------------------------------
-		bra.w	sub_68C4
+	bra.w	setVblankHandler
 ; ---------------------------------------------------------------------------
-		bra.w	setVblankHandler
+	bra.w	sub_CA0
 ; ---------------------------------------------------------------------------
-		bra.w	sub_CA0
+	bra.w	sub_CC6
 ; ---------------------------------------------------------------------------
-		bra.w	sub_CC6
+	bra.w	dmaCopyVram
 ; ---------------------------------------------------------------------------
-		bra.w	dmaCopyVram
+	bra.w	sub_1730
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1730
+	bra.w	sub_55AC
 ; ---------------------------------------------------------------------------
-		bra.w	sub_55AC
+	bra.w	numberToBcd
 ; ---------------------------------------------------------------------------
-		bra.w	numberToBcd
+	bra.w	displayBlack
 ; ---------------------------------------------------------------------------
-		bra.w	displayBlack
+	bra.w	fadeOutColors
 ; ---------------------------------------------------------------------------
-		bra.w	fadeOutColors
+	bra.w	sub_E20
 ; ---------------------------------------------------------------------------
-		bra.w	sub_E20
+	bra.w	sub_E0C
 ; ---------------------------------------------------------------------------
-		bra.w	sub_E0C
+	bra.w	sub_1A28
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1A28
+	bra.w	sub_1A38
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1A38
+	bra.w	sub_1A76
 ; ---------------------------------------------------------------------------
-		bra.w	sub_1A76
-; ---------------------------------------------------------------------------
-		bra.w	sub_1A4E
+	bra.w	sub_1A4E
 
 ; =============== S U B	R O U T	I N E =======================================
 
 
 installErrorVectors:			; CODE XREF: setupGenHardwarep
-					; ROM:00000690p
-		lea	(_EXCPT).w,a0
-		move.w	#$4EF9,d0
-		move.w	d0,(a0)+
-		move.l	#$640,(a0)+
-		move.w	d0,(a0)+
-		move.l	#$904,(a0)+
-		lea	(nullHandler).w,a1
-		moveq	#$11,d1
+	lea	(_EXCPT).w, a0
+	move.w	#$4EF9, d0
+	move.w	d0, (a0)+
+	move.l	#$640, (a0)+
+	move.w	d0, (a0)+
+	move.l	#$904, (a0)+
+	lea	(nullHandler).w, a1
+	moveq	#$11, d1
 
 loc_3C2:				; CODE XREF: installErrorVectors+22j
-		move.w	d0,(a0)+
-		move.l	a1,(a0)+
-		dbf	d1,loc_3C2
-		lea	(errorReset).l,a1
-		moveq	#7,d1
+	move.w	d0, (a0)+
+	move.l	a1, (a0)+
+	dbf	d1, loc_3C2
+	lea	(errorReset).l, a1
+	moveq	#7, d1
 
 loc_3D2:				; CODE XREF: installErrorVectors+32j
-		move.w	d0,(a0)+
-		move.l	a1,(a0)+
-		dbf	d1,loc_3D2
-		move.w	d0,(a0)+
-		move.l	#$40C,(a0)+
-		move.w	d0,(a0)+
-		move.l	#$88F0,(a0)
-		lea	asc_40E(pc),a1	; "RAM_CARTRIDG"
-		lea	(byte_400001).l,a2
-		tst.b	(a2)
-		bpl.s	locret_40C
-		lea	$F(a2),a2
-		moveq	#5,d1
+	move.w	d0, (a0)+
+	move.l	a1, (a0)+
+	dbf	d1, loc_3D2
+	move.w	d0, (a0)+
+	move.l	#$40C, (a0)+
+	move.w	d0, (a0)+
+	move.l	#$88F0, (a0)
+	lea	asc_40E(pc), a1	; "RAM_CARTRIDG"
+	lea	(byte_400001).l, a2
+	tst.b	(a2)
+	bpl.s	locret_40C
+	lea	$F(a2), a2
+	moveq	#5, d1
 
 loc_3FE:				; CODE XREF: installErrorVectors:loc_400j
-		cmpm.w	(a1)+,(a2)+
+	cmpm.w	(a1)+, (a2)+
 
 loc_400:
-		dbne	d1,loc_3FE
-		bne.s	locret_40C
-		move.l	#$400020,(a0)
+	dbne	d1, loc_3FE
+	bne.s	locret_40C
+	move.l	#$400020, (a0)
 
 locret_40C:				; CODE XREF: installErrorVectors+52j
-					; installErrorVectors+60j
-		rts
+	rts
 ; End of function installErrorVectors
 
 ; ---------------------------------------------------------------------------
@@ -306,254 +302,249 @@ asc_40E:	dc.b 'RAM_CARTRIDG'     ; DATA XREF: installErrorVectors+46o
 
 ; =============== S U B	R O U T	I N E =======================================
 
-
-setVblankHandler:			; CODE XREF: ROM:00000368j
-					; loadPrgFromWordRam+6p ...
-		move.l	a1,(_LEVEL6+2).w
-		rts
+setVblankHandler:
+	move.l a1, (_LEVEL6 + 2).w
+	rts
 ; End of function setVblankHandler
 
 
 ; =============== S U B	R O U T	I N E =======================================
 
-
-setVblankJumpTarget:			; CODE XREF: sub_1CFA+468p
-					; sub_30C2+22p	...
-		move.l	a1,(vblankJumpTarget+2).w
-		rts
+setVblankJumpTarget:
+	move.l a1, (vblankJumpTarget + 2).w
+	rts
 ; End of function setVblankJumpTarget
 
 ; ---------------------------------------------------------------------------
 
-_start:					; CODE XREF: ROM:00000214j
-					; ROM:00000284j ...
-		tst.l	($A10008).l
-		bne.s	loc_434
-		tst.w	($A1000C).l
+_start:
+	tst.l	($A10008).l
+	bne.s	loc_434
+	tst.w	($A1000C).l
 
 loc_434:				; CODE XREF: ROM:0000042Cj
-		bne.w	loc_4C8
-		lea	InitData(pc),a5
-		movem.w	(a5)+,d5-d7
-		movem.l	(a5)+,a0-a4
-		move.b	-$10FF(a1),d0
-		andi.b	#$F,d0
-		beq.s	loc_456
-		move.l	#'SEGA',$2F00(a1)
+	bne.w	loc_4C8
+	lea	InitData(pc),a5
+	movem.w	(a5)+,d5-d7
+	movem.l	(a5)+,a0-a4
+	move.b	-$10FF(a1),d0
+	andi.b	#$F,d0
+	beq.s	loc_456
+	move.l	#'SEGA',$2F00(a1)
 
 loc_456:				; CODE XREF: ROM:0000044Cj
-		move.w	(a4),d0
-		moveq	#0,d0
-		move.l	#$C0000000,(VDP_CONTROL).l
-		move.w	#31,d1
+	move.w	(a4),d0
+	moveq	#0,d0
+	move.l	#$C0000000,(VDP_CONTROL).l
+	move.w	#31,d1
 
 loc_468:				; CODE XREF: ROM:0000046Aj
-		move.l	d0,(a3)
-		dbf	d1,loc_468
-		movea.l	d0, a6
-		move.l	a6, usp
-		moveq	#23,d1
+	move.l	d0,(a3)
+	dbf	d1,loc_468
+	movea.l	d0, a6
+	move.l	a6, usp
+	moveq	#23,d1
 
 loc_474:				; CODE XREF: ROM:0000047Aj
-		move.b	(a5)+,d5
-		move.w	d5,(a4)
-		add.w	d7,d5
-		dbf	d1,loc_474
-		move.l	(a5)+,(a4)
-		move.w	d0,(a3)
-		move.w	d7,(a1)
-		move.w	d7,(a2)
+	move.b	(a5)+,d5
+	move.w	d5,(a4)
+	add.w	d7,d5
+	dbf	d1,loc_474
+	move.l	(a5)+,(a4)
+	move.w	d0,(a3)
+	move.w	d7,(a1)
+	move.w	d7,(a2)
 
 loc_486:				; CODE XREF: ROM:00000488j
-		btst	d0,(a1)
-		bne.s	loc_486
-		moveq	#37,d2
+	btst	d0,(a1)
+	bne.s	loc_486
+	moveq	#37,d2
 
 loc_48C:				; CODE XREF: ROM:0000048Ej
-		move.b	(a5)+,(a0)+
-		dbf	d2,loc_48C
-		move.w	d0,(a2)
-		move.w	d0,(a1)
-		move.w	d7,(a2)
+	move.b	(a5)+,(a0)+
+	dbf	d2,loc_48C
+	move.w	d0,(a2)
+	move.w	d0,(a1)
+	move.w	d7,(a2)
 
 loc_498:				; CODE XREF: ROM:0000049Aj
-		move.l	d0,-(a6)
-		dbf	d6,loc_498
-		move.l	(a5)+,(a4)
-		move.l	(a5)+,(a4)
-		moveq	#31,d3
+	move.l	d0,-(a6)
+	dbf	d6,loc_498
+	move.l	(a5)+,(a4)
+	move.l	(a5)+,(a4)
+	moveq	#31,d3
 
 loc_4A4:				; CODE XREF: ROM:000004A6j
-		move.l	d0,(a3)
-		dbf	d3,loc_4A4
-		move.l	(a5)+,(a4)
-		moveq	#19,d4
+	move.l	d0,(a3)
+	dbf	d3,loc_4A4
+	move.l	(a5)+,(a4)
+	moveq	#19,d4
 
 loc_4AE:				; CODE XREF: ROM:000004B0j
-		move.l	d0,(a3)
-		dbf	d4,loc_4AE
-		moveq	#3,d5
+	move.l	d0,(a3)
+	dbf	d4,loc_4AE
+	moveq	#3,d5
 
 loc_4B6:				; CODE XREF: ROM:000004BAj
-		move.b	(a5)+,$11(a3)
-		dbf	d5,loc_4B6
-		move.w	d0,(a2)
-		movem.l	(a6),d0-a6
-		move	#$2700,sr
+	move.b	(a5)+,$11(a3)
+	dbf	d5,loc_4B6
+	move.w	d0,(a2)
+	movem.l	(a6),d0-a6
+	move	#$2700,sr
 
 loc_4C8:				; CODE XREF: ROM:loc_434j
-		bra.s	loc_536
+	bra.s	loc_536
 ; ---------------------------------------------------------------------------
-InitData:	dc.w $8000		; DATA XREF: ROM:00000438o
-		dc.w $3FFF
-		dc.w $100
-		dc.l $A00000
-		dc.l $A11100
-		dc.l $A11200
-		dc.l $C00000
-		dc.l $C00004
-		dc.b   4
-		dc.b $14
-		dc.b $30 ; 0
-		dc.b $3C ; <
-		dc.b   7
-		dc.b $6C ; l
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $FF
-		dc.b   0
-		dc.b $81 ; 
-		dc.b $37 ; 7
-		dc.b   0
-		dc.b   1
-		dc.b   1
-		dc.b   0
-		dc.b   0
-		dc.b $FF
-		dc.b $FF
-		dc.b   0
-		dc.b   0
-		dc.b $80 ; €
-		dc.l $40000080
-		dc.b $AF ; ¯
-		dc.b   1
-		dc.b $D9 ; Ù
-		dc.b $1F
-		dc.b $11
-		dc.b $27 ; '
-		dc.b   0
-		dc.b $21 ; !
-		dc.b $26 ; &
-		dc.b   0
-		dc.b $F9 ; ù
-		dc.b $77 ; w
-		dc.b $ED ; í
-		dc.b $B0 ; °
-		dc.b $DD ; Ý
-		dc.b $E1 ; á
-		dc.b $FD ; ý
-		dc.b $E1 ; á
-		dc.b $ED ; í
-		dc.b $47 ; G
-		dc.b $ED ; í
-		dc.b $4F ; O
-		dc.b $D1 ; Ñ
-		dc.b $E1 ; á
-		dc.b $F1 ; ñ
-		dc.b   8
-		dc.b $D9 ; Ù
-		dc.b $C1 ; Á
-		dc.b $D1 ; Ñ
-		dc.b $E1 ; á
-		dc.b $F1 ; ñ
-		dc.b $F9 ; ù
-		dc.b $F3 ; ó
-		dc.b $ED ; í
-		dc.b $56 ; V
-		dc.b $36 ; 6
-		dc.b $E9 ; é
-		dc.b $E9 ; é
-		dc.w $8104
-		dc.w $8F02
-		dc.l $C0000000
-		dc.l $40000010
-		dc.b $9F ; Ÿ
-		dc.b $BF ; ¿
-		dc.b $DF ; ß
-		dc.b $FF
+InitData:
+	dc.w $8000
+	dc.w $3FFF
+	dc.w $100
+	dc.l $A00000
+	dc.l $A11100
+	dc.l $A11200
+	dc.l $C00000
+	dc.l $C00004
+	dc.b   4
+	dc.b $14
+	dc.b $30 ; 0
+	dc.b $3C ; <
+	dc.b   7
+	dc.b $6C ; l
+	dc.b   0
+	dc.b   0
+	dc.b   0
+	dc.b   0
+	dc.b $FF
+	dc.b   0
+	dc.b $81 ; 
+	dc.b $37 ; 7
+	dc.b   0
+	dc.b   1
+	dc.b   1
+	dc.b   0
+	dc.b   0
+	dc.b $FF
+	dc.b $FF
+	dc.b   0
+	dc.b   0
+	dc.b $80 ; €
+	dc.l $40000080
+	dc.b $AF ; ¯
+	dc.b   1
+	dc.b $D9 ; Ù
+	dc.b $1F
+	dc.b $11
+	dc.b $27 ; '
+	dc.b   0
+	dc.b $21 ; !
+	dc.b $26 ; &
+	dc.b   0
+	dc.b $F9 ; ù
+	dc.b $77 ; w
+	dc.b $ED ; í
+	dc.b $B0 ; °
+	dc.b $DD ; Ý
+	dc.b $E1 ; á
+	dc.b $FD ; ý
+	dc.b $E1 ; á
+	dc.b $ED ; í
+	dc.b $47 ; G
+	dc.b $ED ; í
+	dc.b $4F ; O
+	dc.b $D1 ; Ñ
+	dc.b $E1 ; á
+	dc.b $F1 ; ñ
+	dc.b   8
+	dc.b $D9 ; Ù
+	dc.b $C1 ; Á
+	dc.b $D1 ; Ñ
+	dc.b $E1 ; á
+	dc.b $F1 ; ñ
+	dc.b $F9 ; ù
+	dc.b $F3 ; ó
+	dc.b $ED ; í
+	dc.b $56 ; V
+	dc.b $36 ; 6
+	dc.b $E9 ; é
+	dc.b $E9 ; é
+	dc.w $8104
+	dc.w $8F02
+	dc.l $C0000000
+	dc.l $40000010
+	dc.b $9F ; Ÿ
+	dc.b $BF ; ¿
+	dc.b $DF ; ß
+	dc.b $FF
 ; ---------------------------------------------------------------------------
 
 loc_536:				; CODE XREF: ROM:loc_4C8j
-		tst.w	(VDP_CONTROL).l
-		m_disableInterrupts
-		moveq	#$FFFFFFFF,d1
-		bsr.w	sub_183A
-		clr.b	(byte_FFFFFE54).w
-		btst	#6,(JOYCTRL3).l
-		beq.s	loc_598
-		movea.l	(InitialSSP).w,sp ; Warm boot
+	tst.w	(VDP_CONTROL).l
+	m_disableInterrupts
+	moveq	#$FFFFFFFF,d1
+	bsr.w	sub_183A
+	clr.b	(byte_FFFFFE54).w
+	btst	#6,(JOYCTRL3).l
+	beq.s	loc_598
+	movea.l	(InitialSSP).w,sp ; Warm boot
 
 loc_558:				; CODE XREF: ROM:00000562j
-		move.w	(VDP_CONTROL).l,d3 ; Wait for DMA to finish
-		btst	#1,d3
-		bne.s	loc_558
-		bsr.w	checkRegion
-		movem.l	d0-d1,-(sp)
-		bsr.w	testCartBootBlock
-		bne.w	sub_640		; Boot block didn't match, bail out
-		move.l	(_EXCPT+2).w,d0
-		bcs.w	loc_5AC
+	move.w	(VDP_CONTROL).l,d3 ; Wait for DMA to finish
+	btst	#1,d3
+	bne.s	loc_558
+	bsr.w	checkRegion
+	movem.l	d0-d1,-(sp)
+	bsr.w	testCartBootBlock
+	bne.w	sub_640		; Boot block didn't match, bail out
+	move.l	(_EXCPT+2).w,d0
+	bcs.w	loc_5AC
 
-bootCartridge:				; CODE XREF: ROM:000005B4j
-		st	(byte_FFFFFE54).w
-		bsr.w	setupGenHardware
-		move.w	#$4EF9,(_EXCPT).w
-		move.l	#$5AC,(_EXCPT+2).w
-		jmp	cartBoot
+bootCartridge:
+	st	(byte_FFFFFE54).w
+	bsr.w	setupGenHardware
+	move.w	#$4EF9,(_EXCPT).w
+	move.l	#$5AC,(_EXCPT+2).w
+	jmp	cartBoot
 ; ---------------------------------------------------------------------------
 
 loc_598:				; CODE XREF: ROM:00000552j
-		jsr	(loadDefaultVdpRegs).w
-		jsr	(clearAllVram).w
-		bsr.w	checkRegion
-		bsr.w	clearSubCpuPrg
-		bsr.w	clearWordRam2M
+	jsr	(loadDefaultVdpRegs).w
+	jsr	(clearAllVram).w
+	bsr.w	checkRegion
+	bsr.w	clearSubCpuPrg
+	bsr.w	clearWordRam2M
 
 loc_5AC:				; CODE XREF: ROM:00000578j sub_640+38j
-		m_disableInterrupts
-		bsr.w	testCartBootBlock
-		beq.s	bootCartridge
-		bsr.s	sub_5F0
-		moveq	#1,d0
-		moveq	#4,d1
-		jsr	sub_1800(pc)
-		moveq	#4,d0
-		bsr.w	setNextState
+	m_disableInterrupts
+	bsr.w	testCartBootBlock
+	beq.s	bootCartridge
+	bsr.s	sub_5F0
+	moveq	#1,d0
+	moveq	#4,d1
+	jsr	sub_1800(pc)
+	moveq	#4,d0
+	bsr.w	setNextState
 
 mainLoop:				; CODE XREF: ROM:000005D4j
-					; ROM:000006C6j
-		lea	(nextState).w,a0
-		move.w	(a0),d0
-		andi.w	#$7FFC,d0
-		jsr	mainJumpTable(pc,d0.w)
-		bra.s	mainLoop
+	lea	(nextState).w,a0
+	move.w	(a0),d0
+	andi.w	#$7FFC,d0
+	jsr	mainJumpTable(pc,d0.w)
+	bra.s	mainLoop
 ; ---------------------------------------------------------------------------
 
 mainJumpTable:
-		nop
-		rts
+	nop
+	rts
 ; ---------------------------------------------------------------------------
-		bra.w	sub_21F4
+	bra.w	sub_21F4
 ; ---------------------------------------------------------------------------
-		bra.w	sub_3040
+	bra.w	sub_3040
 ; ---------------------------------------------------------------------------
-		bra.w	loadPrgFromWordRam
+	bra.w	loadPrgFromWordRam
 ; ---------------------------------------------------------------------------
-		bra.w	sub_7374
+	bra.w	sub_7374
 ; ---------------------------------------------------------------------------
-		jmp	$FFFF0000
+	jmp	$FFFF0000
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -595,20 +586,20 @@ setupGenHardware:			; CODE XREF: ROM:00000580p sub_5F0p
 
 sub_640:				; CODE XREF: ROM:00000280j
 					; ROM:00000570j
-		m_disableInterrupts
-		move.b	#$9F,(PSG_CTRL).l
-		nop
-		nop
-		move.b	#$BF,(PSG_CTRL).l
-		nop
-		nop
-		move.b	#$DF,(PSG_CTRL).l
-		nop
-		nop
-		move.b	#$FF,(PSG_CTRL).l
-		jsr	(loadDefaultVdpRegs).w
-		jsr	(clearAllVram).w
-		bra.w	loc_5AC
+	m_disableInterrupts
+	move.b	#$9F,(PSG_CTRL).l
+	nop
+	nop
+	move.b	#$BF,(PSG_CTRL).l
+	nop
+	nop
+	move.b	#$DF,(PSG_CTRL).l
+	nop
+	nop
+	move.b	#$FF,(PSG_CTRL).l
+	jsr	(loadDefaultVdpRegs).w
+	jsr	(clearAllVram).w
+	bra.w	loc_5AC
 ; End of function sub_640
 
 ; ---------------------------------------------------------------------------
@@ -684,15 +675,14 @@ WaitForBus:				; CODE XREF: clearSubCpuPrg+Ej
 ; =============== S U B	R O U T	I N E =======================================
 
 
-fillSubCpuBank:				; CODE XREF: clearSubCpuPrg+1Ep
-					; clearSubCpuPrg+2Ap ...
-		lea	(SubCPU_Bank).l,a0
-		move.w	#$7FFF,d0
+fillSubCpuBank:
+	lea	(SubCPU_Bank).l, a0
+	move.w	#$7FFF, d0
 
-FillLoop:				; CODE XREF: fillSubCpuBank+Cj
-		move.l	d7,(a0)+
-		dbf	d0,FillLoop
-		rts
+@FillLoop:
+	move.l	d7, (a0)+
+	dbf	d0, @FillLoop
+	rts
 ; End of function fillSubCpuBank
 
 
@@ -757,28 +747,27 @@ locret_79E:				; CODE XREF: clearWordRam2M+6j
 ; =============== S U B	R O U T	I N E =======================================
 
 
-checkRegion:				; CODE XREF: ROM:00000564p
-					; ROM:000005A0p
-		move.b	(MD_VERSION).l,d0
-		andi.b	#$C0,d0
-		cmpi.b	#$80,d0
-		bne.s	RegionMismatch
-		rts
+checkRegion:
+	move.b	(MD_VERSION).l,d0
+	andi.b	#$C0,d0
+	cmpi.b	#$80,d0
+	bne.s	RegionMismatch
+	rts
 ; ---------------------------------------------------------------------------
 
-RegionMismatch:				; CODE XREF: checkRegion+Ej
-		m_disableInterrupts
-		jsr	loadDefaultVdpRegs(pc)
-		jsr	loadDefaultFont(pc)
-		lea	regionErrorText(pc),a1
-		move.l	#$C0000000,(VDP_CONTROL).l
-		move.l	(a1)+,(VDP_DATA).l
-		move.l	#$46060003,d0
-		jsr	writeTextToScreen(pc)
-		jsr	displayOn(pc)
+RegionMismatch:
+	m_disableInterrupts
+	jsr	loadDefaultVdpRegs(pc)
+	jsr	loadDefaultFont(pc)
+	lea	regionErrorText(pc),a1
+	move.l	#$C0000000,(VDP_CONTROL).l
+	move.l	(a1)+,(VDP_DATA).l
+	move.l	#$46060003,d0
+	jsr	writeTextToScreen(pc)
+	jsr	displayOn(pc)
 
-loc_7E0:				; CODE XREF: checkRegion:loc_7E0j
-		bra.s	loc_7E0		; Infinite loop	while displaying error
+loc_7E0:	; Infinite loop	while displaying error
+	bra.s	loc_7E0
 ; End of function checkRegion
 
 ; ---------------------------------------------------------------------------
