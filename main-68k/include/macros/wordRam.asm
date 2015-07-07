@@ -25,3 +25,9 @@ m_giveWordRamToSubCpu:  macro
 	bset #GA_MEM_MODE_DMNA, (GA_MEM_MODE).l
 	beq.s @wordRamWaitLoopDmna
 	endm
+
+m_waitForWordRam0:  macro
+@wordRamWaitLoop0:
+	btst #GA_MEM_MODE_RET, (GA_MEM_MODE).l
+	bne.s @wordRamWaitLoop0
+	endm

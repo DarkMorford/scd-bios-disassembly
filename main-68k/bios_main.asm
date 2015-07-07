@@ -12536,14 +12536,11 @@ loc_62B6:				; CODE XREF: sub_62AE+Ej
 
 
 sub_62C8:				; CODE XREF: sub_30C2+4Ep sub_62C8+8j
-		btst	#GA_MEM_MODE_MODE,(GA_MEM_MODE).l
-		beq.s	sub_62C8
+	m_waitForWordRam1M
+	m_waitForWordRam0
 
-loc_62D2:				; CODE XREF: sub_62C8+12j
-		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
-		bne.s	loc_62D2
-		clr.w	(word_200400).l
-		rts
+	clr.w	(word_200400).l
+	rts
 ; End of function sub_62C8
 
 
@@ -12551,25 +12548,26 @@ loc_62D2:				; CODE XREF: sub_62C8+12j
 
 
 sub_62E4:				; CODE XREF: sub_3040+Cp sub_62E4+8j
-		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
-		bne.s	sub_62E4
-		m_saveStatusRegister
-		m_disableInterrupts
-		lea	(WordRAM_Bank0).l,a1
-		move.w	$400(a1),(word_FFFFD020).w
-		move.w	$402(a1),(word_FFFFD022).w
-		move.w	$404(a1),(word_FFFFD024).w
-		move.w	$424(a1),(word_FFFFD026).w
-		move.l	$408(a1),(dword_FFFFD028).w
-		move.l	$40C(a1),(dword_FFFFD02C).w
-		move.b	$410(a1),(byte_FFFFD030).w
-		move.l	$426(a1),(dword_FFFFD032).w
-		move.w	$42A(a1),(word_FFFFD036).w
-		move.b	$440(a1),(byte_FFFFD050).w
-		move.w	$564(a1),d0
-		bsr.w	sub_53B6
-		m_restoreStatusRegister
-		rts
+	m_waitForWordRam0
+	m_saveStatusRegister
+	m_disableInterrupts
+
+	lea	(WordRAM_Bank0).l,a1
+	move.w	$400(a1),(word_FFFFD020).w
+	move.w	$402(a1),(word_FFFFD022).w
+	move.w	$404(a1),(word_FFFFD024).w
+	move.w	$424(a1),(word_FFFFD026).w
+	move.l	$408(a1),(dword_FFFFD028).w
+	move.l	$40C(a1),(dword_FFFFD02C).w
+	move.b	$410(a1),(byte_FFFFD030).w
+	move.l	$426(a1),(dword_FFFFD032).w
+	move.w	$42A(a1),(word_FFFFD036).w
+	move.b	$440(a1),(byte_FFFFD050).w
+	move.w	$564(a1),d0
+	bsr.w	sub_53B6
+
+	m_restoreStatusRegister
+	rts
 ; End of function sub_62E4
 
 
@@ -12577,27 +12575,26 @@ sub_62E4:				; CODE XREF: sub_3040+Cp sub_62E4+8j
 
 
 sub_6342:				; CODE XREF: sub_3040+56p sub_30C2+52p ...
-		btst	#GA_MEM_MODE_RET,(GA_MEM_MODE).l
-		bne.s	sub_6342
-		m_saveStatusRegister
-		m_disableInterrupts
-		lea	(WordRAM_Bank0).l,a1
-		move.w	(word_FFFFD020).w,$400(a1)
-		move.w	(byte_FFFFD008).w,$42C(a1)
-		move.l	(byte_FFFFD00E).w,$42E(a1)
-		move.w	(word_FFFFD012).w,$432(a1)
-		move.l	(dword_FFFFD014).w,$434(a1)
-		move.l	(dword_FFFFD018).w,$438(a1)
-		move.l	(dword_FFFFD01C).w,$43C(a1)
-		lea	$4FE(a1),a1
-		lea	(word_FFFFD168).w,a2
-		moveq	#$33,d0	; '3'
+	m_waitForWordRam0
+	m_saveStatusRegister
+	m_disableInterrupts
+	lea	(WordRAM_Bank0).l,a1
+	move.w	(word_FFFFD020).w,$400(a1)
+	move.w	(byte_FFFFD008).w,$42C(a1)
+	move.l	(byte_FFFFD00E).w,$42E(a1)
+	move.w	(word_FFFFD012).w,$432(a1)
+	move.l	(dword_FFFFD014).w,$434(a1)
+	move.l	(dword_FFFFD018).w,$438(a1)
+	move.l	(dword_FFFFD01C).w,$43C(a1)
+	lea	$4FE(a1),a1
+	lea	(word_FFFFD168).w,a2
+	moveq	#$33,d0	; '3'
 
 loc_638C:				; CODE XREF: sub_6342+4Cj
-		move.l	(a2)+,(a1)+
-		dbf	d0,loc_638C
-		m_restoreStatusRegister
-		rts
+	move.l	(a2)+,(a1)+
+	dbf	d0,loc_638C
+	m_restoreStatusRegister
+	rts
 ; End of function sub_6342
 
 
