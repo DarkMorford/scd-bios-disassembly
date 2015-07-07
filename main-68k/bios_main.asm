@@ -635,11 +635,10 @@ loc_6B2:				; CODE XREF: ROM:000006B4j
 ; =============== S U B	R O U T	I N E =======================================
 
 
-setNextState:				; CODE XREF: ROM:000005C2p
-					; ROM:000006C4p ...
-		andi.w	#$1C,d0
-		move.w	d0,(nextState).w
-		rts
+setNextState:
+	andi.w	#$1C,d0
+	move.w	d0,(nextState).w
+	rts
 ; End of function setNextState
 
 
@@ -647,29 +646,33 @@ setNextState:				; CODE XREF: ROM:000005C2p
 
 
 clearSubCpuPrg:				; CODE XREF: ROM:000005A4p
-		lea	(GA_RESET_HALT).l,a5
-		lea	1(a5),a6
+	lea	(GA_RESET_HALT).l,a5
+	lea	1(a5),a6
 
 WaitForBus:				; CODE XREF: clearSubCpuPrg+Ej
-		bset	#1,(a5)		; Request sub-CPU bus
-		beq.s	WaitForBus
-		move.w	(a6),d5
-		moveq	#0,d7
-		andi.w	#2,d5
-		ori.w	#$40,d5	; '@'
-		move.w	d5,(a6)
-		bsr.s	fillSubCpuBank
-		andi.w	#2,d5
-		ori.w	#$80,d5	; '€'
-		move.w	d5,(a6)
-		bsr.s	fillSubCpuBank
-		andi.w	#2,d5
-		ori.w	#$C0,d5	; 'À'
-		move.w	d5,(a6)
-		bsr.s	fillSubCpuBank
-		andi.w	#2,d5
-		move.w	d5,(a6)
-; End of function clearSubCpuPrg
+	bset	#1,(a5)		; Request sub-CPU bus
+	beq.s	WaitForBus
+
+	move.w	(a6),d5
+	moveq	#0,d7
+
+	andi.w	#2,d5
+	ori.w	#$40,d5	; '@'
+	move.w	d5,(a6)
+	bsr.s	fillSubCpuBank
+
+	andi.w	#2,d5
+	ori.w	#$80,d5	; '€'
+	move.w	d5,(a6)
+	bsr.s	fillSubCpuBank
+
+	andi.w	#2,d5
+	ori.w	#$C0,d5	; 'À'
+	move.w	d5,(a6)
+	bsr.s	fillSubCpuBank
+
+	andi.w	#2,d5
+	move.w	d5,(a6)
 
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -679,11 +682,14 @@ fillSubCpuBank:
 	lea	(SubCPU_Bank).l, a0
 	move.w	#$7FFF, d0
 
-@FillLoop:
-	move.l	d7, (a0)+
-	dbf	d0, @FillLoop
+	@FillLoop:
+		move.l	d7, (a0)+
+		dbf	d0, @FillLoop
+
 	rts
 ; End of function fillSubCpuBank
+
+; End of function clearSubCpuPrg
 
 
 ; =============== S U B	R O U T	I N E =======================================
