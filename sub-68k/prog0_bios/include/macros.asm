@@ -10,3 +10,12 @@ m_disableInterrupts:    macro
 m_enableInterrupts: macro
 	move #$2000, sr
 	endm
+
+;   Status register
+m_saveStatusRegister:   macro
+	move sr, -(sp)
+	endm
+
+m_restoreStatusRegister:    macro
+	move (sp)+, sr
+	endm

@@ -89,56 +89,51 @@ ProgramHeader:
 	dc.l $057FF
 	dc.l $05800
 	dc.l $7FFFF
-	dc.b $52, $41, $F8, $20, $FF, $FE
-	dc.b 0,	1, $FF,	$FE, $3F, $FF
+	dc.b 'RA', $F8, $20
+	dc.l $FFFE0001
+	dc.l $FFFE3FFF
 	dc.b '            '
 	dc.b '                                        '
 	dc.b 'U               '
 
 ; ---------------------------------------------------------------------------
 
-_start:					; DATA XREF: BIOS:00000004o
-					; BIOS:000002D0o
+_start:
 		jmp	(loc_256).l
+
 ; ---------------------------------------------------------------------------
 
-_reset:					; CODE XREF: BIOS:000002C6j
-					; BIOS:000002F2j ...
+_reset:
 		jmp	(loc_250).l
 
-; =============== S U B	R O U T	I N E =======================================
+; ---------------------------------------------------------------------------
 
-
-_nullrts:				; DATA XREF: BIOS:0000031Co
+_nullrts:
 		rts
-; End of function _nullrts
-
-
-; =============== S U B	R O U T	I N E =======================================
-
-
-_nullrte:				; DATA XREF: BIOS:0000033Co
-		rte
-; End of function _nullrte
 
 ; ---------------------------------------------------------------------------
-zeroes:		dc.l 0			; DATA XREF: BIOS:0000025Ew
-					; installJumpTable:loc_410w ...
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
-		dc.l 0
+
+_nullrte:
+		rte
+
+; ---------------------------------------------------------------------------
+zeroes:
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
+	dc.l 0
 ; ---------------------------------------------------------------------------
 
 loc_250:				; CODE XREF: BIOS:_resetj
@@ -150,21 +145,21 @@ loc_256:				; CODE XREF: BIOS:_startj
 		movem.l	zeroes(pc),d0-a6	; Zero out registers
 		move.l	a0,usp		; USP =	0
 		move.b	#0,(GA_CDD_CONTROL).w
-		bclr	#0,(GA_RESET).w
+		bclr	#GA_RES0,(GA_RESET).w
 		move.b	#2,(GA_LED_STATUS).w
 		lea	(GA_MEMORY_MODE).w,a0
 
 loc_27C:				; CODE XREF: BIOS:00000286j
-		btst	#2,(a0)		; Set Word RAM to 2M mode
+		btst	#GA_MODE,(a0)		; Set Word RAM to 2M mode
 		beq.s	loc_288
-		bclr	#2,(a0)
+		bclr	#GA_MODE,(a0)
 		bra.s	loc_27C
 ; ---------------------------------------------------------------------------
 
 loc_288:				; CODE XREF: BIOS:00000280j
-		btst	#1,(a0)		; Give Word RAM	to main	CPU
+		btst	#GA_DMNA,(a0)		; Give Word RAM	to main	CPU
 		beq.s	loc_292
-		bset	#0,(a0)
+		bset	#GA_RET,(a0)
 
 loc_292:				; CODE XREF: BIOS:0000028Cj
 		move.b	#CDC_WRITE_RESET,(GA_CDC_ADDRESS).w
@@ -239,7 +234,7 @@ loc_342:				; CODE XREF: BIOS:00000346j
 		dbf	d1,loc_342
 		bsr.w	initLEDs
 		bsr.w	sub_AEC
-		bsr.w	initCDC
+		bsr.w	initCdc
 ; ---------------------------------------------------------------------------
 		bsr.w	initVolume
 		bsr.w	sub_2A7E
@@ -256,7 +251,8 @@ installJumpTable:
 		lea	loc_388(pc),a6
 		bra.w	loc_556
 ; ---------------------------------------------------------------------------
-word_378:	dc.w $2E8		; DATA XREF: installJumpTable+8o
+word_378:
+		dc.w $2E8
 		dc.w $27A
 		dc.w $2E8
 		dc.w $298
@@ -272,7 +268,8 @@ loc_388:				; DATA XREF: installJumpTable+Co
 		lea	loc_39E(pc),a6
 		bra.w	loc_556
 ; ---------------------------------------------------------------------------
-word_398:	dc.w $238		; DATA XREF: installJumpTable+28o
+word_398:
+		dc.w $238
 		dc.w $24A
 		dc.w 0
 ; ---------------------------------------------------------------------------
@@ -300,7 +297,7 @@ loc_3C2:				; DATA XREF: installJumpTable+56o
 
 loc_3D4:				; CODE XREF: installJumpTable+76j
 					; DATA XREF: installJumpTable+68o
-		btst	#0,(GA_RESET).w
+		btst	#GA_RES0,(GA_RESET).w
 		beq.s	loc_3D4
 		ori.b	#$14,(GA_INT_MASK).w
 		bclr	#2,byte_580A(a5)
@@ -375,12 +372,12 @@ asc_46A:	dc.b 'BOOT____SYS'      ; DATA XREF: installJumpTable+100o
 
 loc_494:				; CODE XREF: installJumpTable+164j
 					; installJumpTable+1A4j
-		movea.l	#unk_C0000,a1
+		movea.l	#$C0000,a1
 		lea	(GA_MEMORY_MODE).w,a0
-		btst	#2,(a0)
+		btst	#GA_MODE,(a0)
 		bne.s	loc_4BC
 		moveq	#0,d0
-		movea.l	#unk_80000,a1
+		movea.l	#$80000,a1
 		btst	d0,(a0)
 		beq.s	loc_4BC
 
@@ -410,7 +407,7 @@ loc_4CA:				; CODE XREF: installJumpTable+174j
 		bclr	#7,(GA_COMM_SUBFLAGS).w
 		lea	(GA_MEMORY_MODE).w,a0
 		moveq	#0,d0
-		btst	#2,(a0)
+		btst	#GA_MODE,(a0)
 		beq.s	loc_4F8
 		btst	d0,(a0)
 		beq.s	loc_4F8
@@ -547,15 +544,16 @@ loc_5B0:				; CODE XREF: sub_578+22j
 ; End of function sub_578
 
 ; ---------------------------------------------------------------------------
-word_5B6:	dc.w 0			; DATA XREF: sub_578:loc_59Eo
-		dc.l 'MAIN'
-		dc.w 8
-		dc.b 'SYS',0
-		dc.w 8
-		dc.b 'SUB',0
-		dc.w 8
-		dc.b 'DAT',0
-		dc.w $FFFF
+word_5B6:
+	dc.w 0
+	dc.b 'MAIN'
+	dc.w 8
+	dc.b 'SYS',0
+	dc.w 8
+	dc.b 'SUB',0
+	dc.w 8
+	dc.b 'DAT',0
+	dc.w $FFFF
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -609,7 +607,7 @@ cddInterrupt:
 cdcInterrupt:
 		movem.l	d0-a6,-(sp)
 		movea.l	#0,a5
-		bsr.w	updateCDC
+		bsr.w	updateCdc
 		movem.l	(sp)+,d0-a6
 		rte
 ; ---------------------------------------------------------------------------
@@ -623,8 +621,6 @@ scdInterrupt:
 
 loc_65C:				; CODE XREF: BIOS:00000656j
 		movem.l	(sp)+,d0-a6
-
-dummyException:
 		rte
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -693,21 +689,21 @@ ledJumpTable:
 ; ---------------------------------------------------------------------------
 
 _leddiscin:				; CODE XREF: BIOS:000006BEj
-		bset	#1,ledStatus(a5)
-		bclr	#0,ledStatus(a5)
+		bset	#GA_LEDG,ledStatus(a5)
+		bclr	#GA_LEDR,ledStatus(a5)
 		rts
 ; ---------------------------------------------------------------------------
 
 _ledmode7:				; CODE XREF: BIOS:000006CAj
-		bclr	#1,ledStatus(a5)
+		bclr	#GA_LEDG,ledStatus(a5)
 		bra.s	loc_6E8
 ; ---------------------------------------------------------------------------
 
 _ledaccess:				; CODE XREF: BIOS:000006C0j
-		bset	#1,ledStatus(a5)
+		bset	#GA_LEDG,ledStatus(a5)
 
 loc_6E8:				; CODE XREF: BIOS:000006E0j
-		bset	#0,ledStatus(a5)
+		bset	#GA_LEDR,ledStatus(a5)
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -717,12 +713,12 @@ _lederror:				; CODE XREF: BIOS:000006C4j
 ; ---------------------------------------------------------------------------
 
 _ledmode6:				; CODE XREF: BIOS:000006C8j
-		bclr	#1,ledStatus(a5)
+		bclr	#GA_LEDG,ledStatus(a5)
 		bra.s	loc_702
 ; ---------------------------------------------------------------------------
 
 _ledready:				; CODE XREF: BIOS:ledJumpTablej
-		bset	#1,ledStatus(a5)
+		bset	#GA_LEDG,ledStatus(a5)
 
 loc_702:				; CODE XREF: BIOS:000006F2j
 					; BIOS:000006FAj
@@ -732,12 +728,12 @@ loc_702:				; CODE XREF: BIOS:000006F2j
 ; ---------------------------------------------------------------------------
 
 _ledstandby:				; CODE XREF: BIOS:000006C2j
-		bclr	#0,ledStatus(a5)
+		bclr	#GA_LEDR,ledStatus(a5)
 		bra.s	sub_71A
 ; ---------------------------------------------------------------------------
 
 _ledmode5:				; CODE XREF: BIOS:000006C6j
-		bset	#0,ledStatus(a5)
+		bset	#GA_LEDR,ledStatus(a5)
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -764,7 +760,7 @@ locret_73A:				; CODE XREF: sub_71A+10j sub_71A+1Aj
 ; =============== S U B	R O U T	I N E =======================================
 
 
-sub_73C:				; CODE XREF: initCDC+42p sub_1F1E+6p
+sub_73C:				; CODE XREF: initCdc+42p sub_1F1E+6p
 		clr.l	4(a4)
 		move.l	d0,0(a4)
 		move.l	d1,8(a4)
@@ -1066,262 +1062,8 @@ sub_8CE:				; CODE XREF: sub_4E74+C6p sub_4FE2+9Cp
 ; End of function sub_8CE
 
 ; ---------------------------------------------------------------------------
-word_8EC:	dc.w 0			; DATA XREF: sub_860+4o sub_8CE+6o
-		dc.w $1021
-		dc.w $2042
-		dc.w $3063
-		dc.w $4084
-		dc.w $50A5
-		dc.w $60C6
-		dc.w $70E7
-		dc.w $8108
-		dc.w $9129
-		dc.w $A14A
-		dc.w $B16B
-		dc.w $C18C
-		dc.w $D1AD
-		dc.w $E1CE
-		dc.w $F1EF
-		dc.w $1231
-		dc.w $210
-		dc.w $3273
-		dc.w $2252
-		dc.w $52B5
-		dc.w $4294
-		dc.w $72F7
-		dc.w $62D6
-		dc.w $9339
-		dc.w $8318
-		dc.w $B37B
-		dc.w $A35A
-		dc.w $D3BD
-		dc.w $C39C
-		dc.w $F3FF
-		dc.w $E3DE
-		dc.w $2462
-		dc.w $3443
-		dc.w $420
-		dc.w $1401
-		dc.w $64E6
-		dc.w $74C7
-		dc.w $44A4
-		dc.w $5485
-		dc.w $A56A
-		dc.w $B54B
-		dc.w $8528
-		dc.w $9509
-		dc.w $E5EE
-		dc.w $F5CF
-		dc.w $C5AC
-		dc.w $D58D
-		dc.w $3653
-		dc.w $2672
-		dc.w $1611
-		dc.w $630
-		dc.w $76D7
-		dc.w $66F6
-		dc.w $5695
-		dc.w $46B4
-		dc.w $B75B
-		dc.w $A77A
-		dc.w $9719
-		dc.w $8738
-		dc.w $F7DF
-		dc.w $E7FE
-		dc.w $D79D
-		dc.w $C7BC
-		dc.w $48C4
-		dc.w $58E5
-		dc.w $6886
-		dc.w $78A7
-		dc.w $840
-		dc.w $1861
-		dc.w $2802
-		dc.w $3823
-		dc.w $C9CC
-		dc.w $D9ED
-		dc.w $E98E
-		dc.w $F9AF
-		dc.w $8948
-		dc.w $9969
-		dc.w $A90A
-		dc.w $B92B
-		dc.w $5AF5
-		dc.w $4AD4
-		dc.w $7AB7
-		dc.w $6A96
-		dc.w $1A71
-		dc.w $A50
-		dc.w $3A33
-		dc.w $2A12
-		dc.w $DBFD
-		dc.w $CBDC
-		dc.w $FBBF
-		dc.w $EB9E
-		dc.w $9B79
-		dc.w $8B58
-		dc.w $BB3B
-		dc.w $AB1A
-		dc.w $6CA6
-		dc.w $7C87
-		dc.w $4CE4
-		dc.w $5CC5
-		dc.w $2C22
-		dc.w $3C03
-		dc.w $C60
-		dc.w $1C41
-		dc.w $EDAE
-		dc.w $FD8F
-		dc.w $CDEC
-		dc.w $DDCD
-		dc.w $AD2A
-		dc.w $BD0B
-		dc.w $8D68
-		dc.w $9D49
-		dc.w $7E97
-		dc.w $6EB6
-		dc.w $5ED5
-		dc.w $4EF4
-		dc.w $3E13
-		dc.w $2E32
-		dc.w $1E51
-		dc.w $E70
-		dc.w $FF9F
-		dc.w $EFBE
-		dc.w $DFDD
-		dc.w $CFFC
-		dc.w $BF1B
-		dc.w $AF3A
-		dc.w $9F59
-		dc.w $8F78
-		dc.w $9188
-		dc.w $81A9
-		dc.w $B1CA
-		dc.w $A1EB
-		dc.w $D10C
-		dc.w $C12D
-		dc.w $F14E
-		dc.w $E16F
-		dc.w $1080
-		dc.w $A1
-		dc.w $30C2
-		dc.w $20E3
-		dc.w $5004
-		dc.w $4025
-		dc.w $7046
-		dc.w $6067
-		dc.w $83B9
-		dc.w $9398
-		dc.w $A3FB
-		dc.w $B3DA
-		dc.w $C33D
-		dc.w $D31C
-		dc.w $E37F
-		dc.w $F35E
-		dc.w $2B1
-		dc.w $1290
-		dc.w $22F3
-		dc.w $32D2
-		dc.w $4235
-		dc.w $5214
-		dc.w $6277
-		dc.w $7256
-		dc.w $B5EA
-		dc.w $A5CB
-		dc.w $95A8
-		dc.w $8589
-		dc.w $F56E
-		dc.w $E54F
-		dc.w $D52C
-		dc.w $C50D
-		dc.w $34E2
-		dc.w $24C3
-		dc.w $14A0
-		dc.w $481
-		dc.w $7466
-		dc.w $6447
-		dc.w $5424
-		dc.w $4405
-		dc.w $A7DB
-		dc.w $B7FA
-		dc.w $8799
-		dc.w $97B8
-		dc.w $E75F
-		dc.w $F77E
-		dc.w $C71D
-		dc.w $D73C
-		dc.w $26D3
-		dc.w $36F2
-		dc.w $691
-		dc.w $16B0
-		dc.w $6657
-		dc.w $7676
-		dc.w $4615
-		dc.w $5634
-		dc.w $D94C
-		dc.w $C96D
-		dc.w $F90E
-		dc.w $E92F
-		dc.w $99C8
-		dc.w $89E9
-		dc.w $B98A
-		dc.w $A9AB
-		dc.w $5844
-		dc.w $4865
-		dc.w $7806
-		dc.w $6827
-		dc.w $18C0
-		dc.w $8E1
-		dc.w $3882
-		dc.w $28A3
-		dc.w $CB7D
-		dc.w $DB5C
-		dc.w $EB3F
-		dc.w $FB1E
-		dc.w $8BF9
-		dc.w $9BD8
-		dc.w $ABBB
-		dc.w $BB9A
-		dc.w $4A75
-		dc.w $5A54
-		dc.w $6A37
-		dc.w $7A16
-		dc.w $AF1
-		dc.w $1AD0
-		dc.w $2AB3
-		dc.w $3A92
-		dc.w $FD2E
-		dc.w $ED0F
-		dc.w $DD6C
-		dc.w $CD4D
-		dc.w $BDAA
-		dc.w $AD8B
-		dc.w $9DE8
-		dc.w $8DC9
-		dc.w $7C26
-		dc.w $6C07
-		dc.w $5C64
-		dc.w $4C45
-		dc.w $3CA2
-		dc.w $2C83
-		dc.w $1CE0
-		dc.w $CC1
-		dc.w $EF1F
-		dc.w $FF3E
-		dc.w $CF5D
-		dc.w $DF7C
-		dc.w $AF9B
-		dc.w $BFBA
-		dc.w $8FD9
-		dc.w $9FF8
-		dc.w $6E17
-		dc.w $7E36
-		dc.w $4E55
-		dc.w $5E74
-		dc.w $2E93
-		dc.w $3EB2
-		dc.w $ED1
-		dc.w $1EF0
+word_8EC:
+	incbin "unk_8EC.bin"
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -1933,10 +1675,8 @@ loc_EE0:				; CODE XREF: sub_ED0+16j
 		or.w	d1,d1
 ; End of function sub_ED0
 
-; START	OF FUNCTION CHUNK FOR sub_F32
-
 loc_F08:				; CODE XREF: sub_F32+Aj
-		move	sr,-(sp)
+		m_saveStatusRegister
 		bclr	#4,byte_580A(a5)
 		bclr	#2,byte_580A(a5)
 		bne.s	loc_F2E
@@ -1952,14 +1692,11 @@ loc_F28:				; CODE XREF: sub_F32-14j
 loc_F2E:				; CODE XREF: sub_F32-1Cj sub_F32-Cj
 		move	(sp)+,ccr
 		rts
-; END OF FUNCTION CHUNK	FOR sub_F32
 
 ; =============== S U B	R O U T	I N E =======================================
 
 
 sub_F32:				; CODE XREF: sub_ED0+1Aj
-
-; FUNCTION CHUNK AT 00000F08 SIZE 0000002A BYTES
 
 		move.b	#4,(GA_CDD_CONTROL).w
 		move	#1,ccr
@@ -3088,7 +2825,7 @@ sub_1840:				; CODE XREF: sub_2946+A8p
 _cdcread:				; CODE XREF: sub_2946+3Aj
 		movem.l	a3-a4,-(sp)
 		move	#1,ccr
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2500,sr
 		lea	$5A44(a5),a4
 		move.w	6(a4),d0
@@ -3137,7 +2874,7 @@ loc_18A4:				; CODE XREF: _cdcread+40j _cdcread+58j
 		move.w	6(a0),d1
 
 loc_18CE:				; CODE XREF: _cdcread+1Aj
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		movem.l	(sp)+,a3-a4
 		rts
 ; End of function _cdcread
@@ -3233,13 +2970,16 @@ loc_196C:				; CODE XREF: _cdctrn+40j
 ; ---------------------------------------------------------------------------
 
 loc_197A:				; CODE XREF: _cdctrn+18j _cdctrn+78j
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2500,sr
+
 		move.b	#CDC_WRITE_IFCTRL,(GA_CDC_ADDRESS).w
 		move.b	#$38,(GA_CDC_REGISTER).w ; '8'
+
 		move.b	#CDC_WRITE_IFCTRL,(GA_CDC_ADDRESS).w
 		move.b	#$3A,(GA_CDC_REGISTER).w ; ':'
-		move	(sp)+,sr
+
+		m_restoreStatusRegister
 		nop
 		nop
 		move	#1,ccr
@@ -3254,12 +2994,15 @@ loc_19A2:				; CODE XREF: _cdctrn+7Cj
 
 
 _cdcack:				; CODE XREF: sub_2946+42j
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2500,sr
+
 		move.b	#CDC_WRITE_DTACK,(GA_CDC_ADDRESS).w
 		move.b	#0,(GA_CDC_REGISTER).w
+
 		bclr	#1,cdcBitfield0(a5)
-		move	(sp)+,sr
+
+		m_restoreStatusRegister
 		rts
 ; End of function _cdcack
 
@@ -3294,13 +3037,13 @@ locret_19E2:				; CODE XREF: sub_19D4+6j
 
 
 _cdcsetmode:				; CODE XREF: sub_2946+66j
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2500,sr
 		andi.w	#$F,d1
 		lsl.w	#2,d1
 		andi.b	#$C3,cdcBitfield0(a5)
 		or.b	d1,cdcBitfield0(a5)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		rts
 ; End of function _cdcsetmode
 
@@ -3308,7 +3051,7 @@ _cdcsetmode:				; CODE XREF: sub_2946+66j
 ; =============== S U B	R O U T	I N E =======================================
 
 
-updateCDC:				; CODE XREF: BIOS:0000063Ep
+updateCdc:				; CODE XREF: BIOS:0000063Ep
 		bset	#0,cdcBitfield0(a5)
 		bne.s	locret_1A5C
 		btst	#7,cdcBitfield0(a5)
@@ -3334,22 +3077,22 @@ updateCDC:				; CODE XREF: BIOS:0000063Ep
 		move.b	(a3),(a0)+
 		movem.l	cdcRegisterCache(a5),d5-a0/a2-a4
 		jmp	(a0)
-; End of function updateCDC
+; End of function updateCdc
 
 
 ; =============== S U B	R O U T	I N E =======================================
 
 
-sub_1A4A:				; CODE XREF: initCDC:loc_1AA4p
+sub_1A4A:				; CODE XREF: initCdc:loc_1AA4p
 					; _cdcstart:loc_1B54p ...
 		movea.l	(sp)+,a0
 		movem.l	d5-a0/a2-a4,cdcRegisterCache(a5)
 		movem.l	(sp)+,d5-d7/a2-a4
 
-loc_1A56:				; CODE XREF: updateCDC+Ej
+loc_1A56:				; CODE XREF: updateCdc+Ej
 		bclr	#0,cdcBitfield0(a5)
 
-locret_1A5C:				; CODE XREF: updateCDC+6j
+locret_1A5C:				; CODE XREF: updateCdc+6j
 		rts
 ; End of function sub_1A4A
 
@@ -3358,7 +3101,7 @@ locret_1A5C:				; CODE XREF: updateCDC+6j
 
 ; Attributes: noreturn
 
-initCDC:				; CODE XREF: BIOS:00000352p
+initCdc:				; CODE XREF: BIOS:00000352p
 		movem.l	d5-d7/a2-a4,-(sp)
 		lea	(GA_CDC_ADDRESS).w,a2
 		lea	(GA_CDC_REGISTER).w,a3
@@ -3367,7 +3110,7 @@ initCDC:				; CODE XREF: BIOS:00000352p
 		moveq	#0,d0
 		moveq	#6,d1
 
-loc_1A76:				; CODE XREF: initCDC+20j
+loc_1A76:				; CODE XREF: initCdc+20j
 		move.l	d0,(a0)+
 		move.l	d0,(a0)+
 		move.l	d0,(a0)+
@@ -3383,11 +3126,11 @@ loc_1A76:				; CODE XREF: initCDC+20j
 		lea	$5A44(a5),a4
 		bsr.w	sub_73C
 
-loc_1AA4:				; CODE XREF: initCDC+48j
+loc_1AA4:				; CODE XREF: initCdc+48j
 					; _cdcstart+188j
 		bsr.s	sub_1A4A
 		bra.w	loc_1AA4
-; End of function initCDC
+; End of function initCdc
 
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -3619,14 +3362,17 @@ loc_1CB0:				; CODE XREF: _cdcstart+1ACj
 ; =============== S U B	R O U T	I N E =======================================
 
 
-resetCdc:				; CODE XREF: initCDC+Cp _cdcstart+48p
+resetCdc:				; CODE XREF: initCdc+Cp _cdcstart+48p
 		move.b	#CDC_WRITE_RESET,(a2)
 		move.b	#0,(a3)
+
 		move.b	#CDC_WRITE_IFCTRL,(a2)
-		move.b	#$3A,(a3) ; ':'
+		move.b	#$3A,(a3)
+
 		move.b	#CDC_WRITE_WAL,(a2)
 		move.b	#0,(a3)
 		move.b	#0,(a3)
+
 		move.b	#CDC_WRITE_PTL,(a2)
 		move.b	#0,(a3)
 		move.b	#0,(a3)
@@ -3956,7 +3702,7 @@ sub_1F1E:				; CODE XREF: _scdinit+2Cp _scdinit+34p ...
 
 _scdstop:				; CODE XREF: _scdstart+Ap sub_2946+4Ej
 		clr.b	$5A84(a5)
-		bclr	#6,(GA_INT_MASK).w
+		bclr	#GA_IEN6,(GA_INT_MASK).w
 		rts
 ; End of function _scdstop
 
@@ -3966,7 +3712,8 @@ _scdstop:				; CODE XREF: _scdstart+Ap sub_2946+4Ej
 
 _scdstart:				; CODE XREF: sub_2946+4Aj
 		movem.l	a4,-(sp)
-		move	sr,-(sp)
+		m_saveStatusRegister
+
 		move	#$2600,sr
 		bsr.s	_scdstop
 		move.w	#7,$5A84(a5)
@@ -3986,8 +3733,9 @@ _scdstart:				; CODE XREF: sub_2946+4Aj
 		move.w	6(a4),4(a4)
 		movea.l	$5A98(a5),a4
 		move.w	6(a4),4(a4)
-		bset	#6,(GA_INT_MASK).w
-		move	(sp)+,sr
+
+		bset	#GA_IEN6,(GA_INT_MASK).w
+		m_restoreStatusRegister
 		movem.l	(sp)+,a4
 		rts
 ; End of function _scdstart
@@ -4013,7 +3761,7 @@ _scdpql:				; CODE XREF: sub_2946+5Ej
 
 _scdpq:					; CODE XREF: sub_2946+5Aj
 		movem.l	a4,-(sp)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2600,sr
 		movea.l	$5A98(a5),a4
 		move.w	6(a4),d0
@@ -4040,7 +3788,7 @@ loc_1FEC:				; CODE XREF: _scdpql+1Cj
 		ori.w	#1,(sp)
 
 loc_1FF0:				; CODE XREF: _scdpql+3Cj
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		movem.l	(sp)+,a4
 		bclr	#2,$5A84(a5)
 		rts
@@ -4052,8 +3800,9 @@ loc_1FF0:				; CODE XREF: _scdpql+3Cj
 
 _scdread:				; CODE XREF: sub_2946+56j
 		movem.l	a4,-(sp)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2400,sr
+
 		movea.l	$5A94(a5),a4
 		move.w	6(a4),d0
 		cmp.w	4(a4),d0
@@ -4075,7 +3824,7 @@ loc_2032:				; CODE XREF: _scdread+16j
 		ori.w	#1,(sp)
 
 loc_2036:				; CODE XREF: _scdread+32j
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		movem.l	(sp)+,a4
 		rts
 ; End of function _scdread
@@ -4173,7 +3922,7 @@ sub_210E:				; CODE XREF: sub_203E+BAp
 		movea.l	a0,a2
 		bsr.s	sub_2168
 		bsr.w	sub_860
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move.b	$18(a2),d0
 		or.b	$30(a2),d0
 		and.b	$48(a2),d0
@@ -4317,10 +4066,6 @@ loc_21C6:				; CODE XREF: sub_2168+8j sub_2168+Ej ...
 
 
 sub_21F8:				; CODE XREF: BIOS:0000061Ep
-
-var_B		= -$B
-var_9		= -9
-
 		bset	#1,dword_5A84(a5)
 		bne.w	locret_2288
 		btst	#5,dword_5A84(a5)
@@ -4331,18 +4076,18 @@ var_9		= -9
 		move.w	6(a4),d0
 		cmp.w	4(a4),d0
 		beq.s	loc_227E
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2300,sr
 
 loc_2226:				; CODE XREF: sub_21F8:loc_227Aj
 		tst.b	dword_5A84+1(a5)
 		beq.s	loc_2242
 		subq.b	#1,dword_5A84+1(a5)
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2600,sr
 		bsr.w	sub_7AA
 		seq	1(sp)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		bra.s	loc_227A
 ; ---------------------------------------------------------------------------
 
@@ -4351,13 +4096,13 @@ loc_2242:				; CODE XREF: sub_21F8+32j
 		bsr.w	sub_74E
 		add.b	d1,dword_5A88+1(a5)
 		exg	a3,a4
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move	#$2600,sr
 		bsr.w	sub_22BC
 		bsr.w	sub_7AA
-		seq	$C+var_B(sp)
-		move	(sp)+,sr
-		seq	$A+var_9(sp)
+		seq	1(sp)
+		m_restoreStatusRegister
+		seq	1(sp)
 		bsr.w	sub_23B8
 		bcc.s	loc_2278
 		addq.b	#1,dword_5A88+3(a5)
@@ -4370,7 +4115,7 @@ loc_2278:				; CODE XREF: sub_21F8+72j
 
 loc_227A:				; CODE XREF: sub_21F8+48j
 		bne.s	loc_2226
-		move	(sp)+,sr
+		m_restoreStatusRegister
 
 loc_227E:				; CODE XREF: sub_21F8+26j
 		movem.l	(sp)+,a3-a4
@@ -4503,6 +4248,7 @@ unk_22E6:	dc.b $7F ; 		; DATA XREF: sub_23B8+Eo
 		dc.b $3B ; ;
 		dc.b $39 ; 9
 		dc.b $3A ; :
+
 unk_2326:	dc.b   1		; DATA XREF: sub_23B8+Ao
 		dc.b   2
 		dc.b   4
@@ -4679,7 +4425,7 @@ loc_23F0:				; CODE XREF: sub_23B8+2Ej
 loc_23F4:				; CODE XREF: sub_23B8+1Ej sub_23B8+34j
 		nop
 		nop
-		move	sr,-(sp)
+		m_saveStatusRegister
 		bsr.w	sub_251E
 		tst.w	dword_5AA0(a5)
 		beq.s	loc_240C
@@ -4694,7 +4440,8 @@ loc_240C:				; CODE XREF: sub_23B8+4Aj
 ; End of function sub_23B8
 
 ; ---------------------------------------------------------------------------
-unk_2414:	dc.b   0		; DATA XREF: sub_251E+Ao
+unk_2414:
+		dc.b   0
 		dc.b   2
 		dc.b   4
 		dc.b   6
@@ -4758,7 +4505,9 @@ unk_2414:	dc.b   0		; DATA XREF: sub_251E+Ao
 		dc.b $39 ; 9
 		dc.b $3F ; ?
 		dc.b $3D ; =
-unk_2454:	dc.b   0		; DATA XREF: sub_24D4+2o
+
+unk_2454:
+		dc.b   0
 		dc.b   4
 		dc.b   8
 		dc.b  $C
@@ -5192,7 +4941,7 @@ loc_26C8:				; CODE XREF: sub_262E+94j
 		move.w	#$17,d2
 		move.b	dword_5AA8(a5),d3
 		bsr.s	sub_2724
-		move	sr,-(sp)
+		m_saveStatusRegister
 		move.b	dword_5AA4+3(a5),d1
 		move.w	#$17,d2
 		move.b	dword_5AA8+1(a5),d3
@@ -7560,10 +7309,11 @@ loc_3B24:				; CODE XREF: sub_3A6C+11Ej
 		bclr	#4,bootBitfield(a5)
 		bra.w	loc_3A84
 ; ---------------------------------------------------------------------------
-asc_3B38:	dc.b 'SEGADISC        ' ; DATA XREF: sub_3A6C+16Eo
-		dc.b 'SEGABOOTDISC    '
-		dc.b 'SEGADATADISC    '
-		dc.b 'SEGADISCSYSTEM  '
+asc_3B38:
+	dc.b 'SEGADISC        '
+	dc.b 'SEGABOOTDISC    '
+	dc.b 'SEGADATADISC    '
+	dc.b 'SEGADISCSYSTEM  '
 ; ---------------------------------------------------------------------------
 
 loc_3B78:				; CODE XREF: sub_3A6C+A8j
@@ -7626,7 +7376,7 @@ loc_3C0A:				; CODE XREF: sub_3A6C+184j
 loc_3C16:				; CODE XREF: sub_3A6C+1A2j
 		movem.l	d0/a0,-(sp)
 		lea	$200(a0),a0
-		bsr.w	sub_3E3A
+		bsr.w	checkDiscBootBlock
 		movem.l	(sp)+,d0/a0
 		bcs.s	loc_3C06
 
@@ -7863,729 +7613,26 @@ unk_3E36:	dc.b $E0 ; à		; DATA XREF: sub_3DD6:loc_3DE0o
 ; =============== S U B	R O U T	I N E =======================================
 
 
-sub_3E3A:				; CODE XREF: sub_3A6C+1B2p
+checkDiscBootBlock:				; CODE XREF: sub_3A6C+1B2p
 		movem.l	d0/a0-a1,-(sp)
-		lea	word_3E58(pc),a1
+		lea	regionBootBlock(pc),a1
 		move.w	#$2C1,d0
 
-loc_3E46:				; CODE XREF: sub_3E3A+Ej
+loc_3E46:				; CODE XREF: checkDiscBootBlock+Ej
 		cmpm.w	(a0)+,(a1)+
 		dbne	d0,loc_3E46
 		beq.s	loc_3E52
 		move	#1,ccr
 
-loc_3E52:				; CODE XREF: sub_3E3A+12j
+loc_3E52:				; CODE XREF: checkDiscBootBlock+12j
 		movem.l	(sp)+,d0/a0-a1
 		rts
-; End of function sub_3E3A
+; End of function checkDiscBootBlock
 
 ; ---------------------------------------------------------------------------
-word_3E58:	dc.w $43FA		; DATA XREF: sub_3E3A+4o
-		dc.w $A
-		dc.w $4EB8
-		dc.w $364
-		dc.w $6000
-		dc.w $57A
-		dc.w $600F
-		dc.w 0
-		dc.w 0
-		dc.w $C22
-		dc.w $E44
-		dc.w $E66
-		dc.w $E88
-		dc.w $EEE
-		dc.w $AAA
-		dc.w $888
-		dc.w $444
-		dc.w $8AE
-		dc.w $46A
-		dc.w $E
-		dc.w 8
-		dc.w 4
-		dc.w $E20
-		dc.w $803F
-		dc.w $8005
-		dc.w $1815
-		dc.w $1B26
-		dc.w $3936
-		dc.w $3845
-		dc.w $1754
-		dc.w $864
-		dc.w $972
-		dc.w $83
-		dc.w $516
-		dc.w $8603
-		dc.w $316
-		dc.w $3A89
-		dc.w $302
-		dc.w $1519
-		dc.w $263B
-		dc.w $48F8
-		dc.w $58FA
-		dc.w $677B
-		dc.w $751A
-		dc.w $8A04
-		dc.w $A8F
-		dc.w $778
-		dc.w $1779
-		dc.w $377A
-		dc.w $FF00
-		dc.w $23AE
-		dc.w $3ACF
-		dc.w $2F37
-		dc.w $7E80
-		dc.w $3FED
-		dc.w $A3FF
-		dc.w $E00E
-		dc.w $FD71
-		dc.w $D679
-		dc.w $79DB
-		dc.w $DBF4
-		dc.w $C2
-		dc.w $5800
-		dc.w $5FAB
-		dc.w $BB2B
-		dc.w $BFC2
-		dc.w $F800
-		dc.w $C7F5
-		dc.w $B0FE
-		dc.w $9A85
-		dc.w $FFF0
-		dc.w $3F8D
-		dc.w $BFD3
-		dc.w $63A0
-		dc.w $BBE1
-		dc.w $81C3
-		dc.w $E5ED
-		dc.w $DFAB
-		dc.w $BDBB
-		dc.w $BC78
-		dc.w $5FAF
-		dc.w $C345
-		dc.w $DA00
-		dc.w $BE61
-		dc.w $1BD
-		dc.w $7D61
-		dc.w $4200
-		dc.w $9D68
-		dc.w $1785
-		dc.w $D10
-		dc.w $802E
-		dc.w $B1FD
-		dc.w $F600
-		dc.w $3E5
-		dc.w $FE17
-		dc.w $CF2E
-		dc.w $D515
-		dc.w $7769
-		dc.w $ABBB
-		dc.w $4D5D
-		dc.w $DA15
-		dc.w $18
-		dc.w $CDD6
-		dc.w $D5F3
-		dc.w $CF9C
-		dc.w $797E
-		dc.w $11B7
-		dc.w $C300
-		dc.w $3864
-		dc.w $B003
-		dc.w $97FD
-		dc.w $F600
-		dc.w $284
-		dc.w $1198
-		dc.w $C800
-		dc.w $691D
-		dc.w $8846
-		dc.w $435F
-		dc.w $1D
-		dc.w $8466
-		dc.w $500B
-		dc.w $F9EF
-		dc.w $C12C
-		dc.w $21DA
-		dc.w $6AEE
-		dc.w $DBF4
-		dc.w $A8C5
-		dc.w $A680
-		dc.w $8A9B
-		dc.w $6296
-		dc.w $D52C
-		dc.w $596D
-		dc.w $58C5
-		dc.w $4559
-		dc.w $70AC
-		dc.w $A17
-		dc.w $FFC6
-		dc.w $1367
-		dc.w $1459
-		dc.w $DFC7
-		dc.w $E158
-		dc.w $17
-		dc.w $7FEF
-		dc.w $1A2
-		dc.w $5A96
-		dc.w $B87E
-		dc.w $55D4
-		dc.w $6B7F
-		dc.w $4001
-		dc.w $F5BD
-		dc.w $4210
-		dc.w $4A25
-		dc.w $209
-		dc.w $44EB
-		dc.w $4017
-		dc.w $ECF8
-		dc.w $E7E0
-		dc.w $58
-		dc.w $44A9
-		dc.w $4010
-		dc.w $8C66
-		dc.w $1004
-		dc.w $A7FA
-		dc.w $F443
-		dc.w $B4D1
-		dc.w $7769
-		dc.w $A395
-		dc.w $E572
-		dc.w $A2A6
-		dc.w $C8BD
-		dc.w $4D91
-		dc.w $7A9A
-		dc.w $4005
-		dc.w $FF35
-		dc.w $1F93
-		dc.w $BAEB
-		dc.w $F5E6
-		dc.w $ECE2
-		dc.w $82CE
-		dc.w $28E3
-		dc.w $D63A
-		dc.w $F1FB
-		dc.w $6E56
-		dc.w $3D80
-		dc.w $A75
-		dc.w $A000
-		dc.w $CC64
-		dc.w $2EA
-		dc.w $1615
-		dc.w $F200
-		dc.w $2254
-		dc.w $2002
-		dc.w $50B8
-		dc.w $D73A
-		dc.w $21
-		dc.w $A32
-		dc.w $214
-		dc.w $663B
-		dc.w $BF60
-		dc.w $420
-		dc.w $21
-		dc.w $3553
-		dc.w $5776
-		dc.w $9A22
-		dc.w $D344
-		dc.w $2E51
-		dc.w $1536
-		dc.w $45EA
-		dc.w $6C88
-		dc.w $B66B
-		dc.w $8B6E
-		dc.w $DC7E
-		dc.w $E400
-		dc.w $8A5E
-		dc.w $78A2
-		dc.w $CE28
-		dc.w $2CE2
-		dc.w $8C7B
-		dc.w $DFB0
-		dc.w $31E
-		dc.w $CD00
-		dc.w $1A8D
-		dc.w $1B
-		dc.w $D689
-		dc.w $4427
-		dc.w $74F8
-		dc.w $CBDF
-		dc.w $7D71
-		dc.w $9FE7
-		dc.w $80D4
-		dc.w $B52F
-		dc.w $31D7
-		dc.w $6FD7
-		dc.w $6611
-		dc.w $2D4B
-		dc.w $52F3
-		dc.w $1D67
-		dc.w $FD7
-		dc.w $EE40
-		dc.w $8D6
-		dc.w $8003
-		dc.w $4AD8
-		dc.w $F8C5
-		dc.w $9708
-		dc.w $ABD6
-		dc.w $2CB8
-		dc.w $B10B
-		dc.w $9FDC
-		dc.w $F3EE
-		dc.w $D340
-		dc.w $6B1
-		dc.w $FE60
-		dc.w $B38A
-		dc.w $2CE2
-		dc.w $A330
-		dc.w $8014
-		dc.w $8003
-		dc.w $114
-		dc.w $425
-		dc.w $E35
-		dc.w $1845
-		dc.w $1356
-		dc.w $3967
-		dc.w $7975
-		dc.w $1481
-		dc.w $300
-		dc.w $162F
-		dc.w $2778
-		dc.w $8204
-		dc.w $516
-		dc.w $3683
-		dc.w $50C
-		dc.w $1637
-		dc.w $28F9
-		dc.w $8405
-		dc.w $1517
-		dc.w $7B85
-		dc.w $516
-		dc.w $8605
-		dc.w $D16
-		dc.w $3A87
-		dc.w $50F
-		dc.w $1776
-		dc.w $8805
-		dc.w $1018
-		dc.w $FA89
-		dc.w $62E
-		dc.w $8A06
-		dc.w $3218
-		dc.w $F88B
-		dc.w $511
-		dc.w $177A
-		dc.w $8C06
-		dc.w $388D
-		dc.w $51A
-		dc.w $8E06
-		dc.w $3317
-		dc.w $778F
-		dc.w $512
-		dc.w $FFA5
-		dc.w $289B
-		dc.w $26F8
-		dc.w $5AF6
-		dc.w $706A
-		dc.w $73C
-		dc.w $DEE0
-		dc.w $6F21
-		dc.w $195B
-		dc.w $56D5
-		dc.w $77FC
-		dc.w $FFEE
-		dc.w $EFCF
-		dc.w $A049
-		dc.w $7F04
-		dc.w $C860
-		dc.w $10EF
-		dc.w $7BD
-		dc.w $FFD4
-		dc.w $F54F
-		dc.w $99F8
-		dc.w $DF9B
-		dc.w $D93D
-		dc.w $98ED
-		dc.w $A637
-		dc.w $9EE6
-		dc.w $D5B5
-		dc.w $6C58
-		dc.w $59FB
-		dc.w $146A
-		dc.w $3C8C
-		dc.w $5518
-		dc.w $4310
-		dc.w $79DD
-		dc.w $CCE5
-		dc.w $7B9B
-		dc.w $B46B
-		dc.w $6CF5
-		dc.w $6E21
-		dc.w $61F2
-		dc.w $1E8C
-		dc.w $731B
-		dc.w $8ED4
-		dc.w $A384
-		dc.w $DB8E
-		dc.w $CC20
-		dc.w $FED5
-		dc.w $ACD8
-		dc.w $F83B
-		dc.w $CEF4
-		dc.w $130A
-		dc.w $9B65
-		dc.w $5D93
-		dc.w $6CF9
-		dc.w $A9CD
-		dc.w $D6AF
-		dc.w $7822
-		dc.w $BF5F
-		dc.w $991F
-		dc.w $91C
-		dc.w $BD4D
-		dc.w $A39D
-		dc.w $35F7
-		dc.w $E3F3
-		dc.w $BD3B
-		dc.w $D69A
-		dc.w $F489
-		dc.w $E838
-		dc.w $1D3B
-		dc.w $AE06
-		dc.w $47EB
-		dc.w $F595
-		dc.w $9FBB
-		dc.w $B8B
-		dc.w $7E5
-		dc.w $7F33
-		dc.w $F3D4
-		dc.w $122C
-		dc.w $B768
-		dc.w $7883
-		dc.w $5041
-		dc.w $EDF3
-		dc.w $988E
-		dc.w $B85D
-		dc.w $288E
-		dc.w $5E26
-		dc.w $E72
-		dc.w $54E
-		dc.w $6467
-		dc.w $674B
-		dc.w $BDB0
-		dc.w $2597
-		dc.w $EC8E
-		dc.w $ACB3
-		dc.w $BF98
-		dc.w $AFC7
-		dc.w $AF84
-		dc.w $CB86
-		dc.w $108F
-		dc.w $3985
-		dc.w $2088
-		dc.w $770A
-		dc.w $D2DC
-		dc.w $DD74
-		dc.w $91A2
-		dc.w $502A
-		dc.w $E7C0
-		dc.w $C2EC
-		dc.w $69F9
-		dc.w $C7F5
-		dc.w $51BA
-		dc.w $D1BB
-		dc.w $F32
-		dc.w $89BE
-		dc.w $B0
-		dc.w $BE17
-		dc.w $3B9
-		dc.w $9046
-		dc.w $4E9
-		dc.w $773B
-		dc.w $463
-		dc.w $952E
-		dc.w $3173
-		dc.w $DB15
-		dc.w $B9CA
-		dc.w $8B3F
-		dc.w $D152
-		dc.w $94A5
-		dc.w $3CFE
-		dc.w $75ED
-		dc.w $5C0C
-		dc.w $865C
-		dc.w $C9AE
-		dc.w $D0B3
-		dc.w $66C6
-		dc.w $B209
-		dc.w $F9DD
-		dc.w $8649
-		dc.w $7F3F
-		dc.w $DC5F
-		dc.w $7763
-		dc.w $2BCC
-		dc.w $1A92
-		dc.w $D703
-		dc.w $BBD3
-		dc.w $F3F9
-		dc.w $895D
-		dc.w $A197
-		dc.w $AF86
-		dc.w $111F
-		dc.w $E8C4
-		dc.w $6581
-		dc.w $C3DB
-		dc.w $FBCD
-		dc.w $5294
-		dc.w $A6A9
-		dc.w $4F3A
-		dc.w $F35F
-		dc.w $D2FB
-		dc.w $DC7C
-		dc.w $87A3
-		dc.w $1CC6
-		dc.w $E3B5
-		dc.w $1C29
-		dc.w $36E3
-		dc.w $B308
-		dc.w $3FB5
-		dc.w $6B36
-		dc.w $3E0E
-		dc.w $F3BD
-		dc.w $4C2
-		dc.w $D6DF
-		dc.w $D24D
-		dc.w $A724
-		dc.w $5A63
-		dc.w $3AFD
-		dc.w $455B
-		dc.w $FACA
-		dc.w $A649
-		dc.w $EEC2
-		dc.w $E95F
-		dc.w $F95F
-		dc.w $CCB2
-		dc.w $43A8
-		dc.w $246E
-		dc.w $1DA1
-		dc.w $79C9
-		dc.w $A820
-		dc.w $F05F
-		dc.w $369E
-		dc.w $1788
-		dc.w $5CD9
-		dc.w $4724
-		dc.w $ACC4
-		dc.w $B0A7
-		dc.w $B89E
-		dc.w $61EB
-		dc.w $8CE4
-		dc.w $9FA2
-		dc.w $223C
-		dc.w $D7CF
-		dc.w $D651
-		dc.w $AAE9
-		dc.w $70F3
-		dc.w $2537
-		dc.w $C016
-		dc.w $17C2
-		dc.w $E077
-		dc.w $3208
-		dc.w $C09D
-		dc.w $2EE7
-		dc.w $608C
-		dc.w $72A5
-		dc.w $C62E
-		dc.w 0
-		dc.w $603
-		dc.w 0
-		dc.w 1
-		dc.w $510
-		dc.w $12C2
-		dc.w $488
-		dc.w $5011
-		dc.w $480
-		dc.w $1405
-		dc.w $109A
-		dc.w $2154
-		dc.w $4260
-		dc.w $505
-		dc.w $134
-		dc.w $3811
-		dc.w $4051
-		dc.w $1181
-		dc.w $1404
-		dc.w $110
-		dc.w $20C5
-		dc.w $501
-		dc.w $5C58
-		dc.w $220
-		dc.w $401F
-		dc.w $200
-		dc.w $8810
-		dc.w $7C3
-		dc.w $80C8
-		dc.w $401
-		dc.w $A138
-		dc.w $B494
-		dc.w $100
-		dc.w $AC58
-		dc.w $E20
-		dc.w $401A
-		dc.w $1393
-		dc.w $B1A9
-		dc.w $A81C
-		dc.w $5D8D
-		dc.w $42E2
-		dc.w $686C
-		dc.w $FF0
-		dc.w $500
-		dc.w 0
-		dc.w 0
-		dc.w $390A
-		dc.w $4106
-		dc.w $181
-		dc.w $8090
-		dc.w $29AF
-		dc.w $F850
-		dc.w $524F
-		dc.w $4455
-		dc.w $4345
-		dc.w $4420
-		dc.w $4259
-		dc.w $204F
-		dc.w $5220
-		dc.w $554E
-		dc.w $4445
-		dc.w $5220
-		dc.w $4C49
-		dc.w $4345
-		dc.w $4E53
-		dc.w $4500
-		dc.w $20
-		dc.w $4652
-		dc.w $4F4D
-		dc.w $2053
-		dc.w $4547
-		dc.w $4120
-		dc.w $454E
-		dc.w $5445
-		dc.w $5250
-		dc.w $5249
-		dc.w $5345
-		dc.w $532C
-		dc.w $204C
-		dc.w $5444
-		dc.w $2EFF
-		dc.w $1411
-		dc.w $80D
-		dc.w $1711
-		dc.w $D
-		dc.w $1411
-		dc.w $1411
-		dc.w $9000
-		dc.w 0
-		dc.w $1C
-		dc.w $1411
-		dc.w $8080
-		dc.w $801D
-		dc.w $1100
-		dc.w 0
-		dc.w $AE
-		dc.w $1107
-		dc.w 1
-		dc.w $AD
-		dc.w $1100
-		dc.w $3F
-		dc.w $1100
-		dc.w $B48
-		dc.w $1100
-		dc.w $B66
-		dc.w $1100
-		dc.w $B84
-		dc.w $1100
-		dc.w $B93
-		dc.w $1100
-		dc.w $BA2
-		dc.w $1100
-		dc.w $BEF
-		dc.w $1E0
-		dc.w $8080
-		dc.w $AC9
-		dc.w $CF2
-		dc.w $8005
-		dc.w $8039
-		dc.w $8005
-		dc.w $800C
-		dc.w $EF00
-		dc.w $F00A
-		dc.w $102
-		dc.w $8A9
-		dc.w $1F80
-		dc.w $1A5
-		dc.w $40E7
-		dc.w $A502
-		dc.w $F700
-		dc.w $85D
-		dc.w $11F2
-		dc.w $8005
-		dc.w $8039
-		dc.w $8005
-		dc.w $800C
-		dc.w $EF00
-		dc.w $F00A
-		dc.w $102
-		dc.w $8B8
-		dc.w $1F80
-		dc.w $1B5
-		dc.w $40E7
-		dc.w $B502
-		dc.w $F700
-		dc.w $87B
-		dc.w $11F2
-		dc.w $EF01
-		dc.w $E080
-		dc.w $8005
-		dc.w $C40C
-		dc.w $E040
-		dc.w $8005
-		dc.w $C439
-		dc.w $F2EF
-		dc.w $1E0
-		dc.w $8080
-		dc.w $A80
-		dc.w $7E0
-		dc.w $4080
-		dc.w $AC9
-		dc.w $34F2
-		dc.w $EF01
-		dc.w $E080
-		dc.w $C112
-		dc.w $E040
-		dc.w $C13F
-		dc.w $F2F2
-		dc.w $3201
-		dc.w $101
-		dc.w $13F
-		dc.w $1F1F
-		dc.w $1F19
-		dc.w $604
-		dc.w $708
-		dc.w $505
-		dc.w $419
-		dc.w $1919
-		dc.w $1911
-		dc.w $8918
-		dc.w $8704
-		dc.w $3772
-		dc.w $7749
-		dc.w $1F1F
-		dc.w $1F1F
-		dc.w $70A
-		dc.w $70D
-		dc.w $B
-		dc.w $B
-		dc.w $1F0F
-		dc.w $1F0F
-		dc.w $2380
-		dc.w $2380
+regionBootBlock:
+	incbin "us_boot_block.bin"
+
 unk_43DC:	dc.b   0		; DATA XREF: BIOS:0000450Co
 		dc.b   0
 		dc.b   0
@@ -10165,12 +9212,12 @@ loc_50CE:				; CODE XREF: sub_4FE2+102j
 
 loc_50FE:				; CODE XREF: sub_4FE2+136j
 		movem.l	(sp)+,d1/a0-a1
-		move	sr,-(sp)
+		m_saveStatusRegister
 		adda.w	d1,a0
 		adda.w	d1,a0
 		asr.w	#1,d1
 		adda.w	d1,a1
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		movem.l	(sp)+,d0-d3/d7/a2-a4
 		rts
 ; ---------------------------------------------------------------------------
@@ -10341,7 +9388,7 @@ loc_51E8:				; CODE XREF: sub_51B2+32j
 		add.w	$E(a1),d0
 		movea.l	dword_5B8C(a5),a0
 		lea	$20(a0),a0
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		move.w	d0,d0
 		move.w	d0,-(sp)
@@ -10359,7 +9406,7 @@ loc_51E8:				; CODE XREF: sub_51B2+32j
 		movep.l	d0,1(a0)
 		adda.l	#8,a0
 		movep.l	d0,1(a0)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 		bra.w	loc_52A2
 ; ---------------------------------------------------------------------------
 
@@ -10385,7 +9432,7 @@ loc_525E:				; CODE XREF: sub_51B2+A8j
 		sub.w	$E(a1),d0
 		movea.l	dword_5B8C(a5),a0
 		lea	$20(a0),a0
-		move	sr,-(sp)
+		m_saveStatusRegister
 		m_disableInterrupts
 		move.w	d0,d0
 		move.w	d0,-(sp)
@@ -10403,7 +9450,7 @@ loc_525E:				; CODE XREF: sub_51B2+A8j
 		movep.l	d0,1(a0)
 		adda.l	#8,a0
 		movep.l	d0,1(a0)
-		move	(sp)+,sr
+		m_restoreStatusRegister
 
 loc_52A2:				; CODE XREF: sub_51B2+7Aj
 		move	#0,ccr
