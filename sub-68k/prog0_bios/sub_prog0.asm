@@ -2029,12 +2029,12 @@ loc_113E:               ; CODE XREF: sub_1084:loc_10A4j
 		move.b  d0,byte_580B(a5)
 		btst    #1,d0
 		beq.s   loc_1178
-		bsr.w   sub_27D8
+		bsr.w   cddEnableDeemphasis
 		bra.s   loc_117C
 ; ---------------------------------------------------------------------------
 
 loc_1178:               ; CODE XREF: BIOS:00001170j
-		bsr.w   sub_27EE
+		bsr.w   cddDisableDeemphasis
 
 loc_117C:               ; CODE XREF: BIOS:00001166j
 					; BIOS:00001176j

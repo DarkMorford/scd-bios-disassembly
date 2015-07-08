@@ -102,27 +102,27 @@ sub_27C8:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_27D8:               ; CODE XREF: BIOS:00001172p
-	move.b #2, d0
+cddEnableDeemphasis:               ; CODE XREF: BIOS:00001172p
+	move.b #GA_DEF0, d0
 	bset d0, systemVolume+1(a5)
 	bset d0, word_5AC0+1(a5)
 	bset d0, word_5AC2+1(a5)
 	bset d0, word_5ABE+1(a5)
 	rts
-; End of function sub_27D8
+; End of function cddEnableDeemphasis
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_27EE:               ; CODE XREF: BIOS:loc_1178p
-	move.b #2, d0
+cddDisableDeemphasis:               ; CODE XREF: BIOS:loc_1178p
+	move.b #GA_DEF0, d0
 	bclr d0, systemVolume+1(a5)
 	bclr d0, word_5AC0+1(a5)
 	bclr d0, word_5AC2+1(a5)
 	bclr d0, word_5ABE+1(a5)
 	rts
-; End of function sub_27EE
+; End of function cddDisableDeemphasis
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -143,8 +143,12 @@ _fdrchg:                ; CODE XREF: sub_2946+26j
 	move.w d1, word_5AC2(a5)
 	lsr.w #4, d1
 	lsr.w #4, d0
+
+	; Volume going up or down?
 	sub.w d1, d0
 	bcc.s @loc_2836
+
+	; Volume is increasing
 	neg.w volumeSlope(a5)
 
 @loc_2836:               ; CODE XREF: _fdrchg+2Cj
@@ -170,46 +174,55 @@ sub_2842:
 
 
 updateVolume:               ; CODE XREF: BIOS:00000626p
+	; Return if updater bit is already set
 	bset #0, volumeBitfield(a5)
 	bne.s @locret_28B2
+
+	; Return if update-required bit is clear
 	btst #7, volumeBitfield(a5)
 	beq.s @loc_28AC
+
+	; Return if fader is busy
 	move.w (GA_CDD_FADER).w, d0
-	btst #$F, d0
+	btst #GA_EFDT, d0
 	bne.s @loc_28AC
+
 	btst #6, volumeBitfield(a5)
 	beq.s @loc_287E
+
 	bclr #2, volumeBitfield(a5)
 	beq.s @loc_289A
+
 	bsr.s sub_28B4
 	bra.s @loc_289A
 ; ---------------------------------------------------------------------------
 
-@loc_287E:               ; CODE XREF: updateVolume+20j
+@loc_287E:
 	bclr #2, volumeBitfield(a5)
 	beq.s @loc_2888
 	bsr.s sub_28CC
 
-@loc_2888:               ; CODE XREF: updateVolume+34j
+@loc_2888:
 	btst #3, volumeBitfield(a5)
 	bne.s @loc_289A
 	btst #1, volumeBitfield(a5)
 	beq.s @loc_289A
 	bsr.s sub_28EA
 
-@loc_289A:               ; CODE XREF: updateVolume+28j
-					; updateVolume+2Cj ...
+@loc_289A:
+	; Compare new fader value to cached value
 	move.w systemVolume(a5), d0
-	cmp.w word_5ABC(a5), d0
-	beq.s @loc_28AC
-	move.w d0, word_5ABC(a5)
+	cmp.w cddFaderCache(a5), d0
+	beq.s @loc_28AC ; Don't write if cached and new are equal
+
+	; Write volume data to the fader
+	move.w d0, cddFaderCache(a5)
 	move.w d0, (GA_CDD_FADER).w
 
-@loc_28AC:               ; CODE XREF: updateVolume+Ej
-					; updateVolume+18j ...
+@loc_28AC:
 	bclr #0, volumeBitfield(a5)
 
-@locret_28B2:                ; CODE XREF: updateVolume+6j
+@locret_28B2:
 	rts
 ; End of function updateVolume
 

@@ -40,6 +40,10 @@ GA_COMM_SUBDATA     equ $FFFF8020
 
 ;   CDD
 GA_CDD_FADER        equ $FFFF8034
+	GA_SSF:  equ  1
+	GA_DEF0: equ  2
+	GA_DEF1: equ  3
+	GA_EFDT: equ $F
 GA_CDD_CONTROL      equ $FFFF8037
 GA_CDD_STATUS       equ $FFFF8038
 GA_CDD_COMMAND      equ $FFFF8042

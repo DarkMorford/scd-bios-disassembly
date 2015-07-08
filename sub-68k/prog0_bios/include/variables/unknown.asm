@@ -89,7 +89,7 @@ word_5830 equ $5830
 word_584E equ $584E
 word_5A00 equ $5A00
 word_5A02 equ $5A02
-word_5ABC equ $5ABC
+cddFaderCache equ $5ABC
 word_5ABE equ $5ABE
 word_5AC0 equ $5AC0
 word_5AC2 equ $5AC2
