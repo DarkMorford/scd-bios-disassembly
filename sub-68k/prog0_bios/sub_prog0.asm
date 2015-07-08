@@ -1195,7 +1195,7 @@ sub_C6E:                ; CODE XREF: BIOS:00000B8Cj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_C7E:                ; CODE XREF: sub_2946:loc_29FAp
+writeTocForTrack:                ; CODE XREF: sub_2946:loc_29FAp
 		bset    #0,byte_580E(a5)
 		move.l  (a0),d0
 		movem.l a0,-(sp)
@@ -1208,16 +1208,16 @@ sub_C7E:                ; CODE XREF: sub_2946:loc_29FAp
 		add.w   d0,d0
 		move.l  (a0)+,(a1,d0.w)
 
-loc_CA4:                ; CODE XREF: sub_C7E+18j
+loc_CA4:                ; CODE XREF: writeTocForTrack+18j
 		bclr    #0,byte_580E(a5)
 		rts
-; End of function sub_C7E
+; End of function writeTocForTrack
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_CAC:                ; CODE XREF: sub_12CE+4C6p
+getTocForTrack:                ; CODE XREF: sub_12CE+4C6p
 					; _cdbtocread+2p ...
 		bset    #0,byte_580E(a5)
 		lea cddTocTable(a5),a0
@@ -1230,7 +1230,7 @@ sub_CAC:                ; CODE XREF: sub_12CE+4C6p
 		tst.b   d0
 		beq.s   loc_CDC
 
-loc_CC8:                ; CODE XREF: sub_CAC+5Cj
+loc_CC8:                ; CODE XREF: getTocForTrack+5Cj
 		lea dword_59E8(a5),a0
 		bclr    #$F,d0
 		sne d1
@@ -1239,7 +1239,7 @@ loc_CC8:                ; CODE XREF: sub_CAC+5Cj
 		rts
 ; ---------------------------------------------------------------------------
 
-loc_CDC:                ; CODE XREF: sub_CAC+Ej sub_CAC+1Aj
+loc_CDC:                ; CODE XREF: getTocForTrack+Ej getTocForTrack+1Aj
 		adda.w  #4,a0
 		lea cddTocTable(a5),a1
 		moveq   #0,d0
@@ -1249,7 +1249,7 @@ loc_CDC:                ; CODE XREF: sub_CAC+Ej sub_CAC+1Aj
 		add.w   d0,d0
 		adda.w  d0,a1
 
-loc_CF4:                ; CODE XREF: sub_CAC+50j
+loc_CF4:                ; CODE XREF: getTocForTrack+50j
 		move.l  (a0)+,d0
 		tst.b   d0
 		bne.s   loc_D04
@@ -1258,14 +1258,14 @@ loc_CF4:                ; CODE XREF: sub_CAC+50j
 		lea dword_D0A(pc),a0
 		move.l  (a0)+,d0
 
-loc_D04:                ; CODE XREF: sub_CAC+4Cj
+loc_D04:                ; CODE XREF: getTocForTrack+4Cj
 		subq.w  #4,a0
 		clr.b   d0
 		bra.s   loc_CC8
-; End of function sub_CAC
+; End of function getTocForTrack
 
 ; ---------------------------------------------------------------------------
-dword_D0A:  dc.l $20000     ; DATA XREF: sub_CAC+52o
+dword_D0A:  dc.l $20000     ; DATA XREF: getTocForTrack+52o
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -2611,7 +2611,7 @@ loc_1784:               ; CODE XREF: sub_12CE+4A2j
 		bclr    #1,byte_580A(a5)
 		bne.s   loc_17C6
 		moveq   #1,d0
-		bsr.w   sub_CAC
+		bsr.w   getTocForTrack
 		tst.b   d0
 		beq.s   loc_17B2
 		move.w  #$400,dword_5822(a5)
@@ -4973,7 +4973,11 @@ _cdbios:
 		movem.l a5,-(sp)
 		movea.l #0,a5
 		bclr    #7,d0
+
+		; CDBIOS commands < $80
 		beq.s   loc_293C
+
+		; CDBIOS commands >= $80
 		bsr.s   sub_2946
 		bra.s   loc_2940
 ; ---------------------------------------------------------------------------
@@ -4993,8 +4997,8 @@ loc_2940:               ; CODE XREF: _cdbios+12j
 sub_2946:               ; CODE XREF: _cdbios+10p
 		add.w   d0,d0
 		add.w   d0,d0
-		cmpi.w  #$64,d0 ; 'd'
-		bcc.s   locret_29B8
+		cmpi.w  #$64,d0
+		bcc.s   locret_29B8 ; Return if invalid command
 		jmp loc_2954(pc,d0.w)
 ; ---------------------------------------------------------------------------
 
@@ -5083,7 +5087,7 @@ loc_29E8:               ; CODE XREF: sub_2946+9Cj
 ; ---------------------------------------------------------------------------
 
 loc_29FA:               ; CODE XREF: _cdbtocwrite+6j
-		bsr.w   sub_C7E
+		bsr.w   writeTocForTrack
 ; End of function sub_2946
 
 
@@ -5102,7 +5106,7 @@ _cdbtocwrite:               ; CODE XREF: sub_2946+16j
 
 _cdbtocread:                ; CODE XREF: sub_2946+1Aj
 		move.w  d1,d0
-		bsr.w   sub_CAC
+		bsr.w   getTocForTrack
 		rts
 ; End of function _cdbtocread
 
@@ -5539,7 +5543,7 @@ loc_2D26:               ; CODE XREF: BIOS:00002D20j
 		andi.w  #$FF,d0
 		move.w  d0,word_5B16(a5)
 		move.w  d0,word_5B00(a5)
-		bsr.w   sub_CAC
+		bsr.w   getTocForTrack
 		move.l  d0,dword_5B02(a5)
 		clr.b   byte_5B13(a5)
 		move.b  #3,byte_5B12(a5)
@@ -5846,7 +5850,7 @@ loc_3056:               ; CODE XREF: BIOS:00003020j
 		andi.b  #$5F,byte_5B18(a5) ; '_'
 		move.w  cddArg1Cache(a5),d0
 		move.w  d0,word_5B00(a5)
-		bsr.w   sub_CAC
+		bsr.w   getTocForTrack
 		move.l  d0,dword_5B02(a5)
 
 loc_306C:               ; CODE XREF: BIOS:00002FA2j
