@@ -392,14 +392,14 @@ loc_4B6:
 loc_4BC:
 	movea.l a1,a0
 	lea (bootModule).w,a0
-	moveq   #6,d0
+	moveq   #CBTIPDISK,d0
 	bsr.w   _CDBOOT
 	bcs.s   loc_494
 
 loc_4CA:
 	bsr.w   _waitForVBlank
 	bsr.w   loc_51E
-	moveq   #7,d0
+	moveq   #CBTIPSTAT,d0
 	bsr.w   _CDBOOT
 	bcs.s   loc_4CA
 	bclr    #7,(GA_COMM_SUBFLAGS).w
@@ -425,12 +425,12 @@ loc_4F8:                ; CODE XREF: installJumpTable+186j
 
 loc_4FE:                ; CODE XREF: installJumpTable+192j
 	lea (bootModule).w,a1 ; "MAINBOOTUSR"
-	moveq   #8,d0
+	moveq   #CBTSPDISC,d0
 	bsr.w   _CDBOOT
 	bcs.s   loc_494
 	bsr.w   _waitForVBlank
 	bsr.w   loc_51E
-	moveq   #9,d0
+	moveq   #CBTSPSTAT,d0
 	bsr.w   _CDBOOT
 	bra.s   loc_552
 ; ---------------------------------------------------------------------------
@@ -441,9 +441,9 @@ loc_51A:                ; CODE XREF: installJumpTable+1F0j
 
 loc_51E:                ; CODE XREF: installJumpTable+16Ap
 					; installJumpTable+1AAp
-	move.w  #$81,d0 ; ''
+	move.w  #CDBSTAT,d0
 	jsr _CDBIOS
-	moveq   #1,d0
+	moveq   #CBTINT,d0
 	bsr.w   _CDBOOT
 	rts
 ; ---------------------------------------------------------------------------
@@ -451,13 +451,13 @@ loc_51E:                ; CODE XREF: installJumpTable+16Ap
 loc_52E:                ; CODE XREF: installJumpTable+1E4j
 					; installJumpTable:loc_552j
 	bsr.w   _waitForVBlank
-	move.w  #$81,d0 ; ''
+	move.w  #CDBSTAT,d0
 	jsr _CDBIOS
-	move.w  #1,d0
+	move.w  #CBTINT,d0
 	bsr.w   _CDBOOT
 	btst    #7,(_CDSTAT).w
 	bne.s   loc_52E
-	move.w  #9,d0
+	move.w  #CBTSPSTAT,d0
 	bsr.w   _CDBOOT
 
 loc_552:                ; CODE XREF: installJumpTable+1B4j
