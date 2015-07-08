@@ -583,9 +583,11 @@ loc_5E8:                ; CODE XREF: _waitForVBlank+Cj
 mdInterrupt:
 		movem.l d0-a6,-(sp)
 		movea.l #0,a5
+
 		bsr.w   sub_17EE
 		jsr _USERCALL2
 		bclr    #0,(vBlankFlag).w
+
 		movem.l (sp)+,d0-a6
 		rte
 ; ---------------------------------------------------------------------------
@@ -593,11 +595,13 @@ mdInterrupt:
 cddInterrupt:
 		movem.l d0-a6,-(sp)
 		movea.l #0,a5
+
 		bsr.w   sub_E74
-		bsr.w   sub_21F8
+		bsr.w   updateSubcode
 		bsr.w   cddContinue
 		bsr.w   updateVolume
 		bsr.w   updateLeds
+
 		movem.l (sp)+,d0-a6
 		rte
 ; ---------------------------------------------------------------------------
@@ -605,7 +609,9 @@ cddInterrupt:
 cdcInterrupt:
 		movem.l d0-a6,-(sp)
 		movea.l #0,a5
+
 		bsr.w   updateCdc
+
 		movem.l (sp)+,d0-a6
 		rte
 ; ---------------------------------------------------------------------------
@@ -613,11 +619,12 @@ cdcInterrupt:
 scdInterrupt:
 		movem.l d0-a6,-(sp)
 		movea.l #0,a5
+
 		tst.b   byte_5810(a5)
-		beq.s   loc_65C
+		beq.s   @loc_65C
 		bsr.w   sub_203E
 
-loc_65C:                ; CODE XREF: BIOS:00000656j
+@loc_65C:
 		movem.l (sp)+,d0-a6
 		rte
 
@@ -679,7 +686,7 @@ loc_790:                ; CODE XREF: sub_74E+30j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_796:                ; CODE XREF: sub_21F8+7Ap
+sub_796:                ; CODE XREF: updateSubcode+7Ap
 		move.w  6(a4),d0
 		sub.w   2(a4),d0
 		bcc.s   loc_7A4
@@ -1282,63 +1289,66 @@ sub_D14:                ; CODE XREF: sub_12CE+8Ap
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_D1A:                ; CODE XREF: sub_D20+6j sub_D3A+6j ...
+setErrorAndReturn:                ; CODE XREF: getAbsFrameTime+6j getRelFrameTime+6j ...
 		move    #1,ccr
 		rts
-; End of function sub_D1A
+; End of function setErrorAndReturn
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_D20:                ; CODE XREF: writeCddStatus+62p
+getAbsFrameTime:                ; CODE XREF: writeCddStatus+62p
 		btst    #0,byte_580F(a5)
-		beq.s   sub_D1A
+		beq.s   setErrorAndReturn
+
 		bset    #1,byte_580E(a5)
 		move.l  cddAbsFrameTime(a5),d0
 		bclr    #1,byte_580E(a5)
 		rts
-; End of function sub_D20
+; End of function getAbsFrameTime
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_D3A:                ; CODE XREF: writeCddStatus+72p
+getRelFrameTime:                ; CODE XREF: writeCddStatus+72p
 		btst    #1,byte_580F(a5)
-		beq.s   sub_D1A
+		beq.s   setErrorAndReturn
+
 		bset    #2,byte_580E(a5)
 		move.l  cddRelFrameTime(a5),d0
 		bclr    #2,byte_580E(a5)
 		rts
-; End of function sub_D3A
+; End of function getRelFrameTime
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_D54:                ; CODE XREF: writeCddStatus+4Cp
-					; BIOS:loc_3222p ...
+getCurrentTrackNumber:                ; CODE XREF: writeCddStatus+4Cp
 		btst    #2,byte_580F(a5)
-		beq.s   sub_D1A
+		beq.s   setErrorAndReturn
+
 		move.b  currentTrackNumber(a5),d0
 		bsr.w   validateTrackNumber
 		bsr.w   convertFromBcd
 		or.w    d1,d1
 		rts
-; End of function sub_D54
+; End of function getCurrentTrackNumber
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_D6C:                ; CODE XREF: writeCddStatus+46p
+getDiscControlCode:                ; CODE XREF: writeCddStatus+46p
 		btst    #2,byte_580F(a5)
-		beq.s   sub_D1A
+		beq.s   setErrorAndReturn
+
 		moveq   #0,d0
 		move.b  byte_59F5(a5),d0
 		rts
-; End of function sub_D6C
+; End of function getDiscControlCode
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1357,7 +1367,8 @@ sub_D7C:                ; CODE XREF: BIOS:00003136p
 
 getFirstTrack:              ; CODE XREF: BIOS:00002D36p
 		btst    #6,byte_580E(a5)
-		beq.s   sub_D1A
+		beq.s   setErrorAndReturn
+
 		move.b  cddFirstTrack(a5),d0
 		bsr.w   convertFromBcd
 		or.w    d1,d1
@@ -1370,7 +1381,8 @@ getFirstTrack:              ; CODE XREF: BIOS:00002D36p
 
 getLastTrack:
 		btst    #6,byte_580E(a5)
-		beq.w   sub_D1A
+		beq.w   setErrorAndReturn
+
 		move.b  cddLastTrack(a5),d0
 		bsr.w   convertFromBcd
 		or.w    d1,d1
@@ -1411,9 +1423,9 @@ loc_DEA:                ; CODE XREF: writeCddStatus+18j
 		moveq   #$FFFFFFFF,d0
 		btst    #2,byte_580F(a5)
 		beq.s   loc_E04
-		bsr.w   sub_D6C
+		bsr.w   getDiscControlCode
 		move.w  d0,-(sp)
-		bsr.w   sub_D54
+		bsr.w   getCurrentTrackNumber
 		ror.l   #8,d0
 		move.w  (sp)+,d0
 		rol.l   #8,d0
@@ -1423,14 +1435,14 @@ loc_E04:                ; CODE XREF: writeCddStatus+44j
 		moveq   #$FFFFFFFF,d0
 		btst    #0,byte_580F(a5)
 		beq.s   loc_E14
-		bsr.w   sub_D20
+		bsr.w   getAbsFrameTime
 
 loc_E14:                ; CODE XREF: writeCddStatus+60j
 		move.l  d0,(a2)+
 		moveq   #$FFFFFFFF,d0
 		btst    #1,byte_580F(a5)
 		beq.s   loc_E24
-		bsr.w   sub_D3A
+		bsr.w   getRelFrameTime
 
 loc_E24:                ; CODE XREF: writeCddStatus+70j
 		move.l  d0,(a2)+
@@ -1469,7 +1481,7 @@ loc_E5C:                ; CODE XREF: writeCddStatus+A8j
 ; =============== S U B R O U T I N E =======================================
 
 
-validateTrackNumber:            ; CODE XREF: sub_D54+Cp
+validateTrackNumber:            ; CODE XREF: getCurrentTrackNumber+Cp
 					; writeCddStatus+28p
 		cmpi.b  #$AA,d0
 		bcs.s   locret_E72
@@ -1484,39 +1496,44 @@ locret_E72:             ; CODE XREF: validateTrackNumber+4j
 
 
 sub_E74:                ; CODE XREF: BIOS:0000061Ap
-		bset    #0,byte_580A(a5)
-		bne.w   locret_ECE
-		btst    #7,byte_580A(a5)
-		beq.w   loc_EC8
-		movem.l d7/a4,-(sp)
-		bsr.w   sub_1084
-		bsr.w   sub_ED0
-		bcs.s   loc_EBE
-		lea cddStatusCache(a5),a0
-		clr.b   d0
-		moveq   #4,d1
+	; Return if updater flag is already set
+	bset    #0,byte_580A(a5)
+	bne.w   locret_ECE
+
+	; Return if bit 7 is cleared
+	btst    #7,byte_580A(a5)
+	beq.w   loc_EC8
+
+	movem.l d7/a4,-(sp)
+
+	bsr.w   sub_1084
+	bsr.w   sub_ED0
+	bcs.s   loc_EBE
+	lea cddStatusCache(a5),a0
+	clr.b   d0
+	moveq   #4,d1
 
 loc_E9E:                ; CODE XREF: sub_E74+2Ej
-		add.b   (a0)+,d0
-		add.b   (a0)+,d0
-		dbf d1,loc_E9E
-		not.b   d0
-		andi.b  #$F,d0
-		bne.s   loc_EBE
-		bsr.w   sub_F4E
-		bsr.w   sub_1084
-		bsr.w   sub_12CE
-		bsr.w   sendCddCommand
+	add.b   (a0)+,d0
+	add.b   (a0)+,d0
+	dbf d1,loc_E9E
+	not.b   d0
+	andi.b  #$F,d0
+	bne.s   loc_EBE
+	bsr.w   sub_F4E
+	bsr.w   sub_1084
+	bsr.w   sub_12CE
+	bsr.w   sendCddCommand
 
 loc_EBE:                ; CODE XREF: sub_E74+20j sub_E74+38j
-		movem.l (sp)+,d7/a4
-		move.w  #$1E,word_5A02(a5)
+	movem.l (sp)+,d7/a4
+	move.w  #$1E,word_5A02(a5)
 
 loc_EC8:                ; CODE XREF: sub_E74+10j
-		bclr    #0,byte_580A(a5)
+	bclr    #0,byte_580A(a5)
 
 locret_ECE:             ; CODE XREF: sub_E74+6j
-		rts
+	rts
 ; End of function sub_E74
 
 
@@ -2630,14 +2647,18 @@ loc_17DA:               ; CODE XREF: sub_12CE+3A0j
 
 
 sub_17EE:               ; CODE XREF: BIOS:000005FCp
-		subq.w  #1,word_5A02(a5)
-		bcc.s   locret_1806
-		bset    #2,byte_580A(a5)
-		move.w  #$1E,word_5A02(a5)
-		move.b  #4,(GA_CDD_CONTROL).w
+	subq.w #1, word_5A02(a5)
+	bcc.s @locret_1806
 
-locret_1806:                ; CODE XREF: sub_17EE+4j
-		rts
+	; Watchdog counter hit -1, set the error flag
+	bset #2, byte_580A(a5)
+	move.w #$1E, word_5A02(a5)
+
+	; HOCK on, abort CDD transfers
+	move.b #4, (GA_CDD_CONTROL).w
+
+@locret_1806:
+	rts
 ; End of function sub_17EE
 
 
@@ -2692,14 +2713,19 @@ sub_1840:               ; CODE XREF: sub_2946+A8p
 _cdcread:               ; CODE XREF: sub_2946+3Aj
 		movem.l a3-a4,-(sp)
 		move    #1,ccr
+
 		m_saveStatusRegister
 		move    #$2500,sr
+
+		; Return if words @ 4 and 6 are equal
 		lea $5A44(a5),a4
 		move.w  6(a4),d0
 		cmp.w   4(a4),d0
 		beq.s   loc_18CE
+
 		btst    #5,cdcBitfield0(a5)
 		bne.s   loc_1870
+
 		bsr.w   sub_7AA
 		bra.s   loc_1876
 ; ---------------------------------------------------------------------------
@@ -2712,30 +2738,47 @@ loc_1876:               ; CODE XREF: _cdcread+28j
 		move.w  4(a0),d1
 		ror.w   #8,d1
 		move.w  #$92F,d0
+
+		; Check CD data mode
 		btst    #3,cdcBitfield0(a5)
 		bne.s   loc_18A4
+
+; CD Mode 1
+loc_1888:
 		move.w  #$803,d0
+
+		; Check CDC device destination
 		btst    #2,(GA_CDC_TRANSFER).w
 		beq.s   loc_1898
+
+		; Only if a DMA mode is selected
 		subq.w  #4,d0
 		addq.w  #4,d1
 
 loc_1898:               ; CODE XREF: _cdcread+4Cj
+		; Check for error detection/correction data
 		btst    #2,cdcBitfield0(a5)
 		beq.s   loc_18A4
+
+		; Add 288 bytes for EDC data
 		addi.w  #$120,d0
 
+; CD Mode 2
 loc_18A4:               ; CODE XREF: _cdcread+40j _cdcread+58j
+		; Send transfer information to the CDC
 		lea (GA_CDC_REGISTER).w,a3
 		move.b  #CDC_WRITE_DBCL,(GA_CDC_ADDRESS).w
-		move.b  d0,(a3)
+		move.b  d0,(a3) ; DBCL
 		lsr.w   #8,d0
-		move.b  d0,(a3)
-		move.b  d1,(a3)
+		move.b  d0,(a3) ; DBCH
+		move.b  d1,(a3) ; DACL
 		lsr.w   #8,d1
-		move.b  d1,(a3)
-		move.b  #0,(a3)
+		move.b  d1,(a3) ; DACH
+		move.b  #0,(a3) ; DTTRG
+
+		; Set transfer flag
 		bset    #1,cdcBitfield0(a5)
+
 		andi.w  #$FF00,(sp)
 		move.l  (a0),d0
 		move.w  6(a0),d1
@@ -2777,23 +2820,39 @@ sub_18D6:               ; CODE XREF: sub_18D6+20j _cdctrn+2Cp ...
 
 _cdctrn:                ; CODE XREF: sub_2946+3Ej
 		movem.l a2-a3,-(sp)
+
 		lea (GA_CDC_DATA).w,a2
 		lea (GA_CDC_TRANSFER).w,a3
-		move.w  #$800,d1
 
-loc_190C:               ; CODE XREF: _cdctrn+14j
-		btst    #6,(a3)
-		dbne    d1,loc_190C
+		; Wait for CDC to signal data ready
+		move.w  #$800,d1
+		loc_190C:
+			btst    #6,(a3)
+			dbne    d1,loc_190C
+
+		; Timed out, raise error condition
 		beq.s   loc_197A
+
+		; Check CD data mode
 		btst    #3,cdcBitfield0(a5)
 		bne.s   loc_193E
+
+; Read Mode 1 frame
+loc_191E:
+		; Read 4 header bytes
 		move.w  (a2),(a1)+
 		nop
 		move.w  (a2),(a1)+
+
+		; Read 2048 data bytes
 		move.w  #$7F,d1 ; ''
 		bsr.s   sub_18D6
+
+		; Check for error detection data
 		btst    #2,cdcBitfield0(a5)
 		beq.s   loc_1938
+
+		; Read 288 error correction/detection bytes
 		move.w  #$11,d1
 		bsr.s   sub_18D6
 
@@ -2802,13 +2861,17 @@ loc_1938:               ; CODE XREF: _cdctrn+34j _cdctrn+6Cj
 		bra.s   loc_196C
 ; ---------------------------------------------------------------------------
 
+; Read Mode 2 frame
 loc_193E:               ; CODE XREF: _cdctrn+20j
+		; Read 4 header bytes
 		move.w  (a2),d0
 		move.w  d0,(a1)+
 		move.w  d0,(a0)+
 		move.w  (a2),d0
 		move.w  d0,(a1)+
 		move.w  d0,(a0)+
+
+		; Read 12 sync(?) bytes
 		move.w  (a2),(a0)+
 		nop
 		move.w  (a2),(a0)+
@@ -2820,18 +2883,25 @@ loc_193E:               ; CODE XREF: _cdctrn+20j
 		move.w  (a2),(a0)+
 		nop
 		move.w  (a2),(a0)+
+
+		; Read 2336 data bytes
 		move.w  #$91,d1 ; '‘'
 		bsr.w   sub_18D6
+
 		bra.s   loc_1938
 ; ---------------------------------------------------------------------------
 
+; Eat any extra data the CDC gives us
 loc_196A:               ; CODE XREF: _cdctrn+74j
 		move.w  (a2),d0
 
 loc_196C:               ; CODE XREF: _cdctrn+40j
 		btst    #7,(a3)
 		dbne    d1,loc_196A
+
+		; Timed out, raise error condition
 		beq.s   loc_197A
+
 		or.w    d1,d1
 		bra.s   loc_19A2
 ; ---------------------------------------------------------------------------
@@ -2861,16 +2931,16 @@ loc_19A2:               ; CODE XREF: _cdctrn+7Cj
 
 
 _cdcack:                ; CODE XREF: sub_2946+42j
-		m_saveStatusRegister
-		move    #$2500,sr
+	m_saveStatusRegister
+	move #$2500, sr
 
-		move.b  #CDC_WRITE_DTACK,(GA_CDC_ADDRESS).w
-		move.b  #0,(GA_CDC_REGISTER).w
+	move.b #CDC_WRITE_DTACK, (GA_CDC_ADDRESS).w
+	move.b #0, (GA_CDC_REGISTER).w
 
-		bclr    #1,cdcBitfield0(a5)
+	bclr #1, cdcBitfield0(a5)
 
-		m_restoreStatusRegister
-		rts
+	m_restoreStatusRegister
+	rts
 ; End of function _cdcack
 
 
@@ -2879,10 +2949,12 @@ _cdcack:                ; CODE XREF: sub_2946+42j
 
 sub_19C4:               ; CODE XREF: BIOS:loc_3832p
 		bclr    #7,cdcBitfield0(a5)
-		beq.s   locret_19D2
+		; Return if bit 7 was already clear
+		beq.s   @locret_19D2
+
 		bset    #6,cdcBitfield0(a5)
 
-locret_19D2:                ; CODE XREF: sub_19C4+6j
+@locret_19D2:                ; CODE XREF: sub_19C4+6j
 		rts
 ; End of function sub_19C4
 
@@ -2892,10 +2964,12 @@ locret_19D2:                ; CODE XREF: sub_19C4+6j
 
 sub_19D4:               ; CODE XREF: BIOS:loc_3890p
 		bclr    #6,cdcBitfield0(a5)
-		beq.s   locret_19E2
+		; Return if bit 6 was already clear
+		beq.s   @locret_19E2
+
 		bset    #7,cdcBitfield0(a5)
 
-locret_19E2:                ; CODE XREF: sub_19D4+6j
+@locret_19E2:                ; CODE XREF: sub_19D4+6j
 		rts
 ; End of function sub_19D4
 
@@ -2906,10 +2980,12 @@ locret_19E2:                ; CODE XREF: sub_19D4+6j
 _cdcsetmode:                ; CODE XREF: sub_2946+66j
 		m_saveStatusRegister
 		move    #$2500,sr
+
 		andi.w  #$F,d1
 		lsl.w   #2,d1
 		andi.b  #$C3,cdcBitfield0(a5)
 		or.b    d1,cdcBitfield0(a5)
+
 		m_restoreStatusRegister
 		rts
 ; End of function _cdcsetmode
@@ -2919,31 +2995,38 @@ _cdcsetmode:                ; CODE XREF: sub_2946+66j
 
 
 updateCdc:              ; CODE XREF: BIOS:0000063Ep
-		bset    #0,cdcBitfield0(a5)
-		bne.s   locret_1A5C
-		btst    #7,cdcBitfield0(a5)
-		beq.s   loc_1A56
-		movem.l d5-d7/a2-a4,-(sp)
-		lea (GA_CDC_ADDRESS).w,a2
-		lea (GA_CDC_REGISTER).w,a3
-		lea cdcStatus(a5),a0
-		move.b  #CDC_READ_IFSTAT,(a2)
-		move.b  (a3),(a0)+
-		addq.w  #1,a0
-		move.b  #CDC_READ_HEAD0,(a2)
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  #CDC_READ_STAT0,(a2)
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		move.b  (a3),(a0)+
-		movem.l cdcRegisterCache(a5),d5-a0/a2-a4
-		jmp (a0)
+	; Return if updater flag is already set
+	bset    #0,cdcBitfield0(a5)
+	bne.s   locret_1A5C
+
+	; Return if bit 7 is cleared
+	btst    #7,cdcBitfield0(a5)
+	beq.s   loc_1A56
+
+	movem.l d5-d7/a2-a4,-(sp)
+
+	; Copy header/status data from CDC to RAM
+	lea (GA_CDC_ADDRESS).w,a2
+	lea (GA_CDC_REGISTER).w,a3
+	lea cdcStatus(a5),a0
+	move.b #CDC_READ_IFSTAT,(a2)
+	move.b (a3),(a0)+   ; IFSTAT
+	addq.w #1,a0
+	move.b #CDC_READ_HEAD0,(a2)
+	move.b (a3),(a0)+   ; HEAD0
+	move.b (a3),(a0)+   ; HEAD1
+	move.b (a3),(a0)+   ; HEAD2
+	move.b (a3),(a0)+   ; HEAD3
+	move.b (a3),(a0)+   ; PTL
+	move.b (a3),(a0)+   ; PTH
+	move.b #CDC_READ_STAT0,(a2)
+	move.b (a3),(a0)+   ; STAT0
+	move.b (a3),(a0)+   ; STAT1
+	move.b (a3),(a0)+   ; STAT2
+	move.b (a3),(a0)+   ; STAT3
+
+	movem.l cdcRegisterCache(a5),d5-a0/a2-a4
+	jmp (a0)
 ; End of function updateCdc
 
 
@@ -2952,15 +3035,16 @@ updateCdc:              ; CODE XREF: BIOS:0000063Ep
 
 sub_1A4A:               ; CODE XREF: initCdc:loc_1AA4p
 					; _cdcstart:loc_1B54p ...
-		movea.l (sp)+,a0
-		movem.l d5-a0/a2-a4,cdcRegisterCache(a5)
-		movem.l (sp)+,d5-d7/a2-a4
+	movea.l (sp)+,a0
+	movem.l d5-a0/a2-a4,cdcRegisterCache(a5)
+	movem.l (sp)+,d5-d7/a2-a4
 
-loc_1A56:               ; CODE XREF: updateCdc+Ej
-		bclr    #0,cdcBitfield0(a5)
+loc_1A56:
+	; Done with update, clear busy flag
+	bclr #0, cdcBitfield0(a5)
 
-locret_1A5C:                ; CODE XREF: updateCdc+6j
-		rts
+locret_1A5C:
+	rts
 ; End of function sub_1A4A
 
 
@@ -3011,10 +3095,13 @@ _cdcstop:               ; CODE XREF: sub_2946+32j
 abortCdcTransfer:           ; CODE XREF: _cdcstart+1Ap
 		bclr    #1,cdcBitfield0(a5)
 		bclr    #5,(GA_INT_MASK).w
+
 		move.b  #CDC_WRITE_IFCTRL,(GA_CDC_ADDRESS).w
 		move.b  #$38,(GA_CDC_REGISTER).w
+
 		move.b  #CDC_WRITE_IFCTRL,(GA_CDC_ADDRESS).w
 		move.b  #$3A,(GA_CDC_REGISTER).w
+
 		nop
 		nop
 		nop
@@ -3702,8 +3789,11 @@ loc_2036:               ; CODE XREF: _scdread+32j
 
 sub_203E:               ; CODE XREF: BIOS:00000658p
 		movem.l a2-a4,-(sp)
+
+		; Return if bit 7 is cleared
 		btst    #7,$5A84(a5)
 		beq.w   loc_2102
+
 		clr.w   d0
 		move.b  (GA_SUBCODE_ADDRESS).w,d0
 		btst    #7,d0
@@ -3932,67 +4022,81 @@ loc_21C6:               ; CODE XREF: sub_2168+8j sub_2168+Ej ...
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_21F8:               ; CODE XREF: BIOS:0000061Ep
-		bset    #1,dword_5A84(a5)
-		bne.w   locret_2288
-		btst    #5,dword_5A84(a5)
-		beq.s   loc_2282
-		movem.l a3-a4,-(sp)
-		movea.l dword_5A94(a5),a3
-		movea.l dword_5A90(a5),a4
-		move.w  6(a4),d0
-		cmp.w   4(a4),d0
-		beq.s   loc_227E
-		m_saveStatusRegister
-		move    #$2300,sr
+updateSubcode:               ; CODE XREF: BIOS:0000061Ep
+	; Return if update flag already set
+	bset    #1,dword_5A84(a5)
+	bne.w   locret_2288
 
-loc_2226:               ; CODE XREF: sub_21F8:loc_227Aj
-		tst.b   dword_5A84+1(a5)
-		beq.s   loc_2242
-		subq.b  #1,dword_5A84+1(a5)
-		m_saveStatusRegister
-		move    #$2600,sr
-		bsr.w   sub_7AA
-		seq 1(sp)
-		m_restoreStatusRegister
-		bra.s   loc_227A
+	; Return if bit 5 is cleared
+	btst    #5,dword_5A84(a5)
+	beq.s   loc_2282
+
+	movem.l a3-a4,-(sp)
+	movea.l dword_5A94(a5),a3
+	movea.l dword_5A90(a5),a4
+
+	move.w  6(a4),d0
+	cmp.w   4(a4),d0
+	beq.s   loc_227E
+
+	m_saveStatusRegister
+	move    #$2300,sr
+
+loc_2226:               ; CODE XREF: updateSubcode:loc_227Aj
+	tst.b   dword_5A84+1(a5)
+	beq.s   loc_2242
+	subq.b  #1,dword_5A84+1(a5)
+
+	m_saveStatusRegister
+	move    #$2600,sr
+
+	bsr.w   sub_7AA
+	seq 1(sp)
+
+	m_restoreStatusRegister
+	bra.s   loc_227A
 ; ---------------------------------------------------------------------------
 
-loc_2242:               ; CODE XREF: sub_21F8+32j
-		exg a3,a4
-		bsr.w   sub_74E
-		add.b   d1,dword_5A88+1(a5)
-		exg a3,a4
-		m_saveStatusRegister
-		move    #$2600,sr
-		bsr.w   sub_22BC
-		bsr.w   sub_7AA
-		seq 1(sp)
-		m_restoreStatusRegister
-		seq 1(sp)
-		bsr.w   sub_23B8
-		bcc.s   loc_2278
-		addq.b  #1,dword_5A88+3(a5)
-		exg a3,a4
-		bsr.w   sub_796
-		exg a3,a4
+loc_2242:               ; CODE XREF: updateSubcode+32j
+	exg a3,a4
+	bsr.w   sub_74E
+	add.b   d1,dword_5A88+1(a5)
+	exg a3,a4
 
-loc_2278:               ; CODE XREF: sub_21F8+72j
-		move    (sp),ccr
+	m_saveStatusRegister
+	move    #$2600,sr
 
-loc_227A:               ; CODE XREF: sub_21F8+48j
-		bne.s   loc_2226
-		m_restoreStatusRegister
+	bsr.w   sub_22BC
+	bsr.w   sub_7AA
+	seq 1(sp)
 
-loc_227E:               ; CODE XREF: sub_21F8+26j
-		movem.l (sp)+,a3-a4
+	m_restoreStatusRegister
+	seq 1(sp)
 
-loc_2282:               ; CODE XREF: sub_21F8+10j
-		bclr    #1,dword_5A84(a5)
+	bsr.w   sub_23B8
+	bcc.s   loc_2278
 
-locret_2288:                ; CODE XREF: sub_21F8+6j
-		rts
-; End of function sub_21F8
+	addq.b  #1,dword_5A88+3(a5)
+	exg a3,a4
+	bsr.w   sub_796
+	exg a3,a4
+
+loc_2278:               ; CODE XREF: updateSubcode+72j
+	move    (sp),ccr
+
+loc_227A:               ; CODE XREF: updateSubcode+48j
+	bne.s   loc_2226
+	m_restoreStatusRegister
+
+loc_227E:               ; CODE XREF: updateSubcode+26j
+	movem.l (sp)+,a3-a4
+
+loc_2282:
+	bclr    #1,dword_5A84(a5)
+
+locret_2288:
+	rts
+; End of function updateSubcode
 
 ; ---------------------------------------------------------------------------
 word_228A:  dc.w $FF58      ; DATA XREF: sub_22BCo
@@ -4024,7 +4128,7 @@ word_228A:  dc.w $FF58      ; DATA XREF: sub_22BCo
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_22BC:               ; CODE XREF: sub_21F8+5Cp
+sub_22BC:               ; CODE XREF: updateSubcode+5Cp
 		lea word_228A(pc),a0
 		bra.s   loc_22DC
 ; ---------------------------------------------------------------------------
@@ -4266,7 +4370,7 @@ loc_23AE:               ; CODE XREF: sub_23A6+Aj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_23B8:               ; CODE XREF: sub_21F8+6Ep
+sub_23B8:               ; CODE XREF: updateSubcode+6Ep
 		movem.l d2-d6/a0-a4/a6,-(sp)
 		movea.l a1,a2
 		bsr.w   sub_24D4
@@ -5917,7 +6021,7 @@ loc_3200:               ; CODE XREF: BIOS:00002B78j
 
 loc_3222:               ; CODE XREF: BIOS:0000321Aj
 					; BIOS:0000324Ej
-		bsr.w   sub_D54
+		bsr.w   getCurrentTrackNumber
 		bcs.w   loc_2AB6
 		cmp.w   word_5B00(a5),d0
 		beq.w   loc_2AB6
@@ -5951,7 +6055,7 @@ loc_3250:               ; CODE XREF: BIOS:00002B80j
 
 loc_3274:               ; CODE XREF: BIOS:0000326Aj
 					; BIOS:000032A4j
-		bsr.w   sub_D54
+		bsr.w   getCurrentTrackNumber
 		bcs.w   loc_2AB6
 		cmp.w   word_5B00(a5),d0
 		bls.w   loc_2AB6
@@ -5985,7 +6089,7 @@ loc_32A6:               ; CODE XREF: BIOS:00002B7Cj
 
 loc_32CA:               ; CODE XREF: BIOS:000032C0j
 					; BIOS:000032F0j
-		bsr.w   sub_D54
+		bsr.w   getCurrentTrackNumber
 		bcs.w   loc_2AB6
 		cmp.w   word_5B00(a5),d0
 		bls.w   loc_2AB6
@@ -6777,12 +6881,18 @@ locret_3A1E:                ; CODE XREF: BIOS:00003A18j
 
 _cbtint:                ; CODE XREF: BIOS:00003926j
 		movem.l d7,-(sp)
+
+		; Return if updater flag already set
 		bset    #0,bootBitfield(a5)
 		bne.s   loc_3A46
+
+		; Return if bit 7 clear
 		btst    #7,bootBitfield(a5)
 		beq.s   loc_3A40
-		movea.l dword_5B26(a5),a0
-		movem.l dword_5B2A(a5),d7
+
+		; Fetch interrupt handler address and data
+		movea.l cbtInterruptHandler(a5),a0
+		movem.l cbtInterruptData(a5),d7
 		jsr (a0)
 
 loc_3A40:               ; CODE XREF: BIOS:00003A32j
@@ -6795,19 +6905,19 @@ loc_3A46:               ; CODE XREF: BIOS:00003A2Aj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3A4C:               ; CODE XREF: sub_3CDA+54p
-		movem.l d7,dword_5B2A(a5)
-; End of function sub_3A4C
+cbtSetIntData:               ; CODE XREF: sub_3CDA+54p
+		movem.l d7,cbtInterruptData(a5)
+; End of function cbtSetIntData
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3A52:               ; CODE XREF: sub_3A6C:loc_3A84p
+cbtSetIntHandler:               ; CODE XREF: sub_3A6C:loc_3A84p
 					; sub_3A6C:loc_3AECp ...
-		move.l  (sp)+,dword_5B26(a5)
+		move.l  (sp)+,cbtInterruptHandler(a5)
 		rts
-; End of function sub_3A52
+; End of function cbtSetIntHandler
 
 ; ---------------------------------------------------------------------------
 
@@ -6835,7 +6945,7 @@ sub_3A6C:               ; CODE XREF: BIOS:0000396Ep
 
 loc_3A84:               ; CODE XREF: BIOS:000039DAp
 					; sub_3A6C+3Aj ...
-		bsr.s   sub_3A52
+		bsr.s   cbtSetIntHandler
 		btst    #5,bootBitfield(a5)
 		bne.s   loc_3AE0
 		btst    #4,bootBitfield(a5)
@@ -6884,7 +6994,7 @@ loc_3AE4:               ; CODE XREF: sub_3A6C+72j
 		bsr.w   sub_3CBE
 
 loc_3AEC:               ; CODE XREF: sub_3A6C+AAj
-		bsr.w   sub_3A52
+		bsr.w   cbtSetIntHandler
 		move.w  #CDBSTAT,d0
 		jsr _CDBIOS
 		lea (_CDSTAT).w,a0
@@ -7020,7 +7130,7 @@ loc_3C88:               ; CODE XREF: sub_3A6C+210j
 		bclr    #4,bootBitfield(a5)
 
 loc_3C8E:               ; CODE XREF: sub_3A6C+22Cj
-		bsr.w   sub_3A52
+		bsr.w   cbtSetIntHandler
 		btst    #3,bootBitfield(a5)
 		beq.s   loc_3C8E
 		movea.l dword_5B3E(a5),a0
@@ -7042,7 +7152,7 @@ sub_3CBE:               ; CODE XREF: sub_3A6C+48p sub_3A6C+7Cp ...
 		jsr _CDBIOS
 
 loc_3CC6:               ; CODE XREF: sub_3CBE+14j
-		bsr.w   sub_3A52
+		bsr.w   cbtSetIntHandler
 		move.w  #CDBCHK,d0
 		jsr _CDBIOS
 		bcs.s   loc_3CC6
@@ -7088,7 +7198,7 @@ loc_3D0E:               ; CODE XREF: sub_3CDA+64j sub_3CDA+74j ...
 loc_3D26:               ; CODE XREF: sub_3CDA+60j
 		tst.b   byte_5A05(a5)
 		beq.w   loc_3DAC
-		bsr.w   sub_3A4C
+		bsr.w   cbtSetIntData
 
 loc_3D32:               ; CODE XREF: sub_3CDA+CCj
 		move.w  #CDCSTAT,d0
@@ -7170,7 +7280,7 @@ sub_3DD6:               ; CODE XREF: sub_3A6C:loc_3AA8p
 ; ---------------------------------------------------------------------------
 
 loc_3DDC:               ; CODE XREF: sub_3DD6+2Aj
-		bsr.w   sub_3A52
+		bsr.w   cbtSetIntHandler
 
 loc_3DE0:               ; CODE XREF: sub_3DD6+4j
 		lea unk_3E36(pc),a0
@@ -7184,7 +7294,7 @@ loc_3DE0:               ; CODE XREF: sub_3DD6+4j
 		bcs.s   loc_3DDC
 
 loc_3E02:               ; CODE XREF: sub_3DD6+38j
-		bsr.w   sub_3A52
+		bsr.w   cbtSetIntHandler
 		move.w  #WONDERCHK,d0
 		jsr _CDBIOS
 		bcs.s   loc_3E02

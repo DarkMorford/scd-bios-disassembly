@@ -48,8 +48,8 @@ dword_5AA4 equ $5AA4
 dword_5AA8 equ $5AA8
 dword_5AD8 equ $5AD8
 dword_5B02 equ $5B02
-dword_5B26 equ $5B26
-dword_5B2A equ $5B2A
+cbtInterruptHandler equ $5B26
+cbtInterruptData equ $5B2A
 dword_5B2E equ $5B2E
 dword_5B34 equ $5B34
 dword_5B38 equ $5B38
