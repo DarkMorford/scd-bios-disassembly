@@ -231,12 +231,12 @@ loc_342:
 	move.w  d0,(a1)+
 	move.l  a0,(a1)+
 	dbf d1,loc_342
-	bsr.w   initLEDs
+	bsr.w   initLeds
 	bsr.w   sub_AEC
 	bsr.w   initCdc
 ; ---------------------------------------------------------------------------
 	bsr.w   initVolume
-	bsr.w   sub_2A7E
+	bsr.w   initCdd
 	m_enableInterrupts
 	nop
 
@@ -595,7 +595,7 @@ cddInterrupt:
 		movea.l #0,a5
 		bsr.w   sub_E74
 		bsr.w   sub_21F8
-		bsr.w   sub_2A66
+		bsr.w   cddContinue
 		bsr.w   updateVolume
 		bsr.w   updateLEDs
 		movem.l (sp)+,d0-a6
@@ -624,12 +624,12 @@ loc_65C:                ; CODE XREF: BIOS:00000656j
 ; =============== S U B R O U T I N E =======================================
 
 
-initLEDs:               ; CODE XREF: BIOS:0000034Ap
+initLeds:               ; CODE XREF: BIOS:0000034Ap
 	move.w  #LEDSYSTEM,userLedMode(a5)
 	move.w  #LEDERROR,lastLedMode(a5)
 	move.w  #LEDREADY,ledMode(a5)
 	rts
-; End of function initLEDs
+; End of function initLeds
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1688,7 +1688,7 @@ loc_F28:                ; CODE XREF: sub_F32-14j
 		bset    #4,byte_580A(a5)
 
 loc_F2E:                ; CODE XREF: sub_F32-1Cj sub_F32-Cj
-		move    (sp)+,ccr
+		m_restoreConditionBits
 		rts
 
 ; =============== S U B R O U T I N E =======================================
@@ -3951,7 +3951,7 @@ loc_2146:               ; CODE XREF: sub_210E+28j sub_210E+2Ej ...
 		move.b  d0,8(a1)
 
 loc_2164:               ; CODE XREF: sub_210E+36j sub_210E+3Cj ...
-		move    (sp)+,ccr
+		m_restoreConditionBits
 		rts
 ; End of function sub_210E
 
@@ -4434,7 +4434,7 @@ loc_23F4:               ; CODE XREF: sub_23B8+1Ej sub_23B8+34j
 		or.w    d0,(sp)
 
 loc_240C:               ; CODE XREF: sub_23B8+4Aj
-		move    (sp)+,ccr
+		m_restoreConditionBits
 		movem.l (sp)+,d2-d6/a0-a4/a6
 		rts
 ; End of function sub_23B8
@@ -4948,7 +4948,7 @@ loc_26C8:               ; CODE XREF: sub_262E+94j
 		bsr.s   sub_2724
 		move    sr,d0
 		or.w    d0,(sp)
-		move    (sp)+,ccr
+		m_restoreConditionBits
 		rts
 ; End of function sub_262E
 
@@ -5008,7 +5008,7 @@ loc_2746:               ; CODE XREF: initVolume+Aj
 ; =============== S U B R O U T I N E =======================================
 
 
-_fdrset:                ; CODE XREF: sub_2946+22j sub_2A7E+2Cp
+_fdrset:                ; CODE XREF: sub_2946+22j initCdd+2Cp
 		bclr    #7,volumeBitfield(a5)
 		bclr    #$F,d1
 		beq.s   loc_277C
@@ -5471,31 +5471,31 @@ loc_2A58:               ; CODE XREF: sub_2A1C+2Aj sub_2A1C+34j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2A60:               ; CODE XREF: sub_2A7E:loc_2A96p
-					; sub_2A7E+26p ...
+cddSetContinueAddress:               ; CODE XREF: initCdd:loc_2A96p
+					; initCdd+26p ...
 		move.l  (sp)+,tempJumpTarget(a5)
 		rts
-; End of function sub_2A60
+; End of function cddSetContinueAddress
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2A66:               ; CODE XREF: BIOS:00000622p
+cddContinue:               ; CODE XREF: BIOS:00000622p
 		tst.w   word_5B22(a5)
 		beq.s   loc_2A70
 		subq.w  #1,word_5B22(a5)
 
-loc_2A70:               ; CODE XREF: sub_2A66+4j
+loc_2A70:               ; CODE XREF: cddContinue+4j
 		movea.l tempJumpTarget(a5),a0
 		jmp (a0)
-; End of function sub_2A66
+; End of function cddContinue
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-copyCddCommand:             ; CODE XREF: sub_2A7E+4Ap
+copyCddCommand:             ; CODE XREF: initCdd+4Ap
 					; BIOS:000031A2p ...
 		move.w  (a0)+,(a1)+
 		move.l  (a0)+,(a1)+
@@ -5507,19 +5507,19 @@ copyCddCommand:             ; CODE XREF: sub_2A7E+4Ap
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2A7E:               ; CODE XREF: BIOS:0000035Ap
+initCdd:               ; CODE XREF: BIOS:0000035Ap
 		move.w  #$8000,cddControlStatus(a5)
 		move.w  #4500,cddSpindownDelay(a5)
 		move.w  #$101,cddArg1Cache(a5)
 		move.w  #$2C,cddCommandCache(a5) ; ','
 
-loc_2A96:               ; CODE XREF: sub_2A7E+1Ej sub_2A7E+24j
-		bsr.s   sub_2A60
+loc_2A96:               ; CODE XREF: initCdd+1Ej initCdd+24j
+		bsr.s   cddSetContinueAddress
 		move.b  byte_5A04(a5),d0
 		beq.s   loc_2A96
 		cmpi.b  #$FF,d0
 		beq.s   loc_2A96
-		bsr.s   sub_2A60
+		bsr.s   cddSetContinueAddress
 		move.w  #$400,d1
 		bsr.w   _fdrset
 		cmpi.w  #$800A,cddCommand(a5)
@@ -5527,18 +5527,18 @@ loc_2A96:               ; CODE XREF: sub_2A7E+1Ej sub_2A7E+24j
 
 loc_2AB6:               ; CODE XREF: BIOS:00002C38j
 					; BIOS:00002C54j ...
-		bsr.s   sub_2A60
+		bsr.s   cddSetContinueAddress
 		bclr    #7,cddCommand(a5)
 		beq.s   loc_2AD0
 		lea cddCommand(a5),a0
 		lea cddCommandCache(a5),a1
 		bsr.s   copyCddCommand
 
-loc_2ACA:               ; CODE XREF: sub_2A7E+36j
+loc_2ACA:               ; CODE XREF: initCdd+36j
 					; BIOS:00002C2Aj ...
 		bset    #7,cddControlStatus(a5)
 
-loc_2AD0:               ; CODE XREF: sub_2A7E+40j
+loc_2AD0:               ; CODE XREF: initCdd+40j
 					; BIOS:loc_2D66j ...
 		move.w  cddCommandCache(a5),d0
 		add.w   d0,d0
@@ -5546,7 +5546,7 @@ loc_2AD0:               ; CODE XREF: sub_2A7E+40j
 		cmpi.w  #$B4,d0 ; '´'
 		bcc.w   loc_2C78
 		jmp loc_2AE4(pc,d0.w)
-; End of function sub_2A7E
+; End of function initCdd
 
 ; ---------------------------------------------------------------------------
 
@@ -5663,7 +5663,7 @@ loc_2BA8:               ; CODE XREF: sub_2B9A+6j
 		move.l  (sp)+,dword_5AD8(a5)
 
 loc_2BAC:               ; CODE XREF: sub_2B9A+1Aj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		subq.w  #1,word_5B1E(a5)
 		bcc.s   loc_2BAC
 		movea.l dword_5AD8(a5),a0
@@ -5681,7 +5681,7 @@ sub_2BBC:               ; CODE XREF: BIOS:000030D2p
 ; ---------------------------------------------------------------------------
 
 loc_2BC2:               ; CODE XREF: sub_2BBC+22j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_2BC6:               ; CODE XREF: sub_2BBC+4j
 		move.w  #$20,d0 ; ' '
@@ -5715,7 +5715,7 @@ loc_2BF0:               ; CODE XREF: BIOS:00002B94j
 		bsr.w   _cdcstop
 		move.w  #1,word_5B00(a5)
 		move.l  #$20000,dword_5B02(a5)
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_D0E
 		cmpi.b  #$E,d0
 		beq.w   loc_2C24
@@ -5732,7 +5732,7 @@ loc_2C24:               ; CODE XREF: BIOS:00002C14j
 
 loc_2C2E:               ; CODE XREF: BIOS:00002C44j
 					; BIOS:00002C6Aj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		btst    #7,cddCommand(a5)
 		bne.w   loc_2AB6
 		bsr.w   sub_D0E
@@ -5745,7 +5745,7 @@ loc_2C48:               ; CODE XREF: BIOS:loc_2CB4j
 		bsr.s   sub_2BE6
 
 loc_2C4A:               ; CODE XREF: BIOS:00002C66j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
 		cmpi.w  #$800A,cddCommand(a5)
@@ -5758,7 +5758,7 @@ loc_2C4A:               ; CODE XREF: BIOS:00002C66j
 		cmpi.b  #0,d0
 		bne.w   loc_2D5A
 
-loc_2C78:               ; CODE XREF: sub_2A7E+5Ej
+loc_2C78:               ; CODE XREF: initCdd+5Ej
 					; BIOS:00002B24j
 		move.w  #LEDREADY,ledMode(a5)
 		bsr.w   _cdcstop
@@ -5767,7 +5767,7 @@ loc_2C78:               ; CODE XREF: sub_2A7E+5Ej
 
 loc_2C90:               ; CODE XREF: BIOS:00002C46j
 					; BIOS:00002CD8j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_D0E
 
 loc_2C98:               ; CODE XREF: BIOS:00002C20j
@@ -5791,7 +5791,7 @@ loc_2CB4:               ; CODE XREF: BIOS:00002CC2j
 		bsr.w   sub_B0C
 
 loc_2CCC:               ; CODE XREF: BIOS:00002CD4j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_2CCC
 		tst.b   d0
@@ -5808,7 +5808,7 @@ loc_2CDE:               ; CODE XREF: BIOS:00002C9Cj
 		bsr.w   sub_B0C
 
 loc_2CF6:               ; CODE XREF: BIOS:00002D0Ej
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		cmpi.w  #$800A,cddCommand(a5)
 		beq.s   loc_2D6A
 		cmpi.w  #$8010,cddCommand(a5)
@@ -5924,7 +5924,7 @@ loc_2E12:               ; CODE XREF: BIOS:00002E00j
 
 loc_2E1C:               ; CODE XREF: BIOS:00002E32j
 					; BIOS:00002EA6j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		btst    #7,cddCommand(a5)
 		bne.w   loc_2AB6
 		bsr.w   sub_D0E
@@ -5958,7 +5958,7 @@ loc_2E50:               ; CODE XREF: BIOS:00002E42j
 		bsr.w   sub_B0C
 
 loc_2E74:               ; CODE XREF: BIOS:00002E7Cj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_2E74
 		tst.b   d0
@@ -5971,7 +5971,7 @@ loc_2E82:               ; CODE XREF: BIOS:00002E58j
 		bsr.w   sub_B0C
 
 loc_2E90:               ; CODE XREF: BIOS:00002EA2j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
 		bsr.w   sub_AF6
@@ -5982,7 +5982,7 @@ loc_2E90:               ; CODE XREF: BIOS:00002EA2j
 loc_2EAA:               ; CODE XREF: BIOS:00002E34j
 					; BIOS:00002E5Ej ...
 		move.w  #$4000,cddControlStatus(a5)
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
 		bsr.w   sub_D0E
@@ -6032,7 +6032,7 @@ loc_2F18:               ; CODE XREF: BIOS:00002F48j
 		bsr.w   sub_B0C
 
 loc_2F3C:               ; CODE XREF: BIOS:00002F44j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_2F3C
 		tst.b   d0
@@ -6164,7 +6164,7 @@ loc_306C:               ; CODE XREF: BIOS:00002FA2j
 ; ---------------------------------------------------------------------------
 
 loc_30B0:               ; CODE XREF: BIOS:000030BCj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_30B4:               ; CODE XREF: BIOS:000030AEj
 					; BIOS:00003104j
@@ -6173,7 +6173,7 @@ loc_30B4:               ; CODE XREF: BIOS:000030AEj
 		bcs.s   loc_30B0
 
 loc_30BE:               ; CODE XREF: BIOS:000030C6j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_30BE
 		tst.b   d0
@@ -6193,7 +6193,7 @@ loc_30EA:               ; CODE XREF: BIOS:000030E2j
 ; ---------------------------------------------------------------------------
 
 loc_30EC:               ; CODE XREF: BIOS:00003112j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_D0E
 		cmpi.b  #1,d0
 		beq.s   loc_3106
@@ -6212,7 +6212,7 @@ loc_3106:               ; CODE XREF: BIOS:loc_30EAj
 ; ---------------------------------------------------------------------------
 
 loc_3116:               ; CODE XREF: BIOS:00003126j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_311A:               ; CODE XREF: BIOS:00003114j
 		move.l  dword_5B02(a5),d1
@@ -6221,7 +6221,7 @@ loc_311A:               ; CODE XREF: BIOS:00003114j
 		bcs.s   loc_3116
 
 loc_3128:               ; CODE XREF: BIOS:00003146j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_D0E
 		cmpi.b  #8,d0
 		bne.s   loc_3142
@@ -6291,7 +6291,7 @@ loc_31E0:               ; CODE XREF: BIOS:0000309Aj
 		bsr.w   sub_2BBC
 
 loc_31EA:               ; CODE XREF: BIOS:000031F2j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_31EA
 		tst.b   d0
@@ -6453,7 +6453,7 @@ loc_3382:               ; CODE XREF: BIOS:00003376j
 		bsr.w   sub_B0C
 
 loc_3394:               ; CODE XREF: BIOS:0000339Cj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_3394
 		tst.b   d0
@@ -6468,7 +6468,7 @@ loc_33B6:               ; CODE XREF: BIOS:000033AEj
 
 loc_33BA:               ; CODE XREF: BIOS:00003380j
 					; BIOS:000033C2j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_33BA
 		tst.b   d0
@@ -6490,7 +6490,7 @@ loc_33E2:               ; CODE XREF: BIOS:000033DCj
 ; ---------------------------------------------------------------------------
 
 loc_33E8:               ; CODE XREF: BIOS:000033F4j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_33EC:               ; CODE XREF: BIOS:000033E6j
 		move.w  word_5B10(a5),d0
@@ -6498,7 +6498,7 @@ loc_33EC:               ; CODE XREF: BIOS:000033E6j
 		bcs.s   loc_33E8
 
 loc_33F6:               ; CODE XREF: BIOS:000033FEj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_33F6
 		tst.b   d0
@@ -6592,7 +6592,7 @@ loc_34D0:               ; CODE XREF: BIOS:000034ECj
 		bsr.w   sub_B0C
 
 loc_34D8:               ; CODE XREF: BIOS:000034E0j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_34D8
 		tst.b   d0
@@ -6623,7 +6623,7 @@ loc_34E4:               ; CODE XREF: BIOS:000034BAj
 ; ---------------------------------------------------------------------------
 
 loc_3536:               ; CODE XREF: BIOS:00003542j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_353A:               ; CODE XREF: BIOS:00003534j
 					; BIOS:00003556j
@@ -6632,7 +6632,7 @@ loc_353A:               ; CODE XREF: BIOS:00003534j
 		bcs.s   loc_3536
 
 loc_3544:               ; CODE XREF: BIOS:0000354Cj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_3544
 		tst.b   d0
@@ -6679,7 +6679,7 @@ loc_359C:               ; CODE XREF: BIOS:00003596j
 ; ---------------------------------------------------------------------------
 
 loc_35B8:               ; CODE XREF: BIOS:000035C4j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_35BC:               ; CODE XREF: BIOS:000035B6j
 		move.w  #$70,d0 ; 'p'
@@ -6687,7 +6687,7 @@ loc_35BC:               ; CODE XREF: BIOS:000035B6j
 		bcs.s   loc_35B8
 
 loc_35C6:               ; CODE XREF: BIOS:000035CEj
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_35C6
 		tst.b   d0
@@ -6877,7 +6877,7 @@ loc_37B2:               ; CODE XREF: BIOS:000037CEj
 		bsr.w   sub_B0C
 
 loc_37BA:               ; CODE XREF: BIOS:000037C2j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_37BA
 		tst.b   d0
@@ -6906,7 +6906,7 @@ loc_37C6:               ; CODE XREF: BIOS:0000379Cj
 ; ---------------------------------------------------------------------------
 
 loc_380C:               ; CODE XREF: BIOS:00003818j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_3810:               ; CODE XREF: BIOS:0000380Aj
 					; BIOS:0000382Cj
@@ -6915,7 +6915,7 @@ loc_3810:               ; CODE XREF: BIOS:0000380Aj
 		bcs.s   loc_380C
 
 loc_381A:               ; CODE XREF: BIOS:00003822j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_381A
 		tst.b   d0
@@ -6947,7 +6947,7 @@ loc_3850:               ; CODE XREF: BIOS:000037EEj
 ; ---------------------------------------------------------------------------
 
 loc_386C:               ; CODE XREF: BIOS:00003878j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 
 loc_3870:               ; CODE XREF: BIOS:0000386Aj
 		move.w  #$70,d0 ; 'p'
@@ -6955,7 +6955,7 @@ loc_3870:               ; CODE XREF: BIOS:0000386Aj
 		bcs.s   loc_386C
 
 loc_387A:               ; CODE XREF: BIOS:00003882j
-		bsr.w   sub_2A60
+		bsr.w   cddSetContinueAddress
 		bsr.w   sub_AF6
 		bcs.s   loc_387A
 		tst.b   d0

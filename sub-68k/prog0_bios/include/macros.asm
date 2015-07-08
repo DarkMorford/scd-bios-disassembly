@@ -19,3 +19,7 @@ m_saveStatusRegister:   macro
 m_restoreStatusRegister:    macro
 	move (sp)+, sr
 	endm
+
+m_restoreConditionBits:    macro
+	move (sp)+, ccr
+	endm
