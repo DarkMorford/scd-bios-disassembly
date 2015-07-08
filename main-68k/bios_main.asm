@@ -2007,13 +2007,12 @@ word_1318:	dc.w 8			; DATA XREF: sub_12F4+14o
 		dc.w $4C
 		dc.w $166
 		dc.w $166
-		dc.w $3E3C
-		dc.w $FF
 
 ; =============== S U B	R O U T	I N E =======================================
 
 
-sub_1324:
+sub_1320:
+		move.w	#$FF,d7
 		m_z80RequestBus
 		m_z80WaitForBus
 
@@ -2034,15 +2033,12 @@ loc_1356:				; CODE XREF: sub_1324+1Cj sub_1324+26j
 		rts
 ; End of function sub_1324
 
-; ---------------------------------------------------------------------------
-		dc.w $3E3C
-		dc.w $FF
-		dc.w $49D5
-
 ; =============== S U B	R O U T	I N E =======================================
 
 
-sub_136A:
+sub_1364:
+		move.w	#$FF,d7
+		lea	(a5),a4
 		m_z80RequestBus
 		m_z80WaitForBus
 
@@ -5699,7 +5695,7 @@ sub_30C2:				; CODE XREF: sub_3040p
 		lea	word_318C(pc),a1
 		jsr	loadVdpRegs(pc)
 		jsr	sub_1098(pc)
-		lea	(word_319E).l,a1
+		lea	(sub_319E).l,a1
 		jsr	setVblankJumpTarget(pc)
 		bsr.w	sub_328C
 		move.b	#1,(byte_FFFFD010).w
@@ -5735,8 +5731,8 @@ sub_30C2:				; CODE XREF: sub_3040p
 ; End of function sub_30C2
 
 ; ---------------------------------------------------------------------------
-	dc.l $32DC
-	dc.l $4220
+	dc.l loc_32DC
+	dc.l sub_4220
 
 word_318C:
 	dc.w $8334 ; Reg #03: Window pattern table $D000
@@ -5748,59 +5744,34 @@ word_318C:
 	dc.w $9100 ; Reg #17: Window H position 0
 	dc.w $9200 ; Reg #18: Window V position 0
 	dc.w 0
-word_319E:	dc.w $49F9		; DATA XREF: sub_30C2+1Co
-		dc.w $C0
-		dc.w 4
-		dc.w $3838
-		dc.w $FDB6
-		dc.w $8C4
-		dc.w 4
-		dc.w $3884
-		dc.w $40E7
-		dc.w $7C
-		dc.w $700
-		dc.w $33FC
-		dc.w $100
-		dc.w $A1
-		dc.w $1100
-		dc.w $28BC
-		dc.w $9400
-		dc.w $9380
-		dc.w $28BC
-		dc.w $96FC
-		dc.w $9580
-		dc.w $38BC
-		dc.w $977F
-		dc.w $38BC
-		dc.w $5000
-		dc.w $3F3C
-		dc.w $83
-		dc.w $839
-		dc.w 0
-		dc.w $A1
-		dc.w $1100
-		dc.w $66F6
-		dc.w $389F
-		dc.w $33FC
-		dc.w 0
-		dc.w $A1
-		dc.w $1100
-		dc.w $38B8
-		dc.w $FDB6
-		dc.w $28BC
-		dc.w $5000
-		dc.w 3
-		dc.w $3978
-		dc.w $F900
-		dc.w $FFFC
-		dc.w $46DF
-		dc.w $6100
-		dc.w $327A
 
 ; =============== S U B	R O U T	I N E =======================================
 
 
-sub_31FE:
+sub_319E:                               ; DATA XREF: sub_30C2+1Co
+		lea     (VDP_CONTROL).l,a4
+		move.w  (vdpRegCache+2).w,d4
+		bset    #4,d4
+		move.w  d4,(a4)
+		move    sr,-(sp)
+		ori     #$700,sr
+		move.w  #$100,(Z80_BUSREQ).l
+		move.l  #$94009380,(a4)
+		move.l  #$96FC9580,(a4)
+		move.w  #$977F,(a4)
+		move.w  #$5000,(a4)
+		move.w  #$83,-(sp) ; 'â'
+
+loc_31D4:                               ; CODE XREF: sub_319E+3Ej
+		btst    #0,(Z80_BUSREQ).l
+		bne.s   loc_31D4
+		move.w  (sp)+,(a4)
+		move.w  #0,(Z80_BUSREQ).l
+		move.w  (vdpRegCache+2).w,(a4)
+		move.l  #$50000003,(a4)
+		move.w  (spriteTable).w,-4(a4)
+		move    (sp)+,sr
+        bsr.w   sub_6476
 		bclr	#5,(byte_FFFFD007).w
 		beq.s	locret_3210
 		tst.b	(byte_FFFFD003).w
@@ -5839,7 +5810,7 @@ loc_3212:				; CODE XREF: sub_31FE+Cj
 	move.l	#$FF800000,(VDP_DATA).l
 
 	jmp	displayOn(pc)
-; End of function sub_31FE
+; End of function sub_319E
 
 
 ; =============== S U B	R O U T	I N E =======================================
@@ -13503,6 +13474,8 @@ byte_6A9A:
 		dc.b $50 ; P
 		dc.b $FE ; þ
 		dc.b   0
+
+unk_6ABE:
 		dc.b   4
 		dc.b   8
 		dc.b   0
@@ -13572,7 +13545,7 @@ loc_6B06:				; CODE XREF: sub_6AF0+Cj
 ; End of function sub_6AF0
 
 ; ---------------------------------------------------------------------------
-		dc.l $6D68
+		dc.l sub_6D68
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -13581,7 +13554,7 @@ sub_6B14:				; CODE XREF: sub_68C4+DCp
 		lea	(unk_FFFFC000).w,a0
 		moveq	#$40,d6	; '@'
 		moveq	#$4F,d7	; 'O'
-		lea	unk_6B88(pc),a1
+		lea	word_6B88(pc),a1
 
 loc_6B20:				; CODE XREF: sub_6B14+6Ej
 		move.w	#4,(a0)
@@ -13620,589 +13593,292 @@ loc_6B40:				; CODE XREF: sub_6B14+24j
 ; End of function sub_6B14
 
 ; ---------------------------------------------------------------------------
-unk_6B88:	dc.b $80 ; €		; DATA XREF: sub_6B14+8o
-		dc.b   0
-		dc.b   0
-		dc.b $90 ; 
-		dc.b  $B
-		dc.b $8E ; Ž
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $8A ; Š
-		dc.b $13
-		dc.b $7A ; z
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $A0 ;  
-		dc.b $17
-		dc.b $33 ; 3
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $94 ; ”
-		dc.b $20
-		dc.b   0
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $87 ; ‡
-		dc.b $2A ; *
-		dc.b $AA ; ª
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $90 ; 
-		dc.b $2F ; /
-		dc.b $1C
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $85 ; …
-		dc.b $3A ; :
-		dc.b $B4 ; ´
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $9C ; œ
-		dc.b $38 ; 8
-		dc.b $9D ; 
-		dc.b $6C ; l
-		dc.b   0
-		dc.b   0
-		dc.b $81 ; 
-		dc.b $4C ; L
-		dc.b $67 ; g
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $94 ; ”
-		dc.b $49 ; I
-		dc.b $83 ; ƒ
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b $57 ; W
-		dc.b $87 ; ‡
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $8D ; 
-		dc.b $5B ; [
-		dc.b $B0 ; °
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $9C ; œ
-		dc.b $59 ; Y
-		dc.b $6F ; o
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $84 ; „
-		dc.b $71 ; q
-		dc.b $74 ; t
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $8D ; 
-		dc.b $71 ; q
-		dc.b $79 ; y
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $91 ; ‘
-		dc.b $75 ; u
-		dc.b $68 ; h
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $98 ; ˜
-		dc.b $76 ; v
-		dc.b $BC ; ¼
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $8A ; Š
-		dc.b $8A ; Š
-		dc.b $33 ; 3
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $93 ; “
-		dc.b $88 ; ˆ
-		dc.b $B5 ; µ
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $A0 ;  
-		dc.b $84 ; „
-		dc.b   0
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $90 ; 
-		dc.b $99 ; ™
-		dc.b $C7 ; Ç
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $84 ; „
-		dc.b $7A ; z
-		dc.b $2E ; .
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $69 ; i
-		dc.b $19
-		dc.b $99 ; ™
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $75 ; u
-		dc.b $1F
-		dc.b $B9 ; ¹
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $7B ; {
-		dc.b $26 ; &
-		dc.b $81 ; 
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $6C ; l
-		dc.b $35 ; 5
-		dc.b $55 ; U
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $6E ; n
-		dc.b $3D ; =
-		dc.b $AC ; ¬
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $72 ; r
-		dc.b $44 ; D
-		dc.b $7D ; }
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $6A ; j
-		dc.b $53 ; S
-		dc.b $52 ; R
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $82 ; ‚
-		dc.b $4B ; K
-		dc.b $D0 ; Ð
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $66 ; f
-		dc.b $6A ; j
-		dc.b $AA ; ª
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $85 ; …
-		dc.b $59 ; Y
-		dc.b $80 ; €
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $76 ; v
-		dc.b $6D ; m
-		dc.b $8F ; 
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $7E ; ~
-		dc.b $6E ; n
-		dc.b $BA ; º
-		dc.b $94 ; ”
-		dc.b   0
-		dc.b   0
-		dc.b $8A ; Š
-		dc.b $6C ; l
-		dc.b $85 ; …
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $7A ; z
-		dc.b $85 ; …
-		dc.b $3E ; >
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $66 ; f
-		dc.b $A6 ; ¦
-		dc.b $E6 ; æ
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $82 ; ‚
-		dc.b $8A ; Š
-		dc.b $D4 ; Ô
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $76 ; v
-		dc.b $A1 ; ¡
-		dc.b $A0 ;  
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $66 ; f
-		dc.b $C5 ; Å
-		dc.b   5
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $86 ; †
-		dc.b $9D ; 
-		dc.b $9C ; œ
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $84 ; „
-		dc.b $9E ; ž
-		dc.b  $F
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b  $C
-		dc.b $3C ; <
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $83 ; ƒ
-		dc.b $10
-		dc.b $9C ; œ
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $99 ; ™
-		dc.b  $D
-		dc.b $62 ; b
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $83 ; ƒ
-		dc.b $12
-		dc.b $90 ; 
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $76 ; v
-		dc.b  $F
-		dc.b $2F ; /
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b $12
-		dc.b $D2 ; Ò
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $89 ; ‰
-		dc.b  $E
-		dc.b   3
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $86 ; †
-		dc.b $13
-		dc.b $1A
-		dc.b $94 ; ”
-		dc.b   0
-		dc.b   0
-		dc.b $8E ; Ž
-		dc.b $10
-		dc.b $39 ; 9
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $7E ; ~
-		dc.b $9B ; ›
-		dc.b $6D ; m
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $8B ; ‹
-		dc.b $94 ; ”
-		dc.b $42 ; B
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $92 ; ’
-		dc.b $8D ; 
-		dc.b $26 ; &
-		dc.b $94 ; ”
-		dc.b   0
-		dc.b   0
-		dc.b $97 ; —
-		dc.b $8A ; Š
-		dc.b $2C ; ,
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $83 ; ƒ
-		dc.b $A5 ; ¥
-		dc.b $21 ; !
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $80 ; €
-		dc.b $A6 ; ¦
-		dc.b   0
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $86 ; †
-		dc.b $A5 ; ¥
-		dc.b $40 ; @
-		dc.b $6C ; l
-		dc.b   0
-		dc.b   0
-		dc.b $7F ; 
-		dc.b $AC ; ¬
-		dc.b $58 ; X
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $80 ; €
-		dc.b $B1 ; ±
-		dc.b   0
-		dc.b $94 ; ”
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b $35 ; 5
-		dc.b $A5 ; ¥
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $84 ; „
-		dc.b $56 ; V
-		dc.b $4D ; M
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $72 ; r
-		dc.b $90 ; 
-		dc.b $D7 ; ×
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $7E ; ~
-		dc.b $AB ; «
-		dc.b $AE ; ®
-		dc.b $88 ; ˆ
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $17
-		dc.b $E4 ; ä
-		dc.b $94 ; ”
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $1C
-		dc.b $71 ; q
-		dc.b $78 ; x
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $29 ; )
-		dc.b $69 ; i
-		dc.b $70 ; p
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $99 ; ™
-		dc.b $99 ; ™
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $34 ; 4
-		dc.b $9A ; š
-		dc.b $6C ; l
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $44 ; D
-		dc.b $89 ; ‰
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $44 ; D
-		dc.b $81 ; 
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $50 ; P
-		dc.b $D7 ; ×
-		dc.b $90 ; 
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $84 ; „
-		dc.b $DC ; Ü
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $5C ; \
-		dc.b $16
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $59 ; Y
-		dc.b $C4 ; Ä
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $6F ; o
-		dc.b $A3 ; £
-		dc.b $7C ; |
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $72 ; r
-		dc.b $2F ; /
-		dc.b $8C ; Œ
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $95 ; •
-		dc.b $9C ; œ
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $7A ; z
-		dc.b $BD ; ½
-		dc.b $80 ; €
-		dc.b   0
-		dc.b   0
-		dc.b $BE ; ¾
-		dc.b $85 ; …
-		dc.b $68 ; h
-loc_6D68:
-		dc.b $4A ; J
-		dc.b $68 ; h
-		dc.b   0
-		dc.b $28 ; (
-		dc.b $67 ; g
-		dc.b $16
-		dc.b   6
-		dc.b $A8 ; ¨
-		dc.b   0
-		dc.b   0
-		dc.b   8
-		dc.b   0
-		dc.b   0
-		dc.b $14
-		dc.b $53 ; S
-		dc.b $68 ; h
-		dc.b   0
-		dc.b $28 ; (
-		dc.b $66 ; f
-		dc.b   8
-		dc.b $42 ; B
-		dc.b $A8 ; ¨
-		dc.b   0
-		dc.b $10
-		dc.b $42 ; B
-		dc.b $A8 ; ¨
-		dc.b   0
-		dc.b $14
-		dc.b $10
-		dc.b $28 ; (
-		dc.b   0
-		dc.b $23 ; #
-		dc.b $50 ; P
-		dc.b $28 ; (
-		dc.b   0
-		dc.b $26 ; &
-		dc.b $10
-		dc.b $28 ; (
-		dc.b   0
-		dc.b $26 ; &
-		dc.b   2
-		dc.b   0
-		dc.b   0
-		dc.b $60 ; `
-		dc.b  $C
-		dc.b   0
-		dc.b   0
-		dc.b $60 ; `
-		dc.b $66 ; f
-		dc.b   2
-		dc.b $70 ; p
-		dc.b   0
-		dc.b $11
-		dc.b $40 ; @
-		dc.b   0
-		dc.b $18
-		dc.b $43 ; C
-		dc.b $FA ; ú
-		dc.b $FD ; ý
-		dc.b $1C
-		dc.b $53 ; S
-		dc.b $28 ; (
-		dc.b   0
-		dc.b $21 ; !
-		dc.b $6A ; j
-		dc.b  $A
-		dc.b $11
-		dc.b $69 ; i
-		dc.b   0
-		dc.b   1
-		dc.b   0
-		dc.b $21 ; !
-		dc.b $52 ; R
-		dc.b $28 ; (
-		dc.b   0
-		dc.b $20
-		dc.b $70 ; p
-		dc.b   0
-		dc.b $10
-		dc.b $28 ; (
-		dc.b   0
-		dc.b $20
-		dc.b $B0 ; °
-		dc.b $11
-		dc.b $65 ; e
-		dc.b   6
-		dc.b $70 ; p
-		dc.b   0
-		dc.b $11
-		dc.b $40 ; @
-		dc.b   0
-		dc.b $20
-		dc.b $E5 ; å
-		dc.b $40 ; @
-		dc.b $21 ; !
-		dc.b $71 ; q
-		dc.b   0
-		dc.b   2
-		dc.b   0
-		dc.b   4
-		dc.b $4E ; N
-		dc.b $75 ; u
+
+word_6B88:
+	dc.w $8000
+	dc.w $90
+	dc.w $B8E
+	dc.w $7800
+	dc.w $8A
+	dc.w $137A
+	dc.w $9000
+	dc.w $A0
+	dc.w $1733
+	dc.w $8400
+	dc.w $94
+	dc.w $2000
+	dc.w $7400
+	dc.w $87
+	dc.w $2AAA
+	dc.w $8000
+	dc.w $90
+	dc.w $2F1C
+	dc.w $7000
+	dc.w $85
+	dc.w $3AB4
+	dc.w $8C00
+	dc.w $9C
+	dc.w $389D
+	dc.w $6C00
+	dc.w $81
+	dc.w $4C67
+	dc.w $8400
+	dc.w $94
+	dc.w $4983
+	dc.w $7400
+	dc.w $88
+	dc.w $5787
+	dc.w $7C00
+	dc.w $8D
+	dc.w $5BB0
+	dc.w $8C00
+	dc.w $9C
+	dc.w $596F
+	dc.w $7000
+	dc.w $84
+	dc.w $7174
+	dc.w $7C00
+	dc.w $8D
+	dc.w $7179
+	dc.w $8000
+	dc.w $91
+	dc.w $7568
+	dc.w $8800
+	dc.w $98
+	dc.w $76BC
+	dc.w $7800
+	dc.w $8A
+	dc.w $8A33
+	dc.w $8400
+	dc.w $93
+	dc.w $88B5
+	dc.w $9000
+	dc.w $A0
+	dc.w $8400
+	dc.w $8000
+	dc.w $90
+	dc.w $99C7
+	dc.w $8400
+	dc.w $84
+	dc.w $7A2E
+	dc.w $7000
+	dc.w $69
+	dc.w $1999
+	dc.w $8000
+	dc.w $75
+	dc.w $1FB9
+	dc.w $8400
+	dc.w $7B
+	dc.w $2681
+	dc.w $7800
+	dc.w $6C
+	dc.w $3555
+	dc.w $7800
+	dc.w $6E
+	dc.w $3DAC
+	dc.w $7C00
+	dc.w $72
+	dc.w $447D
+	dc.w $7400
+	dc.w $6A
+	dc.w $5352
+	dc.w $8C00
+	dc.w $82
+	dc.w $4BD0
+	dc.w $7000
+	dc.w $66
+	dc.w $6AAA
+	dc.w $9000
+	dc.w $85
+	dc.w $5980
+	dc.w $8000
+	dc.w $76
+	dc.w $6D8F
+	dc.w $8800
+	dc.w $7E
+	dc.w $6EBA
+	dc.w $9400
+	dc.w $8A
+	dc.w $6C85
+	dc.w $8400
+	dc.w $7A
+	dc.w $853E
+	dc.w $7000
+	dc.w $66
+	dc.w $A6E6
+	dc.w $8C00
+	dc.w $82
+	dc.w $8AD4
+	dc.w $8000
+	dc.w $76
+	dc.w $A1A0
+	dc.w $7000
+	dc.w $66
+	dc.w $C505
+	dc.w $9000
+	dc.w $86
+	dc.w $9D9C
+	dc.w $8400
+	dc.w $84
+	dc.w $9E0F
+	dc.w $7800
+	dc.w $88
+	dc.w $C3C
+	dc.w $7400
+	dc.w $83
+	dc.w $109C
+	dc.w $9000
+	dc.w $99
+	dc.w $D62
+	dc.w $7C00
+	dc.w $83
+	dc.w $1290
+	dc.w $7000
+	dc.w $76
+	dc.w $F2F
+	dc.w $8800
+	dc.w $88
+	dc.w $12D2
+	dc.w $8C00
+	dc.w $89
+	dc.w $E03
+	dc.w $8400
+	dc.w $86
+	dc.w $131A
+	dc.w $9400
+	dc.w $8E
+	dc.w $1039
+	dc.w $8400
+	dc.w $7E
+	dc.w $9B6D
+	dc.w $8C00
+	dc.w $8B
+	dc.w $9442
+	dc.w $9000
+	dc.w $92
+	dc.w $8D26
+	dc.w $9400
+	dc.w $97
+	dc.w $8A2C
+	dc.w $7C00
+	dc.w $83
+	dc.w $A521
+	dc.w $7400
+	dc.w $80
+	dc.w $A600
+	dc.w $7800
+	dc.w $86
+	dc.w $A540
+	dc.w $6C00
+	dc.w $7F
+	dc.w $AC58
+	dc.w $7000
+	dc.w $80
+	dc.w $B100
+	dc.w $9400
+	dc.w $88
+	dc.w $35A5
+	dc.w $9000
+	dc.w $84
+	dc.w $564D
+	dc.w $7800
+	dc.w $72
+	dc.w $90D7
+	dc.w $8800
+	dc.w $7E
+	dc.w $ABAE
+	dc.w $8800
+	dc.w $BE
+	dc.w $17E4
+	dc.w $9400
+	dc.w $BE
+	dc.w $1C71
+	dc.w $7800
+	dc.w $BE
+	dc.w $2969
+	dc.w $7000
+	dc.w $BE
+	dc.w $9999
+	dc.w $8400
+	dc.w $BE
+	dc.w $349A
+	dc.w $6C00
+	dc.w $BE
+	dc.w $4489
+	dc.w $8000
+	dc.w $BE
+	dc.w $4481
+	dc.w $7400
+	dc.w $BE
+	dc.w $50D7
+	dc.w $9000
+	dc.w $BE
+	dc.w $84DC
+	dc.w $7C00
+	dc.w $BE
+	dc.w $5C16
+	dc.w $8C00
+	dc.w $BE
+	dc.w $59C4
+	dc.w $7400
+	dc.w $BE
+	dc.w $6FA3
+	dc.w $7C00
+	dc.w $BE
+	dc.w $722F
+	dc.w $8C00
+	dc.w $BE
+	dc.w $959C
+	dc.w $8400
+	dc.w $BE
+	dc.w $7ABD
+	dc.w $8000
+	dc.w $BE
+	dc.w $8568
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_6D68:                       ; DATA XREF: ROM:00006B10o
+		tst.w   $28(a0)
+		beq.s   loc_6D84
+		addi.l  #$800,$14(a0)
+		subq.w  #1,$28(a0)
+		bne.s   loc_6D84
+		clr.l   $10(a0)
+		clr.l   $14(a0)
+
+loc_6D84:                               ; CODE XREF: sub_6D68+4j
+								; sub_6D68+12j
+		move.b  $23(a0),d0
+		addq.b  #8,$26(a0)
+		move.b  $26(a0),d0
+		andi.b  #$60,d0 ; '`'
+		cmpi.b  #$60,d0 ; '`'
+		bne.s   loc_6D9C
+		moveq   #0,d0
+
+loc_6D9C:                               ; CODE XREF: sub_6D68+30j
+		move.b  d0,$18(a0)
+		lea     unk_6ABE(pc),a1
+		subq.b  #1,$21(a0)
+		bpl.s   loc_6DB4
+		move.b  1(a1),$21(a0)
+		addq.b  #1,$20(a0)
+
+loc_6DB4:                               ; CODE XREF: sub_6D68+40j
+		moveq   #0,d0
+		move.b  $20(a0),d0
+		cmp.b   (a1),d0
+		bcs.s   loc_6DC4
+		moveq   #0,d0
+		move.b  d0,$20(a0)
+
+loc_6DC4:                               ; CODE XREF: sub_6D68+54j
+		asl.w   #2,d0
+		move.l  2(a1,d0.w),4(a0)
+		rts
+; End of function sub_6D68
 
 ; =============== S U B	R O U T	I N E =======================================
 
@@ -14212,7 +13888,7 @@ testCartBootBlock:			; CODE XREF: ROM:0000056Cp
 		lea	(cartBoot).l,a0
 		cmpi.l	#'SEGA',-$100(a0)
 		bne.s	locret_6DEC	; Bail if it doesn't start with SEGA
-		lea	RegionBootBlock(pc),a1
+		lea	regionBootBlock(pc),a1
 		move.w	#706,d0
 
 loc_6DE6:				; CODE XREF: testCartBootBlock+1Aj
@@ -14224,7 +13900,7 @@ locret_6DEC:				; CODE XREF: testCartBootBlock+Ej
 ; End of function testCartBootBlock
 
 ; ---------------------------------------------------------------------------
-RegionBootBlock:		; DATA XREF: testCartBootBlock+10o
+regionBootBlock:		; DATA XREF: testCartBootBlock+10o
 	incbin "us_boot_block.bin"
 
 ; =============== S U B	R O U T	I N E =======================================
