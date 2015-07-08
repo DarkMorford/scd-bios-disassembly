@@ -4,25 +4,25 @@
 
 ;   General
 GA_LED_STATUS       equ $FFFF8000
-	GA_LEDR equ 0
-	GA_LEDG equ 1
+	GA_LEDR: equ 0
+	GA_LEDG: equ 1
 GA_RESET            equ $FFFF8001
-	GA_RES0 equ 0
+	GA_RES0: equ 0
 GA_WRITE_PROTECT    equ $FFFF8002   ; Read-only
 GA_MEMORY_MODE      equ $FFFF8003
-	GA_PM1  equ 4
-	GA_PM0  equ 3
-	GA_MODE equ 2
-	GA_DMNA equ 1
-	GA_RET  equ 0
+	GA_PM1:  equ 4
+	GA_PM0:  equ 3
+	GA_MODE: equ 2
+	GA_DMNA: equ 1
+	GA_RET:  equ 0
 GA_INT3_TIMER       equ $FFFF8031
 GA_INT_MASK         equ $FFFF8033
-	GA_IEN1 equ 1
-	GA_IEN2 equ 2
-	GA_IEN3 equ 3
-	GA_IEN4 equ 4
-	GA_IEN5 equ 5
-	GA_IEN6 equ 6
+	GA_IEN1: equ 1
+	GA_IEN2: equ 2
+	GA_IEN3: equ 3
+	GA_IEN4: equ 4
+	GA_IEN5: equ 5
+	GA_IEN6: equ 6
 
 ;   CDC
 GA_CDC_TRANSFER     equ $FFFF8004
@@ -40,7 +40,7 @@ GA_COMM_SUBDATA     equ $FFFF8020
 
 ;   CDD
 GA_CDD_FADER        equ $FFFF8034
-GA_CDD_CONTROL      equ $FFFF8036
+GA_CDD_CONTROL      equ $FFFF8037
 GA_CDD_STATUS       equ $FFFF8038
 GA_CDD_COMMAND      equ $FFFF8042
 
