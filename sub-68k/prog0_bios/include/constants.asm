@@ -7,3 +7,4 @@
 
 	include "constants\bios.asm"
 	include "constants\cdcRegisters.asm"
+	include "constants\memoryMap.asm"

@@ -1,0 +1,2 @@
+WORD_RAM_2M equ $80000
+WORD_RAM_1M equ $C0000

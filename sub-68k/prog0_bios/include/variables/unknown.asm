@@ -1,4 +1,4 @@
-asc_6000 equ $6000
+bootModule equ $6000
 byte_580A equ $580A
 byte_580B equ $580B
 byte_580C equ $580C
