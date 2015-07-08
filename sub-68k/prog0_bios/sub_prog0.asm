@@ -275,7 +275,7 @@ word_398:
 
 loc_39E:                ; DATA XREF: installJumpTable+2Co
 	lea (_BURAM).w,a0
-	lea (off_4436).l,a1
+	lea (word_4436).l,a1
 	lea loc_3B0(pc),a6
 	bra.w   loc_56A
 ; ---------------------------------------------------------------------------
@@ -7681,7 +7681,8 @@ asc_4412:   dc.b 'SEGA_CD_ROM',0    ; DATA XREF: BIOS:00004592o
 		dc.l $1000000
 asc_4422:   dc.b 'RAM_CARTRIDGE___' ; DATA XREF: BIOS:0000456Ao
 dword_4432: dc.l $FE0000        ; DATA XREF: sub_447Er sub_448E+6r ...
-off_4436:   dc.l unk_40000      ; DATA XREF: installJumpTable+3Eo
+word_4436:  dc.w 4      ; DATA XREF: installJumpTable+3Eo
+        dc.w 0
 
 ; =============== S U B R O U T I N E =======================================
 
