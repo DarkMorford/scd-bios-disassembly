@@ -6,4 +6,4 @@ SET INFILE=prog1_boot.asm
 SET OUTFILE=prog1_boot
 
 ECHO Building Sub CPU program 1 (BOOT)...
-%ASM% %ASMOPTS% %INFILE%,%OUTFILE%.smd,%OUTFILE%.sym,%OUTFILE%.lst
+%ASM% %ASMOPTS% %INFILE%,%OUTFILE%.smd,%OUTFILE%.sym,%OUTFILE%.l68

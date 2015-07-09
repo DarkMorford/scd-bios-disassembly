@@ -12,7 +12,7 @@
 	include "macros.asm"
 
 	org $6000
-	
+
 asc_6000:	dc.b 'MAINBOOTUSR'      ; DATA XREF: installJumpTable+15Ao
 					; installJumpTable:loc_4FEo
 		dc.b   0
@@ -36,13 +36,13 @@ asc_6000:	dc.b 'MAINBOOTUSR'      ; DATA XREF: installJumpTable+15Ao
 
 
 boot_user0:
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		clr.w	0(a6)
 		clr.l	4(a6)
 		bsr.w	sub_618C
 		bsr.w	sub_61E8
-		bclr	#2,(GA_MEMORY_MODE).w
-		bset	#0,(GA_MEMORY_MODE).w
+		bclr	#GA_MODE,(GA_MEMORY_MODE).w
+		bset	#GA_RET,(GA_MEMORY_MODE).w
 		lea	(unk_F700).l,a0
 		move.w	#$23F,d0
 		moveq	#0,d1
@@ -61,13 +61,13 @@ loc_6056:				; CODE XREF: boot_user0+2Ej
 
 
 boot_user2:
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		bsr.w	sub_6234
 		tst.b	6(a6)
 		beq.w	sub_6178
 		move.w	0(a6),d0
 		jsr	loc_609A(pc,d0.w)
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		addq.w	#1,4(a6)
 		move.l	a6,-(sp)
 		jsr	sub_18000
@@ -97,19 +97,19 @@ boot_user1:				; CODE XREF: sub_610A+Cj
 		bsr.w	sub_61E0
 		beq.s	sub_610A
 		move.b	#$80,(GA_COMM_SUBFLAGS).l
-		bclr	#3,(GA_MEMORY_MODE).w
-		bclr	#4,(GA_MEMORY_MODE).w
-		bset	#2,(GA_MEMORY_MODE).w
-		bset	#0,(GA_MEMORY_MODE).w
+		bclr	#GA_PM0,(GA_MEMORY_MODE).w
+		bclr	#GA_PM1,(GA_MEMORY_MODE).w
+		bset	#GA_MODE,(GA_MEMORY_MODE).w
+		bset	#GA_RET,(GA_MEMORY_MODE).w
 
 loc_60D4:				; CODE XREF: boot_user1+2Cj
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		beq.s	loc_60D4
 		bsr.s	clearWordRam1M
-		bclr	#0,(GA_MEMORY_MODE).w
+		bclr	#GA_RET,(GA_MEMORY_MODE).w
 
 loc_60E4:				; CODE XREF: boot_user1+3Cj
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		bne.s	loc_60E4
 		bsr.s	clearWordRam1M
 		jsr	sub_18004
@@ -129,7 +129,7 @@ loc_60E4:				; CODE XREF: boot_user1+3Cj
 
 
 sub_610A:				; CODE XREF: boot_user1+4j
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		move.w	0(a6),d0
 		jsr	loc_6118(pc,d0.w)
 		bra.s	boot_user1
@@ -237,7 +237,7 @@ sub_6172:
 
 sub_6178:				; CODE XREF: boot_user2+Cj
 					; BOOT:loc_609Aj
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		bsr.w	sub_619A
 		bsr.w	sub_6296
 		bsr.w	sub_6414
@@ -2502,7 +2502,7 @@ locret_71FA:				; CODE XREF: sub_71E6+6j
 ; ---------------------------------------------------------------------------
 
 loc_7208:				; CODE XREF: BOOT:000060A2j
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		bsr.w	sub_619A
 		btst	#2,(GA_MEMORY_MODE).w
 		beq.s	loc_722E
@@ -2575,7 +2575,7 @@ loc_7296:				; CODE XREF: sub_726E+18j
 loc_72CA:				; CODE XREF: sub_726E+5Ej
 		move.w	d1,(a0)+
 		dbf	d0,loc_72CA
-		lea	(unk_C0000).l,a0
+		lea	(WORD_RAM_1M).l,a0
 		move.w	#$35FF,d0
 
 loc_72DA:				; CODE XREF: sub_726E+6Ej
@@ -2776,7 +2776,7 @@ loc_743C:				; CODE XREF: sub_7360+3Ej
 
 sub_744A:				; CODE XREF: sub_7302+2Ep sub_7360+E0j
 		bsr.w	sub_77C0
-		lea	(unk_C0000).l,a1
+		lea	(WORD_RAM_1M).l,a1
 		move.w	#$D7,d1	; '×'
 
 loc_7458:				; CODE XREF: sub_744A+1Aj
@@ -3068,7 +3068,7 @@ sub_7682:				; CODE XREF: BOOT:loc_7604p
 		lsl.w	#8,d1
 		add.l	d1,d1
 		add.l	d1,d0
-		lea	(unk_80000).l,a1
+		lea	(WORD_RAM_2M).l,a1
 		adda.l	d0,a1
 		movem.l	(sp)+,d0-d1
 		rts
@@ -3085,7 +3085,7 @@ sub_76A6:
 		bsr.w	sub_76C6
 		lsl.l	#8,d1
 		add.w	d1,d0
-		lea	(unk_C0000).l,a1
+		lea	(WORD_RAM_1M).l,a1
 		adda.l	d0,a1
 		rts
 ; End of function sub_76A6
@@ -3191,7 +3191,7 @@ loc_7720:				; CODE XREF: sub_770C+Aj sub_770C+10j
 
 sub_7750:				; CODE XREF: BOOT:000074CEp
 		move.w	d2,-(sp)
-		lea	(unk_80000).l,a1
+		lea	(WORD_RAM_2M).l,a1
 		adda.l	d0,a1
 		move.w	#$D7,d2	; '×'
 
@@ -3211,7 +3211,7 @@ loc_775E:				; CODE XREF: sub_7750+16j
 sub_776E:				; CODE XREF: BOOT:000074FEp
 		movem.l	d1-d3,-(sp)
 		lsl.w	#8,d1
-		lea	(unk_C0000).l,a1
+		lea	(WORD_RAM_1M).l,a1
 		adda.l	d1,a1
 		moveq	#$B,d2
 
@@ -3234,7 +3234,7 @@ loc_7780:				; CODE XREF: sub_776E+14j
 sub_7794:				; CODE XREF: BOOT:00007532p
 					; BOOT:00007544p
 		move.w	d6,-(sp)
-		lea	(unk_80000).l,a1
+		lea	(WORD_RAM_2M).l,a1
 		lea	(a1,d0.l),a2
 		move.w	d3,d0
 		bsr.w	sub_76C0
@@ -3702,7 +3702,7 @@ loc_7AD2:				; CODE XREF: sub_79AA+18j sub_7ACA+4j
 
 
 sub_7ADC:				; CODE XREF: sub_7B5E+8p
-		lea	unk_833C(pc),a6
+		lea	RAM_BASE(pc),a6
 		move.b	#0,($FF8003).l
 		move.w	#4,($FF8058).l
 		move.w	#$8000,($FF805A).l
@@ -3836,7 +3836,7 @@ loc_7C94:				; CODE XREF: sub_7B5E+14j
 ; ---------------------------------------------------------------------------
 
 loc_7CA2:				; CODE XREF: BOOT:0000609Ej
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		bsr.w	sub_619A
 		bsr.w	sub_6296
 		bsr.w	sub_6414
@@ -4355,7 +4355,7 @@ loc_8142:				; CODE XREF: sub_810A+2Ej
 		move.w	d0,$26(a6)
 		subq.w	#1,d0
 		asl.w	#2,d0
-		lea	(unk_80000).l,a2
+		lea	(WORD_RAM_2M).l,a2
 		lea	(unk_90000).l,a3
 		jsr	loc_8186(pc,d0.w)
 
@@ -4563,7 +4563,7 @@ sub_82D0:				; CODE XREF: BOOT:000081A2j
 
 
 sub_82E8:				; CODE XREF: sub_810A+1Cp
-		lea	(unk_80000).l,a0
+		lea	(WORD_RAM_2M).l,a0
 		lea	(unk_90000).l,a1
 		lea	$4010(a0),a2
 		lea	$4010(a1),a3
@@ -4588,7 +4588,7 @@ loc_8308:				; CODE XREF: sub_82E8+34j
 ; ---------------------------------------------------------------------------
 
 loc_8322:				; CODE XREF: BOOT:000060AAj
-		lea	unk_833C,a6
+		lea	RAM_BASE,a6
 		bsr.w	sub_619A
 		bsr.w	sub_6296
 		bsr.w	sub_6414
