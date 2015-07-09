@@ -314,7 +314,7 @@ loc_3FE:                ; CODE XREF: installJumpTable+A2j
 
 loc_410:                ; CODE XREF: installJumpTable:loc_51Aj
 	movem.l _zeroes(pc),d0-a6
-	movea.l #$6000,a1
+	movea.l #bootModule,a1
 
 loc_41C:                ; CODE XREF: installJumpTable+104j
 	move    #$2200,sr
@@ -1546,25 +1546,27 @@ sub_ED0:                ; CODE XREF: sub_E74+1Cp
 		move.w  #$100,d0
 
 loc_EE0:                ; CODE XREF: sub_ED0+16j
-		btst    #1,(GA_CDD_CONTROL).w
+		btst    #GA_DRS,(GA_CDD_CONTROL).w
 		dbeq    d0,loc_EE0
 		bne.s   sub_F32
+
+		; Copy CDD status bytes to RAM cache
 		lea cddStatusCache(a5),a0
 		lea (GA_CDD_STATUS).w,a1
 		move.l  (a1)+,(a0)+
 		move.l  (a1)+,(a0)+
 		move.w  (a1)+,(a0)+
+
 		bset    #4,byte_580D(a5)
 		bset    #4,byte_580E(a5)
 		or.w    d1,d1
-; End of function sub_ED0
 
 loc_F08:                ; CODE XREF: sub_F32+Aj
 		m_saveStatusRegister
 		bclr    #4,byte_580A(a5)
 		bclr    #2,byte_580A(a5)
 		bne.s   loc_F2E
-		btst    #0,(GA_CDD_CONTROL).w
+		btst    #GA_DTS,(GA_CDD_CONTROL).w
 		beq.s   loc_F28
 		move.b  #4,(GA_CDD_CONTROL).w
 		bra.s   loc_F2E
@@ -1576,6 +1578,7 @@ loc_F28:                ; CODE XREF: sub_F32-14j
 loc_F2E:                ; CODE XREF: sub_F32-1Cj sub_F32-Cj
 		m_restoreConditionBits
 		rts
+; End of function sub_ED0
 
 ; =============== S U B R O U T I N E =======================================
 

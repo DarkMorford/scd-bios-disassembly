@@ -46,6 +46,9 @@ GA_CDD_FADER        equ $FFFF8034
 	GA_EFDT: equ $F
 GA_CDD_DATAMUSIC    equ $FFFF8036
 GA_CDD_CONTROL      equ $FFFF8037
+	GA_DTS:  equ 0
+	GA_DRS:  equ 1
+	GA_HOCK: equ 2
 GA_CDD_STATUS       equ $FFFF8038
 GA_CDD_COMMAND      equ $FFFF8042
 
