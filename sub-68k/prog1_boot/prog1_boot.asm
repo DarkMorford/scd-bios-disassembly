@@ -36,22 +36,25 @@ asc_6000:	dc.b 'MAINBOOTUSR'      ; DATA XREF: installJumpTable+15Ao
 
 
 boot_user0:
-		lea	RAM_BASE,a6
+		lea	RAM_BASE(pc),a6
 		clr.w	0(a6)
 		clr.l	4(a6)
 		bsr.w	sub_618C
 		bsr.w	sub_61E8
+
 		bclr	#GA_MODE,(GA_MEMORY_MODE).w
 		bset	#GA_RET,(GA_MEMORY_MODE).w
+
 		lea	(unk_F700).l,a0
 		move.w	#$23F,d0
 		moveq	#0,d1
-
 loc_6056:				; CODE XREF: boot_user0+2Ej
 		move.l	d1,(a0)+
 		dbf	d0,loc_6056
+
 		move.l	a6,-(sp)
 		jsr	sub_18004
+
 		movea.l	(sp)+,a6
 		jmp	loc_625A(pc)
 ; End of function boot_user0
@@ -61,16 +64,20 @@ loc_6056:				; CODE XREF: boot_user0+2Ej
 
 
 boot_user2:
-		lea	RAM_BASE,a6
+		lea	RAM_BASE(pc),a6
 		bsr.w	sub_6234
+
 		tst.b	6(a6)
 		beq.w	sub_6178
+
 		move.w	0(a6),d0
 		jsr	loc_609A(pc,d0.w)
-		lea	RAM_BASE,a6
+
+		lea	RAM_BASE(pc),a6
 		addq.w	#1,4(a6)
 		move.l	a6,-(sp)
 		jsr	sub_18000
+
 		movea.l	(sp)+,a6
 		clr.b	3(a6)
 		rts
@@ -129,7 +136,7 @@ loc_60E4:				; CODE XREF: boot_user1+3Cj
 
 
 sub_610A:				; CODE XREF: boot_user1+4j
-		lea	RAM_BASE,a6
+		lea	RAM_BASE(pc),a6
 		move.w	0(a6),d0
 		jsr	loc_6118(pc,d0.w)
 		bra.s	boot_user1
@@ -237,7 +244,7 @@ sub_6172:
 
 sub_6178:				; CODE XREF: boot_user2+Cj
 					; BOOT:loc_609Aj
-		lea	RAM_BASE,a6
+		lea	RAM_BASE(pc),a6
 		bsr.w	sub_619A
 		bsr.w	sub_6296
 		bsr.w	sub_6414
