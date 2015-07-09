@@ -40,8 +40,19 @@ byte_3F equ $3F
 word_40 equ $40
 discType equ $42
 byte_43 equ $43
-word_44 equ $44
-byte_58 equ $58
+
+biosStatus  equ $44
+biosStatus.currentStatus    equ $44 ; 00: current bios status
+biosStatus.previousStatus   equ $46 ; 02: previous bios status
+biosStatus.absFrameTime     equ $48 ; 04: absolute CD time
+biosStatus.relFrameTime     equ $4C ; 08: relative CD time
+biosStatus.trackNumber      equ $50 ; 0C: track number
+biosStatus.flag             equ $51 ; 0D: flag byte
+biosStatus.firstTrack       equ $52 ; 0E: first track
+biosStatus.lastTrack        equ $53 ; 0F: last track
+biosStatus.leadOutTime      equ $54 ; 10: lead-out start time
+biosStatus.cddStatusCode    equ $58 ; 14: cdd status code
+
 byte_59 equ $59
 word_5A equ $5A
 dword_5C equ $5C
@@ -49,6 +60,8 @@ dword_60 equ $60
 byte_63 equ $63
 unk_64 equ $64
 chkdiskScratch equ $E4 ; (through $8E3)
+dword_A14 equ $A14
+word_A22 equ $A22
 unk_BE4 equ $BE4
 subcodeScratch equ $C0A ; (through $1359)
 word_20EA equ $20EA
