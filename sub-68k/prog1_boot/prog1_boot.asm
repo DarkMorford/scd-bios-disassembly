@@ -155,7 +155,7 @@ loc_6118:
 
 clearWordRam1M:				; CODE XREF: boot_user1+2Ep
 					; boot_user1+3Ep
-		lea	($C0000).l,a0
+		lea	(WORD_RAM_1M).l,a0
 		move.w	#$7FFF,d0
 		moveq	#0,d1
 
@@ -1050,7 +1050,7 @@ sub_66F4:				; CODE XREF: sub_626E+12p sub_726E+86p
 
 sub_66FE:				; CODE XREF: BOOT:0000723Cp
 		bsr.w	sub_62C6
-		lea	($C0000).l,a5
+		lea	(WORD_RAM_1M).l,a5
 		move.w	$42C(a5),d7
 		lea	$A14(a6),a4
 		lea	$44(a6),a3
@@ -2504,14 +2504,14 @@ locret_71FA:				; CODE XREF: sub_71E6+6j
 loc_7208:				; CODE XREF: BOOT:000060A2j
 		lea	RAM_BASE,a6
 		bsr.w	sub_619A
-		btst	#2,(GA_MEMORY_MODE).w
+		btst	#GA_MODE,(GA_MEMORY_MODE).w
 		beq.s	loc_722E
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		bne.s	loc_722E
-		bset	#0,(GA_MEMORY_MODE).w
+		bset	#GA_RET,(GA_MEMORY_MODE).w
 
 loc_7226:				; CODE XREF: BOOT:0000722Cj
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		beq.s	loc_7226
 
 loc_722E:				; CODE XREF: BOOT:00007216j
@@ -2526,16 +2526,16 @@ loc_7240:				; CODE XREF: BOOT:0000723Aj
 		bsr.w	sub_71E6
 
 loc_7244:				; CODE XREF: BOOT:00007254j
-		btst	#2,(GA_MEMORY_MODE).w
+		btst	#GA_MODE,(GA_MEMORY_MODE).w
 		beq.s	locret_726C
 		btst	#1,(GA_COMM_MAINFLAGS).l
 		bne.s	loc_7244
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		beq.s	locret_726C
-		bclr	#0,(GA_MEMORY_MODE).w
+		bclr	#GA_RET,(GA_MEMORY_MODE).w
 
 loc_7264:				; CODE XREF: BOOT:0000726Aj
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		bne.s	loc_7264
 
 locret_726C:				; CODE XREF: BOOT:0000724Aj
@@ -2546,15 +2546,15 @@ locret_726C:				; CODE XREF: BOOT:0000724Aj
 
 
 sub_726E:				; CODE XREF: sub_7302+4p
-		bclr	#3,(GA_MEMORY_MODE).w
-		bclr	#4,(GA_MEMORY_MODE).w
-		bset	#2,(GA_MEMORY_MODE).w
-		btst	#0,(GA_MEMORY_MODE).w
+		bclr	#GA_PM0,(GA_MEMORY_MODE).w
+		bclr	#GA_PM1,(GA_MEMORY_MODE).w
+		bset	#GA_MODE,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		beq.s	loc_7296
-		bclr	#0,(GA_MEMORY_MODE).w
+		bclr	#GA_RET,(GA_MEMORY_MODE).w
 
 loc_728E:				; CODE XREF: sub_726E+26j
-		btst	#0,(GA_MEMORY_MODE).w
+		btst	#GA_RET,(GA_MEMORY_MODE).w
 		bne.s	loc_728E
 
 loc_7296:				; CODE XREF: sub_726E+18j
