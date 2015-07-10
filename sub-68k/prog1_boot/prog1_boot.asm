@@ -4311,24 +4311,24 @@ word_7F12:
 	incbin "word_7F12.bin"
 
 word_8012:
-	dc.w $28
-	dc.w $28
-	dc.w $28
-	dc.w $28
-	dc.w $28
-	dc.w $28
-	dc.w $28
-	dc.w $28
+	dc.w 40
+	dc.w 40
+	dc.w 40
+	dc.w 40
+	dc.w 40
+	dc.w 40
+	dc.w 40
+	dc.w 40
 
 word_8022:
-	dc.w $6800
-	dc.w $6DF0
-	dc.w $73E0
-	dc.w $79D0
-	dc.w $6800
-	dc.w $6DF0
-	dc.w $73E0
-	dc.w $79D0
+	dc.w ($1A000 >> 2)
+	dc.w ($1B7C0 >> 2)
+	dc.w ($1CF80 >> 2)
+	dc.w ($1E740 >> 2)
+	dc.w ($1A000 >> 2)
+	dc.w ($1B7C0 >> 2)
+	dc.w ($1CF80 >> 2)
+	dc.w ($1E740 >> 2)
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -4336,12 +4336,12 @@ word_8022:
 sub_8032:               ; CODE XREF: sub_7B5E+66p sub_7B5E+F8p
 		move.w  word_1CA0(a6),d0
 		lsl.w   #1,d0
-		move.w  word_8012(pc,d0.w),d1
-		move.w  d1,(GAL_BUFFER_VDOTS).l
+		move.w  word_8012(pc,d0.w),d1           ; Always 40 in this version
+		move.w  d1,(GAL_BUFFER_VDOTS).l         ; 40 dots
 		move.w  d1,d7
 		lsr.w   #3,d1
 		subq.w  #1,d1
-		move.w  d1,(GAL_BUFFER_VCELLS).l
+		move.w  d1,(GAL_BUFFER_VCELLS).l        ; 5 cells
 		move.w  word_8022(pc,d0.w),d1
 		move.w  d1,(GAL_BUFFER_ADDRESS).l
 		subq.w  #1,d7
@@ -4375,7 +4375,7 @@ loc_80A6:               ; CODE XREF: sub_8032+4Aj sub_8032+62j
 		bset    #GA_PM0,(GAL_MEMORY_MODE).l
 
 loc_80DA:               ; CODE XREF: sub_8032+78j sub_8032+96j
-		move.w  #$67A0,(GAL_TRACE_VECTORS).l
+		move.w  #($19E80 >> 2),(GAL_TRACE_VECTORS).l
 		rts
 ; End of function sub_8032
 
@@ -4398,76 +4398,85 @@ sub_80E4:               ; CODE XREF: sub_7ADC+68p sub_7ADC+70p
 
 
 sub_810A:               ; CODE XREF: BOOT:00006128j
-		bsr.w   sub_6150
-		st  6(a6)
+	bsr.w   sub_6150
+	st  byte_6(a6)
 
-loc_8112:               ; CODE XREF: sub_810A+10j
+	; Switch WordRAM to 2M mode
+	@loc_8112:
 		bclr    #GA_MODE,(GAL_MEMORY_MODE).l
-		bne.s   loc_8112
+		bne.s   @loc_8112
 
-loc_811C:               ; CODE XREF: sub_810A+1Aj
+	; Wait for main CPU to give us WordRAM
+	@loc_811C:
 		btst    #GA_DMNA,(GAL_MEMORY_MODE).l
-		beq.s   loc_811C
-		bsr.w   sub_82E8
-		bra.s   loc_816E
+		beq.s   @loc_811C
+
+	bsr.w   sub_82E8
+	bra.s   loc_816E
 ; ---------------------------------------------------------------------------
 
 loc_812C:               ; CODE XREF: sub_810A+4Aj sub_810A+7Aj
-		clr.l   $26(a6)
+	clr.l   subCommBuffer+8(a6)
 
 loc_8130:               ; CODE XREF: sub_810A+40j
-		bsr.w   sub_6166
-		bsr.w   sub_6150
-		beq.s   loc_8142
-		nop
-		nop
-		nop
-		rts
+	bsr.w   sub_6166
+	bsr.w   sub_6150
+	beq.s   loc_8142
+
+	nop
+	nop
+	nop
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_8142:               ; CODE XREF: sub_810A+2Ej
-		btst    #GA_DMNA,(GAL_MEMORY_MODE).l
-		beq.s   loc_8130
-		movem.w $16(a6),d0-d1
-		tst.w   d0
-		beq.s   loc_812C
-		move.w  d0,$26(a6)
-		subq.w  #1,d0
-		asl.w   #2,d0
-		lea (WORD_RAM_2M).l,a2
-		lea (unk_90000).l,a3
-		jsr loc_8186(pc,d0.w)
+	btst    #GA_DMNA,(GAL_MEMORY_MODE).l
+	beq.s   loc_8130
 
-loc_816E:               ; CODE XREF: sub_810A+20j sub_810A+6Cj
+	movem.w mainCommCache+8(a6),d0-d1
+	tst.w   d0
+	beq.s   loc_812C
+
+	move.w  d0,subCommBuffer+8(a6)
+	subq.w  #1,d0
+	asl.w   #2,d0
+
+	lea (WORD_RAM_2M).l,a2
+	lea (unk_90000).l,a3
+	jsr loc_8186(pc,d0.w)
+
+	; Give WordRAM back to main CPU
+	loc_816E:
 		bset    #GA_RET,(GAL_MEMORY_MODE).l
 		beq.s   loc_816E
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		bra.s   loc_812C
+
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	bra.s   loc_812C
 ; End of function sub_810A
 
 ; ---------------------------------------------------------------------------
 
 loc_8186:
-		bra.w   loc_81A6
+	bra.w   loc_81A6
 ; ---------------------------------------------------------------------------
-		bra.w   sub_81D0
+	bra.w   sub_81D0
 ; ---------------------------------------------------------------------------
-		bra.w   sub_81FE
+	bra.w   sub_81FE
 ; ---------------------------------------------------------------------------
-		bra.w   sub_8222
+	bra.w   sub_8222
 ; ---------------------------------------------------------------------------
-		bra.w   sub_824A
+	bra.w   sub_824A
 ; ---------------------------------------------------------------------------
-		bra.w   sub_8268
+	bra.w   sub_8268
 ; ---------------------------------------------------------------------------
-		bra.w   sub_82B4
+	bra.w   sub_82B4
 ; ---------------------------------------------------------------------------
-		bra.w   sub_82D0
+	bra.w   sub_82D0
 ; ---------------------------------------------------------------------------
 
 loc_81A6:               ; CODE XREF: BOOT:loc_8186j
