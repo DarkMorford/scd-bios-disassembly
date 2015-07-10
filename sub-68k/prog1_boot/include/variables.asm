@@ -27,13 +27,16 @@ word_CE0FC equ $CE0FC
 ;       Unless and until otherwise noted, all variables following
 ;       this statement are relative to RAM_BASE ($833C).
 ;   ======================================================================
+
 word_0 equ 0
 byte_2 equ 2
 byte_3 equ 3
 word_4 equ 4
 byte_6 equ 6
+
 mainCommCache equ $E
 subCommBuffer  equ $1E
+
 word_2E equ $2E
 word_32 equ $32
 flags_3E equ $3E
@@ -60,7 +63,9 @@ dword_5C equ $5C
 dword_60 equ $60
 byte_63 equ $63
 unk_64 equ $64
+
 chkdiskScratch equ $E4 ; (through $8E3)
+
 dword_A14 equ $A14
 byte_A16 equ $A16
 byte_A17 equ $A17
@@ -87,17 +92,21 @@ word_BF4 equ $BF4
 word_BF6 equ $BF6
 flags_BFC equ $BFC
 dword_C02 equ $C02
+
 subcodeScratch equ $C0A ; (through $1359)
+
 byte_135A equ $135A
 byte_135B equ $135B
-unk_135C equ $135C
-unk_1360 equ $1360
-dword_1C90 equ $1C90
+
+cdcHeaderBuffer equ $135C
+cdcDataBuffer equ $1360 ; (through $1C7F)
+
+word_1C90 equ $1C90
 word_1C92 equ $1C92
 byte_1C94 equ $1C94
 byte_1C96 equ $1C96
-dword_1C98 equ $1C98
-word_1C9C equ $1C9C
+oldGfxCompleteHandler equ $1C98
+word_1C9C equ $1C9C ; (through $1F1B)
 byte_1C9E equ $1C9E
 byte_1C9F equ $1C9F
 word_1CA0 equ $1CA0
@@ -109,4 +118,19 @@ unk_1D4A equ $1D4A
 unk_1DEA equ $1DEA
 unk_1F6A equ $1F6A
 word_20EA equ $20EA
+
+;   ======================================================================
+;       Unless and until otherwise noted, all variables following
+;       this statement are relative to WORD_RAM_1M ($C0000).
+;   ======================================================================
+
+WR1_word_402 equ $402
+WR1_unk_404 equ $404
+WR1_dword_408 equ $408
+WR1_byte_410 equ $410
+WR1_dword_426 equ $426
+WR1_word_42A equ $42A
+WR1_word_42C equ $42C
+WR1_byte_440 equ $440
+
 ;   ======================================================================
