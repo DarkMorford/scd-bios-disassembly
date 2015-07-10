@@ -13,3 +13,11 @@
 
 	; Commands for the Z80 driver
 	include "constants\z80Commands.asm"
+
+;   Main loop states
+STATE_NULL   equ 0
+STATE_21F4   equ 4
+STATE_3040   equ 8
+STATE_LOAD   equ $C
+STATE_7374   equ $10
+STATE_LAUNCH equ $14
