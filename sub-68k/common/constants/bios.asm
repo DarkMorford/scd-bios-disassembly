@@ -6,6 +6,17 @@ _CDSTAT     equ $5E80
 _BOOTSTAT   equ $5EA0
 _USERMODE   equ $5EA6
 
+;   CD types
+CD_NOTREADY     equ $FF
+CD_NODISC       equ 0
+CD_MUSIC        equ 1
+CD_ROM          equ 2
+CD_MIXED        equ 3
+CD_GAMESYSTEM   equ 4
+CD_GAMEDATA     equ 5
+CD_GAMEBOOT     equ 6
+CD_GAMEDISC     equ 7
+
 ;   LED modes
 LEDREADY    equ 0
 LEDDISCIN   equ 1
