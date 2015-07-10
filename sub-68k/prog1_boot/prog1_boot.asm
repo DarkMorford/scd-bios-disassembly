@@ -2697,9 +2697,9 @@ loc_7296:
 	jsr _CDBIOS
 
 	lea (unk_CE080).l,a0
-	clr.l   $7C(a0)
-	move.l  #$AFFFC,(a0)
-	move.b  #1,4(a0)
+	clr.l   $7C(a0)             ; $CE0FC
+	move.l  #$AFFFC,(a0)        ; $CE080
+	move.b  #1,4(a0)            ; $CE084
 
 	moveq   #0,d1
 
@@ -2710,7 +2710,7 @@ loc_7296:
 		move.w  d1,(a0)+
 		dbf d0,loc_72CA
 
-	; Clear 55 KiB
+	; Clear 54 KiB
 	lea (WORD_RAM_1M).l,a0
 	move.w  #$35FF,d0
 	loc_72DA:
@@ -3813,8 +3813,8 @@ word_7A82:  dc.w $7214      ; DATA XREF: sub_7A66+4o
 
 
 sub_7AC0:               ; CODE XREF: sub_726E+82p
-		clr.w   $135A(a6)
-		clr.l   $1C90(a6)
+		clr.w   word_135A(a6)
+		clr.l   dword_1C90(a6)
 		rts
 ; End of function sub_7AC0
 

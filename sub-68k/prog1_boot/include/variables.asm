@@ -64,5 +64,7 @@ dword_A14 equ $A14
 word_A22 equ $A22
 unk_BE4 equ $BE4
 subcodeScratch equ $C0A ; (through $1359)
+word_135A equ $135A
+dword_1C90 equ $1C90
 word_20EA equ $20EA
 ;   ======================================================================
