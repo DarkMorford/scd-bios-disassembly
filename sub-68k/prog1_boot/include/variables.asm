@@ -28,6 +28,7 @@ word_CE0FC equ $CE0FC
 ;       this statement are relative to RAM_BASE ($833C).
 ;   ======================================================================
 word_0 equ 0
+byte_2 equ 2
 byte_3 equ 3
 word_4 equ 4
 byte_6 equ 6
