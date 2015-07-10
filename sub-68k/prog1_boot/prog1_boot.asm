@@ -204,8 +204,8 @@ boot_user3:
 
 
 sub_6142:               ; CODE XREF: BOOT:000071FCj
-		clr.b   6(a6)
-		lea 0(a6),a0
+		clr.b   byte_6(a6)
+		lea word_0(a6),a0
 		move.w  d0,(a0)+
 		st  (a0)
 		rts
@@ -216,9 +216,9 @@ sub_6142:               ; CODE XREF: BOOT:000071FCj
 
 
 sub_6150:               ; CODE XREF: sub_7302p sub_7302+12p ...
-		tst.b   2(a6)
+		tst.b   byte_2(a6)
 		beq.s   locret_615E
-		clr.b   2(a6)
+		clr.b   byte_2(a6)
 		andi    #$FB,ccr ; 'û'
 
 locret_615E:                ; CODE XREF: sub_6150+4j
@@ -230,7 +230,7 @@ locret_615E:                ; CODE XREF: sub_6150+4j
 
 
 sub_6160:
-		tst.b   2(a6)
+		tst.b   byte_2(a6)
 		rts
 ; End of function sub_6160
 
@@ -240,10 +240,10 @@ sub_6160:
 
 sub_6166:               ; CODE XREF: sub_7302:loc_730Ap
 					; sub_7B5E+Cp ...
-		st  3(a6)
+		st  byte_3(a6)
 
 loc_616A:               ; CODE XREF: sub_6166+8j
-		tst.b   3(a6)
+		tst.b   byte_3(a6)
 		bne.s   loc_616A
 		rts
 ; End of function sub_6166
@@ -253,7 +253,7 @@ loc_616A:               ; CODE XREF: sub_6166+8j
 
 
 sub_6172:
-		st  3(a6)
+		st  byte_3(a6)
 		rts
 ; End of function sub_6172
 
@@ -289,8 +289,8 @@ clearSubCommBuffer:             ; CODE XREF: boot_user0+Cp
 
 sub_619A:               ; CODE XREF: sub_6178+4p
 					; BOOT:0000720Cp ...
-	lea (GA_COMM_SUBFLAGS).w,a0
-	bset    #0,(a0)
+	lea  (GA_COMM_SUBFLAGS).w,a0
+	bset #GA_SUBFLAG0,(a0)
 
 	; Copy data from registers to cache
 	lea mainCommCache(a6),a2
@@ -319,12 +319,12 @@ sub_619A:               ; CODE XREF: sub_6178+4p
 
 
 sub_61CA:               ; CODE XREF: sub_726E+8Ep sub_7ADC+54p
-		bset    #6,(GA_COMM_SUBFLAGS).w
+		bset    #GA_SUBFLAG6,(GA_COMM_SUBFLAGS).w
 
 loc_61D0:               ; CODE XREF: sub_61CA+Cj
-		btst    #2,(GA_COMM_MAINFLAGS).w
+		btst    #GA_MAINFLAG2,(GA_COMM_MAINFLAGS).w
 		bne.s   loc_61D0
-		bclr    #6,(GA_COMM_SUBFLAGS).w
+		bclr    #GA_SUBFLAG6,(GA_COMM_SUBFLAGS).w
 		rts
 ; End of function sub_61CA
 
@@ -333,7 +333,7 @@ loc_61D0:               ; CODE XREF: sub_61CA+Cj
 
 
 sub_61E0:               ; CODE XREF: boot_user1p sub_7302+Cp ...
-		btst    #7,(GA_COMM_MAINFLAGS).w
+		btst    #GA_MAINFLAG7,(GA_COMM_MAINFLAGS).w
 		rts
 ; End of function sub_61E0
 
@@ -500,15 +500,15 @@ cdbGetBiosStatus:               ; CODE XREF: BOOT:sub_625Ap
 	move.l  a3,-(sp)
 
 	move.w  (a3),d1
-	move.w  (a0),(a3)+      ; bios status
-	move.w  d1,(a3)+
-	move.l  8(a0),(a3)+     ; absolute time
-	move.l  $C(a0),(a3)+    ; relative time
-	move.b  7(a0),(a3)+     ; current track
-	move.b  $13(a0),(a3)+   ; flags
-	move.w  $10(a0),(a3)+   ; first/last track
-	move.l  $14(a0),(a3)+   ; lead-out start time
-	move.b  4(a0),(a3)+     ; cdd status code
+	move.w  (a0),(a3)+  ; bios status word
+	move.w  d1,(a3)+    ; previous bios status word
+	move.l  CDBSTAT.absTimeCode(a0),(a3)+
+	move.l  CDBSTAT.relTimeCode(a0),(a3)+
+	move.b  CDBSTAT.currentTrack(a0),(a3)+
+	move.b  CDBSTAT.flags(a0),(a3)+
+	move.w  CDBSTAT.firstTrack(a0),(a3)+
+	move.l  CDBSTAT.leadOut(a0),(a3)+
+	move.b  CDBSTAT.statusCode(a0),(a3)+
 
 	movea.l (sp)+,a3
 	rts
@@ -524,16 +524,17 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 		bsr.s   cdbGetBiosStatus
 		movea.l (sp)+,a0
 
-		bclr    #2,(a0)
+		bclr    #GA_SUBFLAG2,(a0)
 		moveq   #0,d0
 
-		move.w  4(a2),d0
-		or.w    $C(a2),d0
+		move.w  GA_SUBDATA1(a2),d0
+		or.w    GA_SUBDATA3(a2),d0
 		bne.s   loc_637E
 
 		btst    #0,flags_3E(a6)
 		beq.s   loc_6330
 
+		; Skip if disc type is "not ready"
 		move.b  discType(a6),d1
 		bmi.s   loc_6330
 
@@ -544,10 +545,10 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 ; ---------------------------------------------------------------------------
 
 loc_6330:               ; CODE XREF: sub_62FA+20j sub_62FA+26j
-	bset    #2,(a0)
-	bset    #3,(a0)
+	bset    #GA_SUBFLAG2,(a0)
+	bset    #GA_SUBFLAG3,(a0)
 	move.w  (a3)+,d0 ; current status
-	move.w  d0,4(a2)
+	move.w  d0,GA_SUBDATA1(a2)
 	move.w  (a3)+,d1 ; previous status
 	andi.w  #$E000,d0
 	bne.s   loc_6368
@@ -560,19 +561,19 @@ loc_6330:               ; CODE XREF: sub_62FA+20j sub_62FA+26j
 	beq.s   loc_6368
 
 	adda.w  #$A,a3
-	move.w  (a3)+,6(a2) ; first/last tracks
-	move.l  (a3)+,$C(a2) ; lead-out start time
-	bclr    #3,(a0)
+	move.w  (a3)+,GA_SUBDATA1+2(a2) ; first/last tracks
+	move.l  (a3)+,GA_SUBDATA3(a2) ; lead-out start time
+	bclr    #GA_SUBFLAG3,(a0)
 	bra.s   loc_637E
 ; ---------------------------------------------------------------------------
 
 loc_6368:               ; CODE XREF: sub_62FA+4Aj sub_62FA+50j ...
-		move.w  (a3)+,6(a2) ; absolute time (minute/second)
+		move.w  (a3)+,GA_SUBDATA1+2(a2) ; absolute time (minute/second)
 		addq.w  #2,a3
-		move.w  (a3)+,$C(a2) ; relative time (minute/second)
+		move.w  (a3)+,GA_SUBDATA3(a2) ; relative time (minute/second)
 		addq.w  #2,a3
-		move.b  (a3)+,$E(a2) ; track number
-		move.b  biosStatus.cddStatusCode(a6),$F(a2)
+		move.b  (a3)+,GA_SUBDATA3+2(a2) ; track number
+		move.b  biosStatus.cddStatusCode(a6),GA_SUBDATA3+3(a2)
 
 loc_637E:               ; CODE XREF: sub_62FA+18j sub_62FA+34j ...
 		movem.l (sp)+,a1-a2
