@@ -366,7 +366,7 @@ loc_6204:
 	bset    #0,flags_3E(a6)
 
 	; Set disc type to "not ready"
-	move.b  #$FF,discType(a6)
+	move.b  #CD_NOTREADY,discType(a6)
 
 	; Initialize CD boot system
 	moveq   #CBTINIT,d0
@@ -428,7 +428,7 @@ sub_625A:               ; CODE XREF: boot_user0+3Cj
 	bne.s sub_626E
 
 	; Set disc type to "not ready"
-	move.b #$FF,discType(a6)
+	move.b #CD_NOTREADY,discType(a6)
 	rts
 ; End of function sub_625A
 
@@ -445,7 +445,7 @@ sub_626E:               ; CODE XREF: BOOT:00006264j
 	bsr.w   sub_66F4
 
 	; Set disc type to "not ready"
-	move.b  #$FF,discType(a6)
+	move.b  #CD_NOTREADY,discType(a6)
 
 	; Check if disc boot is possible
 	move.w  #CBTCHKDISC,d0
@@ -638,7 +638,7 @@ locret_63F2:                ; CODE XREF: sub_6384+20j sub_6384+26j ...
 
 sub_63F4:               ; CODE XREF: sub_6384+48p
 		; Set disc type to "not ready"
-		move.b  #$FF,discType(a6)
+		move.b  #CD_NOTREADY,discType(a6)
 		moveq   #$FFFFFFFF,d1
 		moveq   #4,d0
 		bsr.w   sub_66EA
@@ -690,7 +690,7 @@ sub_6414:               ; CODE XREF: sub_6178+Cp
 		bclr    #2,flags_3E(a6)
 
 		; Set disc type to "not ready"
-		move.b  #$FF,discType(a6)
+		move.b  #CD_NOTREADY,discType(a6)
 
 		; Open the disc tray
 		; (How does this work with the top-loading models?)
@@ -1017,7 +1017,7 @@ loc_6676:               ; CODE XREF: sub_6414+72j sub_665C+2j
 		move.b  #$81,byte_3F(a6)
 
 loc_667C:               ; CODE XREF: sub_6660+8j sub_6660+12j
-		clr.l   $5C(a6)
+		clr.l   dword_5C(a6)
 		move.w  biosStatus(a6),word_40(a6)
 		lea unk_64(a6),a0
 		move.b  d1,byte_63(a6)
@@ -1378,13 +1378,13 @@ loc_68D0:               ; CODE XREF: sub_6850+42j
 		lea $A24(a6),a1
 		adda.w  d1,a1
 		move.l  (a5)+,d0
-		bsr.w   sub_716C
+		bsr.w   timecodeToFrames
 
 loc_68F4:               ; CODE XREF: sub_6850+B4j
 		move.l  d0,d1
 		move.l  (a5)+,d0
 		beq.s   loc_6906
-		bsr.w   sub_716C
+		bsr.w   timecodeToFrames
 		move.l  d0,d2
 		sub.l   d1,d2
 		move.l  d2,(a1)+
@@ -1393,7 +1393,7 @@ loc_68F4:               ; CODE XREF: sub_6850+B4j
 
 loc_6906:               ; CODE XREF: sub_6850+A8j
 		move.l  biosStatus.leadOutTime(a6),d0
-		bsr.w   sub_716C
+		bsr.w   timecodeToFrames
 		sub.l   d1,d0
 		move.l  d0,(a1)+
 		clr.l   (a1)+
@@ -2382,7 +2382,7 @@ loc_7096:               ; CODE XREF: sub_7080+20j
 
 loc_70A4:               ; CODE XREF: sub_7080+10j
 		move.l  d2,d0
-		bsr.w   sub_71AC
+		bsr.w   framesToTimecode
 		lea $BB8(a6),a1
 		move.l  d0,(a1)
 		movem.l (sp)+,d1-d2
@@ -2486,98 +2486,102 @@ locret_714E:                ; CODE XREF: BOOT:00007148j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_7150:               ; CODE XREF: sub_716C+8p sub_716C+12p ...
-		move.w  d1,-(sp)
-		andi.w  #$FF,d0
-		ror.w   #4,d0
-		lsl.b   #1,d0
-		move.b  d0,d1
-		lsl.b   #2,d0
-		add.b   d0,d1
-		rol.w   #4,d0
-		andi.w  #$F,d0
-		add.b   d1,d0
-		move.w  (sp)+,d1
-		rts
-; End of function sub_7150
+convertFromBcd:
+	move.w  d1,-(sp)
+	andi.w  #$FF,d0
+
+	ror.w   #4,d0
+	lsl.b   #1,d0
+	move.b  d0,d1
+
+	lsl.b   #2,d0
+	add.b   d0,d1
+
+	rol.w   #4,d0
+	andi.w  #$F,d0
+	add.b   d1,d0
+
+	move.w  (sp)+,d1
+	rts
+; End of function convertFromBcd
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_716C:               ; CODE XREF: sub_6850+A0p sub_6850+AAp ...
+timecodeToFrames:               ; CODE XREF: sub_6850+A0p sub_6850+AAp ...
 	move.l  d1,-(sp)
 	move.l  d0,-(sp)
 
 	move.b  TIMECODE.frames(sp),d0
-	bsr.s   sub_7150
+	bsr.s   convertFromBcd
 
 	moveq   #0,d1
 	move.w  d0,d1
 	move.b  TIMECODE.seconds(sp),d0
-	bsr.s   sub_7150
+	bsr.s   convertFromBcd
 
-	mulu.w  #75,d0
+	mulu.w  #CD_FRAMES_PER_SEC,d0
 	add.l   d0,d1
 	move.b  TIMECODE.minutes(sp),d0
-	bsr.s   sub_7150
+	bsr.s   convertFromBcd
 
-	mulu.w  #4500,d0
+	mulu.w  #(CD_FRAMES_PER_SEC * SECS_PER_MINUTE), d0
 	add.l   d1,d0
 
 	move.l  (sp)+,d1
 	move.l  (sp)+,d1
 	rts
-; End of function sub_716C
+; End of function timecodeToFrames
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_7198:               ; CODE XREF: sub_71AC+Ep sub_71AC+1Ep ...
-		andi.l  #$FF,d0
-		divu.w  #$A,d0
-		swap    d0
-		ror.w   #4,d0
-		lsl.l   #4,d0
-		swap    d0
-		rts
-; End of function sub_7198
+convertToBcd:
+	andi.l  #$FF,d0
+	divu.w  #$A,d0
+	swap    d0
+	ror.w   #4,d0
+	lsl.l   #4,d0
+	swap    d0
+	rts
+; End of function convertToBcd
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_71AC:               ; CODE XREF: sub_7080+26p
+framesToTimecode:               ; CODE XREF: sub_7080+26p
 	move.l  d1,-(sp)
 	moveq   #0,d1
 	move.l  d1,-(sp)
 
-	divu.w  #75,d0
+	divu.w  #CD_FRAMES_PER_SEC,d0
 	move.w  d0,d1
 	swap    d0
-	bsr.s   sub_7198
+	bsr.s   convertToBcd
 
 	move.b  d0,TIMECODE.frames(sp)
 	move.l  d1,d0
-	divu.w  #60,d0
+	divu.w  #SECS_PER_MINUTE,d0
 	move.w  d0,d1
 	swap    d0
-	bsr.s   sub_7198
+	bsr.s   convertToBcd
 
 	move.b  d0,TIMECODE.seconds(sp)
 	move.l  d1,d0
 	divu.w  #100,d0
 	move.w  d0,d1
 	swap    d0
-	bsr.s   sub_7198
+	bsr.s   convertToBcd
 
 	move.b  d0,TIMECODE.minutes(sp)
 
 	move.l  (sp)+,d0
 	move.l  (sp)+,d1
 	rts
-; End of function sub_71AC
+; End of function framesToTimecode
 
 
 ; =============== S U B R O U T I N E =======================================
