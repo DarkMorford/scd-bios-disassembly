@@ -3903,7 +3903,7 @@ loc_7AD2:               ; CODE XREF: sub_79AA+18j sub_7ACA+4j
 
 sub_7ADC:               ; CODE XREF: sub_7B5E+8p
 		lea RAM_BASE(pc),a6
-		move.b  #0,($FF8003).l
+		move.b  #0,(GAL_MEMORY_MODE).l
 		move.w  #4,($FF8058).l
 		move.w  #$8000,($FF805A).l
 		move.w  #0,($FF8060).l
@@ -3963,7 +3963,7 @@ loc_7B92:               ; CODE XREF: sub_7B5E+44j
 loc_7BAA:               ; CODE XREF: sub_7B5E+5Cj
 		bsr.w   sub_6150
 		bne.w   loc_7C6E
-		btst    #1,($FF8003).l
+		btst    #1,(GAL_MEMORY_MODE).l
 		beq.s   loc_7BAA
 		clr.w   word_1CA2(a6)
 		lea unk_1DEA(a6),a0
@@ -4022,8 +4022,8 @@ loc_7C6E:               ; CODE XREF: sub_7B5E+1Cj sub_7B5E+38j ...
 loc_7C76:               ; CODE XREF: sub_7B5E+142j
 		bclr    #1,(GA_INT_MASK).w
 		move.l  dword_1C98(a6),(_LEVEL1+2).w
-		bclr    #3,($FF8003).l
-		bclr    #4,($FF8003).l
+		bclr    #3,(GAL_MEMORY_MODE).l
+		bclr    #4,(GAL_MEMORY_MODE).l
 		rts
 ; ---------------------------------------------------------------------------
 
@@ -4050,7 +4050,7 @@ loc_7CB8:               ; DATA XREF: sub_7ADC+32o
 		beq.s   locret_7CCE
 
 loc_7CC4:               ; CODE XREF: BOOT:00007CCCj
-		bset    #0,($FF8003).l
+		bset    #0,(GAL_MEMORY_MODE).l
 		beq.s   loc_7CC4
 
 locret_7CCE:                ; CODE XREF: BOOT:00007CC2j
@@ -4217,7 +4217,7 @@ sub_7E3C:               ; CODE XREF: sub_7CD0+26p
 		divs.w  $58(a5),d0
 		asl.w   #3,d0
 		addi.w  #$280,d0
-		tst.w   $1CA4(a6)
+		tst.w   word_1CA4(a6)
 		beq.s   loc_7E78
 		addi.w  #$7B00,d0
 
@@ -4334,16 +4334,16 @@ word_8022:
 
 
 sub_8032:               ; CODE XREF: sub_7B5E+66p sub_7B5E+F8p
-		move.w  $1CA0(a6),d0
+		move.w  word_1CA0(a6),d0
 		lsl.w   #1,d0
 		move.w  word_8012(pc,d0.w),d1
-		move.w  d1,($FF8064).l
+		move.w  d1,(GAL_BUFFER_VDOTS).l
 		move.w  d1,d7
 		lsr.w   #3,d1
 		subq.w  #1,d1
-		move.w  d1,($FF805C).l
+		move.w  d1,(GAL_BUFFER_VCELLS).l
 		move.w  word_8022(pc,d0.w),d1
-		move.w  d1,($FF805E).l
+		move.w  d1,(GAL_BUFFER_ADDRESS).l
 		subq.w  #1,d7
 		lea (unk_99E80).l,a1
 
@@ -4351,31 +4351,31 @@ loc_8060:               ; CODE XREF: sub_8032+32j
 		move.l  (a0)+,(a1)+
 		move.l  (a0)+,(a1)+
 		dbf d7,loc_8060
-		bclr    #3,($FF8003).l
-		bclr    #4,($FF8003).l
-		tst.b   $1CA8(a6)
+		bclr    #GA_PM0,(GAL_MEMORY_MODE).l
+		bclr    #GA_PM1,(GAL_MEMORY_MODE).l
+		tst.b   byte_1CA8(a6)
 		beq.s   loc_80A6
-		bclr    #3,($FF8003).l
-		bset    #4,($FF8003).l
-		cmpi.b  #1,$1CA8(a6)
+		bclr    #GA_PM0,(GAL_MEMORY_MODE).l
+		bset    #GA_PM1,(GAL_MEMORY_MODE).l
+		cmpi.b  #1,byte_1CA8(a6)
 		beq.s   loc_80A6
-		bclr    #4,($FF8003).l
-		bset    #3,($FF8003).l
+		bclr    #GA_PM1,(GAL_MEMORY_MODE).l
+		bset    #GA_PM0,(GAL_MEMORY_MODE).l
 
 loc_80A6:               ; CODE XREF: sub_8032+4Aj sub_8032+62j
-		tst.w   $1CA2(a6)
+		tst.w   word_1CA2(a6)
 		beq.s   loc_80DA
-		bclr    #3,($FF8003).l
-		bset    #4,($FF8003).l
-		lea $1CAA(a6),a4
+		bclr    #GA_PM0,(GAL_MEMORY_MODE).l
+		bset    #GA_PM1,(GAL_MEMORY_MODE).l
+		lea unk_1CAA(a6),a4
 		move.w  6(a4),d0
 		cmp.w   6(a5),d0
 		bge.s   loc_80DA
-		bclr    #4,($FF8003).l
-		bset    #3,($FF8003).l
+		bclr    #GA_PM1,(GAL_MEMORY_MODE).l
+		bset    #GA_PM0,(GAL_MEMORY_MODE).l
 
 loc_80DA:               ; CODE XREF: sub_8032+78j sub_8032+96j
-		move.w  #$67A0,($FF8066).l
+		move.w  #$67A0,(GAL_TRACE_VECTORS).l
 		rts
 ; End of function sub_8032
 
@@ -4402,11 +4402,11 @@ sub_810A:               ; CODE XREF: BOOT:00006128j
 		st  6(a6)
 
 loc_8112:               ; CODE XREF: sub_810A+10j
-		bclr    #2,($FF8003).l
+		bclr    #GA_MODE,(GAL_MEMORY_MODE).l
 		bne.s   loc_8112
 
 loc_811C:               ; CODE XREF: sub_810A+1Aj
-		btst    #1,($FF8003).l
+		btst    #GA_DMNA,(GAL_MEMORY_MODE).l
 		beq.s   loc_811C
 		bsr.w   sub_82E8
 		bra.s   loc_816E
@@ -4426,7 +4426,7 @@ loc_8130:               ; CODE XREF: sub_810A+40j
 ; ---------------------------------------------------------------------------
 
 loc_8142:               ; CODE XREF: sub_810A+2Ej
-		btst    #1,($FF8003).l
+		btst    #GA_DMNA,(GAL_MEMORY_MODE).l
 		beq.s   loc_8130
 		movem.w $16(a6),d0-d1
 		tst.w   d0
@@ -4439,7 +4439,7 @@ loc_8142:               ; CODE XREF: sub_810A+2Ej
 		jsr loc_8186(pc,d0.w)
 
 loc_816E:               ; CODE XREF: sub_810A+20j sub_810A+6Cj
-		bset    #0,($FF8003).l
+		bset    #GA_RET,(GAL_MEMORY_MODE).l
 		beq.s   loc_816E
 		nop
 		nop
