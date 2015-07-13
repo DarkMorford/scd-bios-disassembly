@@ -15,22 +15,19 @@
 	org $6000
 
 loc_6000:
-	dc.b 'MAINBOOTUSR'
-	dc.b 0
-	dc.w $10
-	dc.w 0
-	dc.w 0
-	dc.w 0
-	dc.w 0
-	dc.w 0
-	dc.w 0
-	dc.w $20
-	dc.w 0
-	dc.w $20EC
-	dc.w $A
-	dc.w $8E
-	dc.w $4A
-	dc.w $120
+	; User header (see BIOS pg 33)
+	dc.b 'MAINBOOTUSR'  ; Module name
+	dc.b 0              ; Boot flag
+	dc.w $0010          ; Version
+	dc.w 0              ; Module type
+	dc.l 0              ; Next module pointer
+	dc.l 0              ; Module size
+	dc.l $20            ; Start address
+	dc.l $20EC          ; Work RAM size
+	dc.w $A             ; usercall0 ($602A)
+	dc.w $8E            ; usercall1 ($60AE)
+	dc.w $4A            ; usercall2 ($606A)
+	dc.w $120           ; usercall3 ($6140)
 	dc.w 0
 
 ; =============== S U B R O U T I N E =======================================
@@ -46,23 +43,23 @@ boot_user0:
 	bsr.w initCdBoot
 
 	; Set WordRAM to 2M mode and return it to main CPU
-	bclr #GA_MODE,(GA_MEMORY_MODE).w
-	bset #GA_RET,(GA_MEMORY_MODE).w
+	bclr #GA_MODE, (GA_MEMORY_MODE).w
+	bset #GA_RET,  (GA_MEMORY_MODE).w
 
 	; Clear RAM from $F700-$FFFF (2304 bytes)
-	lea (unk_F700).l,a0
-	move.w #$23F,d0
-	moveq  #0,d1
+	lea (unk_F700).l, a0
+	move.w #$23F, d0
+	moveq  #0, d1
 	@clearMemory:
-		move.l  d1,(a0)+
-		dbf d0,@clearMemory
+		move.l d1, (a0)+
+		dbf d0, @clearMemory
 
-	move.l a6,-(sp)
+	move.l a6, -(sp)
 
 	; Jump to a function in the CD player module
 	jsr sub_18004
 
-	movea.l (sp)+,a6
+	movea.l (sp)+, a6
 	jmp sub_625A(pc)
 ; End of function boot_user0
 
@@ -443,18 +440,18 @@ sub_625A:               ; CODE XREF: boot_user0+3Cj
 
 sub_626E:               ; CODE XREF: BOOT:00006264j
 					; sub_6384+28p ...
-	bset    #0,flags_3E(a6)
-	bset    #1,flags_3E(a6)
-	bclr    #2,flags_3E(a6)
+	bset #0, flags_3E(a6)
+	bset #1, flags_3E(a6)
+	bclr #2, flags_3E(a6)
 
-	bsr.w   sub_66F4
+	bsr.w sub_66F4
 
 	; Set disc type to "not ready"
-	move.b  #CD_NOTREADY,discType(a6)
+	move.b #CD_NOTREADY, discType(a6)
 
 	; Check if disc boot is possible
-	move.w  #CBTCHKDISC,d0
-	lea chkdiskScratch(a6),a0
+	move.w #CBTCHKDISC, d0
+	lea chkdiskScratch(a6), a0
 	jmp _CDBOOT
 ; End of function sub_626E
 

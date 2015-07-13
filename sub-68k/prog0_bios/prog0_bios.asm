@@ -145,26 +145,35 @@ loc_256:
 	movem.l _zeroes(pc),d0-a6
 	move.l  a0,usp
 	move.b  #0,(GA_CDD_CONTROL).w
-	bclr    #GA_RES0,(GA_RESET).w
-	move.b  #2,(GA_LED_STATUS).w
-	lea (GA_MEMORY_MODE).w,a0
 
-loc_27C:
-	btst    #GA_MODE,(a0)       ; Set Word RAM to 2M mode
-	beq.s   loc_288
-	bclr    #GA_MODE,(a0)
-	bra.s   loc_27C
+	; Trigger peripheral reset
+	bclr    #GA_RES0,(GA_RESET).w
+
+	; Green LED on
+	move.b  #2,(GA_LED_STATUS).w
+
+	; Set Word RAM to 2M mode
+	lea (GA_MEMORY_MODE).w,a0
+	loc_27C:
+		btst  #GA_MODE,(a0)
+		beq.s loc_288
+		bclr  #GA_MODE,(a0)
+		bra.s loc_27C
 ; ---------------------------------------------------------------------------
 
 loc_288:
-	btst    #GA_DMNA,(a0)       ; Give Word RAM to main CPU
+	; Give Word RAM to main CPU
+	btst    #GA_DMNA,(a0)
 	beq.s   loc_292
 	bset    #GA_RET,(a0)
 
 loc_292:
+	; Reset CDC (Sanyo LC89510)
 	move.b  #CDC_WRITE_RESET,(GA_CDC_ADDRESS).w
 	move.b  #0,(GA_CDC_REGISTER).w
 	move.w  #0,(GA_STOPWATCH).w
+
+	; Clear communication registers
 	moveq   #0,d0
 	move.b  d0,(GA_COMM_SUBFLAGS).w
 	lea (GA_COMM_SUBDATA).w,a0
@@ -172,7 +181,11 @@ loc_292:
 	move.l  d0,(a0)+
 	move.l  d0,(a0)+
 	move.l  d0,(a0)
-	move.w  #0,(GA_CDD_FADER).w ; Mute CD audio
+
+	; Mute CD audio
+	move.w  #0,(GA_CDD_FADER).w
+
+	; Test header and verify checksum
 	lea ProgramHeader(pc),a1
 	cmpi.l  #'SEGA',(a1)
 	bne.w   _reset
@@ -186,312 +199,347 @@ loc_292:
 	swap    d1
 	moveq   #0,d0
 
-loc_2E0:
-	add.w   (a0)+,d0    ; Calculate checksum
-	dbf d2,loc_2E0
-	dbf d1,loc_2E0
+	@loc_2E0:
+		add.w   (a0)+,d0
+		dbf d2,@loc_2E0
+		dbf d1,@loc_2E0
+
 	move.w  $8E(a1),d1
 	beq.s   loc_2F6
 	cmp.w   d1,d0
 	bne.w   _reset
 
 loc_2F6:
+	; Clear RAM from $5800 - $5FFF (2 KiB)
 	movea.l #$5800,a0
 	move.l  #$6000,d1
 	subi.l  #$5801,d1
-	lsr.l   #4,d1       ; d1 = 0x7F
+	lsr.l   #4,d1
 	moveq   #0,d0
 
-loc_30C:
-	move.l  d0,(a0)+    ; Clear RAM from $5800 - $5FFF
-	move.l  d0,(a0)+
-	move.l  d0,(a0)+
-	move.l  d0,(a0)+
-	dbf d1,loc_30C
-	move.w  #$4EF9,d0
-	lea _nullrts(pc),a0
-	lea (JumpTable).w,a1 ; Set up the jump table with dummy values
-	moveq   #15,d1
+	@loc_30C:
+		move.l  d0,(a0)+
+		move.l  d0,(a0)+
+		move.l  d0,(a0)+
+		move.l  d0,(a0)+
+		dbf d1,@loc_30C
 
-loc_326:
-	move.w  d0,(a1)+
-	move.l  a0,(a1)+
-	dbf d1,loc_326
-	lea _reset(pc),a0
-	moveq   #8,d1
+	; Set up the jump tables with dummy values
+	move.w #$4EF9, d0
+	lea _nullrts(pc), a0
+	lea (JumpTable).w, a1
 
-loc_334:
-	move.w  d0,(a1)+
-	move.l  a0,(a1)+
-	dbf d1,loc_334
-	lea _nullrte(pc),a0
-	moveq   #22,d1
+	; "User" jump table
+	moveq #15, d1
+	@loc_326:
+		move.w d0, (a1)+
+		move.l a0, (a1)+
+		dbf d1, @loc_326
 
-loc_342:
-	move.w  d0,(a1)+
-	move.l  a0,(a1)+
-	dbf d1,loc_342
-	bsr.w   initLeds
-	bsr.w   sub_AEC
-	bsr.w   initCdc
-; ---------------------------------------------------------------------------
-	bsr.w   initVolume
-	bsr.w   initCdd
+	; Error vectors
+	lea _reset(pc), a0
+	moveq #8, d1
+	@loc_334:
+		move.w d0, (a1)+
+		move.l a0,( a1)+
+		dbf d1, @loc_334
+
+	; Interrupt/trap vectors
+	lea _nullrte(pc), a0
+	moveq #22,d1
+	@loc_342:
+		move.w d0, (a1)+
+		move.l a0, (a1)+
+		dbf d1, @loc_342
+
+	; Initialize other hardware
+	bsr.w initLeds
+	bsr.w sub_AEC
+	bsr.w initCdc
+	bsr.w initVolume
+	bsr.w initCdd
 	m_enableInterrupts
 	nop
 
-; =============== S U B R O U T I N E =======================================
-
-
-installJumpTable:
+installDefaultJumpTable:
 	m_disableInterrupts
+
+	; Install interrupt vectors
 	lea (_LEVEL1).w,a0
 	lea word_378(pc),a1
 	lea loc_388(pc),a6
 	bra.w   loc_556
 ; ---------------------------------------------------------------------------
 word_378:
-	dc.w $2E8
-	dc.w $27A
-	dc.w $2E8
-	dc.w $298
-	dc.w $2BC
-	dc.w $2D0
-	dc.w $2E8
+	dc.w $2E8   ; $660
+	dc.w $27A   ; $5F2
+	dc.w $2E8   ; $660
+	dc.w $298   ; $610
+	dc.w $2BC   ; $634
+	dc.w $2D0   ; $648
+	dc.w $2E8   ; $660
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
-loc_388:                ; DATA XREF: installJumpTable+Co
-	lea ($5F0A).w,a0
+loc_388:
+	; Install _setjmptbl and _waitvsync handlers
+	lea (_SETJMPTBL).w,a0
 	lea word_398(pc),a1
 	lea loc_39E(pc),a6
 	bra.w   loc_556
 ; ---------------------------------------------------------------------------
 word_398:
-	dc.w $238
-	dc.w $24A
+	dc.w $238   ; $5D0
+	dc.w $24A   ; $5E2
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
-loc_39E:                ; DATA XREF: installJumpTable+2Co
+loc_39E:
+	; Install _buram handler
 	lea (_BURAM).w,a0
 	lea (word_4436).l,a1
 	lea loc_3B0(pc),a6
 	bra.w   loc_56A
 ; ---------------------------------------------------------------------------
 
-loc_3B0:                ; DATA XREF: installJumpTable+44o
+loc_3B0:
+	; Install _cdboot handler
 	lea (_CDBOOT).w,a0
 	lea (word_3900).l,a1
 	lea loc_3C2(pc),a6
 	bra.w   loc_56A
 ; ---------------------------------------------------------------------------
 
-loc_3C2:                ; DATA XREF: installJumpTable+56o
+loc_3C2:
+	; Install _cdbios handler
 	lea (_CDBIOS).w,a0
 	lea (word_2924).l,a1
 	lea loc_3D4(pc),a6
 	bra.w   loc_56A
 ; ---------------------------------------------------------------------------
 
-loc_3D4:                ; CODE XREF: installJumpTable+76j
-				; DATA XREF: installJumpTable+68o
-	btst    #GA_RES0,(GA_RESET).w
-	beq.s   loc_3D4
+	; Wait for peripheral reset to complete
+	loc_3D4:
+		btst    #GA_RES0,(GA_RESET).w
+		beq.s   loc_3D4
+
+	; Enable INT2 (MD) and INT4 (CDD)
 	ori.b   #$14,(GA_INT_MASK).w
+
+	; Reset CDD watchdog counter
 	bclr    #2,byte_580A(a5)
-	move.w  #$1E,word_5A02(a5)
+	move.w  #$1E,cddWatchdogCounter(a5)
+
+	; Enable CDD communication (HOCK)
 	move.b  #4,(GA_CDD_CONTROL).w
+
 	move.b  #$80,byte_580A(a5)
 	m_enableInterrupts
 
-loc_3FE:                ; CODE XREF: installJumpTable+A2j
-	bsr.w   _waitForVBlank
-	move.b  byte_5A04(a5),d0
-	beq.s   loc_3FE
+	@loc_3FE:
+		bsr.w   _waitForVBlank
+		move.b  byte_5A04(a5),d0
+		beq.s   @loc_3FE
+
 	cmpi.b  #$FF,d0
 	beq.w   _reset
 
-loc_410:                ; CODE XREF: installJumpTable:loc_51Aj
+loc_410:
 	movem.l _zeroes(pc),d0-a6
+
+	; Install usercall* routines from boot module
 	movea.l #bootModule,a1
 
-loc_41C:                ; CODE XREF: installJumpTable+104j
-	move    #$2200,sr
+loc_41C:
+	move #$2200,sr              ; Disable MD interrupt temporarily
 	lea (_USERCALL0).w,a0
-	bsr.w   _setJmpTbl
-	clr.w   d0
+	bsr.w _setJmpTbl
 
-loc_42A:
-	move.w  d0,(word_5EA2).w
+	clr.w  d0
+	move.w d0, (_usermode).w
+
+	; Do boot module init
 	jsr _USERCALL0
+
 	m_enableInterrupts
 
-loc_436:                ; CODE XREF: installJumpTable+DEj
-				; installJumpTable+E8j ...
+mainLoop:
 	bsr.w   _waitForVBlank
-	move.w  (word_5EA2).w,d0
-	jsr _USERCALL1
-	bcc.s   loc_436
-	move.w  d0,(word_5EA2).w
-	cmpi.w  #$FFFF,d0
-	bne.s   loc_436
-	cmpi.w  #4,(_BOOTSTAT).w
-	beq.s   loc_45C
-	cmpi.w  #6,(_BOOTSTAT).w
 
-loc_45C:                ; CODE XREF: installJumpTable+F0j
-	bne.s   loc_436
+	move.w  (_usermode).w,d0
+
+	jsr _USERCALL1
+	bcc.s mainLoop
+
+	move.w  d0,(_usermode).w
+
+	cmpi.w  #$FFFF,d0
+	bne.s   mainLoop
+
+	; Check for Game System disc
+	cmpi.w  #CD_GAMESYSTEM,(_BOOTSTAT).w
+	beq.s   loc_45C
+
+	; Check for Game Boot disc
+	cmpi.w  #CD_GAMEBOOT,(_BOOTSTAT).w
+
+loc_45C:
+	bne.s   mainLoop
+
+	; Disc is either game system or game boot
 	movem.l _zeroes(pc),d0-a6
-	lea asc_46A(pc),a1  ; "BOOT____SYS"
+
+	; Install new usercall* routines
+	lea     discBootHeader(pc),a1
 	bra.s   loc_41C
 ; ---------------------------------------------------------------------------
-asc_46A:
-	dc.b 'BOOT____SYS'
-	dc.b 0
-	dc.b 1
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b 0
-	dc.b $EC
-	dc.l $20
-	dc.l 0
-	dc.w $FD82
-	dc.w $A
-	dc.w $FD82
-	dc.w $FD82
+discBootHeader:
+	; User header (see BIOS pg 33)
+	dc.b 'BOOT____SYS'  ; Module name
+	dc.b 0              ; Boot flag
+	dc.w $0100          ; Version
+	dc.w 0              ; Module type
+	dc.l 0              ; Next module pointer
+	dc.l $EC            ; Module size
+	dc.l $20            ; Start address
+	dc.l 0              ; Work RAM size
+	dc.w $FD82          ; usercall0 ($20C [_nullrts])
+	dc.w $A             ; usercall1 ($494 [beginDiscBoot])
+	dc.w $FD82          ; usercall2 ($20C [_nullrts])
+	dc.w $FD82          ; usercall3 ($20C [_nullrts])
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
-loc_494:
+beginDiscBoot:
 	movea.l #WORD_RAM_1M, a1
+
 	lea (GA_MEMORY_MODE).w, a0
 	btst #GA_MODE, (a0)
-	bne.s loc_4BC
-	moveq #0, d0
+	bne.s loc_4BC                   ; Jump if WordRAM in 1M mode
+
+	moveq #GA_RET, d0
 	movea.l #WORD_RAM_2M, a1
 	btst d0, (a0)
-	beq.s loc_4BC
+	beq.s loc_4BC                   ; Jump if sub-CPU has WordRAM
 
-loc_4B0:
-	btst    #1,(a0)
-	beq.s   loc_4B0
+	; Wait for main CPU to give up WordRAM
+	@loc_4B0:
+		btst  #GA_DMNA, (a0)
+		beq.s @loc_4B0
 
-loc_4B6:
-	bclr    d0,(a0)
-	btst    d0,(a0)
-	bne.s   loc_4B6
+	; Wait until sub-CPU gets WordRAM
+	@loc_4B6:
+		bclr  d0, (a0)
+		btst  d0, (a0)
+		bne.s @loc_4B6
 
 loc_4BC:
-	movea.l a1,a0
-	lea (bootModule).w,a0
-	moveq   #CBTIPDISK,d0
-	bsr.w   _CDBOOT
-	bcs.s   loc_494
+	movea.l a1, a0
+
+	lea   (bootModule).w,a0
+	moveq #CBTIPDISK,d0
+	bsr.w _CDBOOT
+	bcs.s beginDiscBoot
 
 loc_4CA:
-	bsr.w   _waitForVBlank
-	bsr.w   loc_51E
-	moveq   #CBTIPSTAT,d0
-	bsr.w   _CDBOOT
-	bcs.s   loc_4CA
-	bclr    #7,(GA_COMM_SUBFLAGS).w
-	lea (GA_MEMORY_MODE).w,a0
-	moveq   #0,d0
-	btst    #GA_MODE,(a0)
-	beq.s   loc_4F8
-	btst    d0,(a0)
-	beq.s   loc_4F8
+	bsr.w _waitForVBlank
+	bsr.w loc_51E
+
+	moveq #CBTIPSTAT,d0
+	bsr.w _CDBOOT
+	bcs.s loc_4CA
+
+	bclr  #7,(GA_COMM_SUBFLAGS).w
+	lea   (GA_MEMORY_MODE).w,a0
+	moveq #0,d0
+	btst  #GA_MODE,(a0)
+	beq.s loc_4F8
+
+	btst  d0,(a0)
+	beq.s loc_4F8
 
 loc_4F0:
-	bclr    d0,(a0)
-	btst    d0,(a0)
-	bne.s   loc_4F0
-	bra.s   loc_4FE
+	bclr  d0,(a0)
+	btst  d0,(a0)
+	bne.s loc_4F0
+	bra.s loc_4FE
 ; ---------------------------------------------------------------------------
 
-loc_4F8:                ; CODE XREF: installJumpTable+186j
-					; installJumpTable+18Aj ...
-	bset    d0,(a0)
-	btst    d0,(a0)
-	beq.s   loc_4F8
+loc_4F8:
+	bset  d0,(a0)
+	btst  d0,(a0)
+	beq.s loc_4F8
 
-loc_4FE:                ; CODE XREF: installJumpTable+192j
-	lea (bootModule).w,a1 ; "MAINBOOTUSR"
-	moveq   #CBTSPDISC,d0
-	bsr.w   _CDBOOT
-	bcs.s   loc_494
-	bsr.w   _waitForVBlank
-	bsr.w   loc_51E
-	moveq   #CBTSPSTAT,d0
-	bsr.w   _CDBOOT
-	bra.s   loc_552
+loc_4FE:
+	lea   (bootModule).w,a1
+	moveq #CBTSPDISC,d0
+	bsr.w _CDBOOT
+	bcs.s beginDiscBoot
+
+	bsr.w _waitForVBlank
+	bsr.w loc_51E
+
+	moveq #CBTSPSTAT,d0
+	bsr.w _CDBOOT
+	bra.s loc_552
 ; ---------------------------------------------------------------------------
 
-loc_51A:                ; CODE XREF: installJumpTable+1F0j
-	bra.w   loc_410
+loc_51A:
+	bra.w loc_410
 ; ---------------------------------------------------------------------------
 
-loc_51E:                ; CODE XREF: installJumpTable+16Ap
-					; installJumpTable+1AAp
-	move.w  #CDBSTAT,d0
-	jsr _CDBIOS
-	moveq   #CBTINT,d0
-	bsr.w   _CDBOOT
+loc_51E:
+	move.w #CDBSTAT,d0
+	jsr    _CDBIOS
+
+	moveq  #CBTINT,d0
+	bsr.w  _CDBOOT
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_52E:                ; CODE XREF: installJumpTable+1E4j
-					; installJumpTable:loc_552j
+loc_52E:
 	bsr.w   _waitForVBlank
 	move.w  #CDBSTAT,d0
 	jsr _CDBIOS
+
 	move.w  #CBTINT,d0
 	bsr.w   _CDBOOT
+
 	btst    #7,(_CDSTAT).w
 	bne.s   loc_52E
+
 	move.w  #CBTSPSTAT,d0
 	bsr.w   _CDBOOT
 
-loc_552:                ; CODE XREF: installJumpTable+1B4j
+loc_552:
 	bcs.s   loc_52E
 	bra.s   loc_51A
 ; ---------------------------------------------------------------------------
 
-loc_556:                ; CODE XREF: installJumpTable+10j
-				; installJumpTable+30j ...
+loc_556:
 	move.l  a1,d1
 	bra.s   loc_564
 ; ---------------------------------------------------------------------------
 
-loc_55A:                ; CODE XREF: installJumpTable+202j
+loc_55A:
 	ext.l   d0
 	add.l   d1,d0
 	move.w  #$4EF9,(a0)+
 	move.l  d0,(a0)+
 
-loc_564:                ; CODE XREF: installJumpTable+1F4j
+loc_564:
 	move.w  (a1)+,d0
 	bne.s   loc_55A
 	jmp (a6)
 ; ---------------------------------------------------------------------------
 
-loc_56A:                ; CODE XREF: installJumpTable+48j
-				; installJumpTable+5Aj ...
+loc_56A:
 	move.w  (a1),d0
 	ext.l   d0
 	add.l   a1,d0
 	move.w  #$4EF9,(a0)+
 	move.l  d0,(a0)+
 	jmp (a6)
-; End of function installJumpTable
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -556,12 +604,12 @@ word_5B6:
 ; =============== S U B R O U T I N E =======================================
 
 
-_setJmpTbl:             ; CODE XREF: installJumpTable+C0p
-		movem.l a5,-(sp)
-		movea.l #0,a5
-		bsr.s   sub_578
-		movem.l (sp)+,a5
-		rts
+_setJmpTbl:
+	movem.l a5, -(sp)
+	movea.l #0, a5
+	bsr.s   sub_578
+	movem.l (sp)+, a5
+	rts
 ; End of function _setJmpTbl
 
 
@@ -569,7 +617,7 @@ _setJmpTbl:             ; CODE XREF: installJumpTable+C0p
 
 
 _waitForVBlank:             ; CODE XREF: installJumpTable:loc_3FEp
-					; installJumpTable:loc_436p ...
+					; installJumpTable:mainLoopp ...
 		bset    #0,(vBlankFlag).w
 
 loc_5E8:                ; CODE XREF: _waitForVBlank+Cj
@@ -581,52 +629,55 @@ loc_5E8:                ; CODE XREF: _waitForVBlank+Cj
 ; ---------------------------------------------------------------------------
 
 mdInterrupt:
-		movem.l d0-a6,-(sp)
-		movea.l #0,a5
+	movem.l d0-a6,-(sp)
+	movea.l #0,a5
 
-		bsr.w   sub_17EE
-		jsr _USERCALL2
-		bclr    #0,(vBlankFlag).w
+	; CD-SYSTEM processing
+	bsr.w sub_17EE
 
-		movem.l (sp)+,d0-a6
-		rte
+	; User processing
+	jsr   _USERCALL2
+
+	bclr  #0,(vBlankFlag).w
+	movem.l (sp)+,d0-a6
+	rte
 ; ---------------------------------------------------------------------------
 
 cddInterrupt:
-		movem.l d0-a6,-(sp)
-		movea.l #0,a5
+	movem.l d0-a6,-(sp)
+	movea.l #0,a5
 
-		bsr.w   sub_E74
-		bsr.w   updateSubcode
-		bsr.w   cddContinue
-		bsr.w   updateVolume
-		bsr.w   updateLeds
+	bsr.w sub_E74
+	bsr.w updateSubcode
+	bsr.w cddContinue
+	bsr.w updateVolume
+	bsr.w updateLeds
 
-		movem.l (sp)+,d0-a6
-		rte
+	movem.l (sp)+,d0-a6
+	rte
 ; ---------------------------------------------------------------------------
 
 cdcInterrupt:
-		movem.l d0-a6,-(sp)
-		movea.l #0,a5
+	movem.l d0-a6,-(sp)
+	movea.l #0,a5
 
-		bsr.w   updateCdc
+	bsr.w   updateCdc
 
-		movem.l (sp)+,d0-a6
-		rte
+	movem.l (sp)+,d0-a6
+	rte
 ; ---------------------------------------------------------------------------
 
 scdInterrupt:
-		movem.l d0-a6,-(sp)
-		movea.l #0,a5
+	movem.l d0-a6,-(sp)
+	movea.l #0,a5
 
-		tst.b   byte_5810(a5)
-		beq.s   @loc_65C
-		bsr.w   sub_203E
+	tst.b   byte_5810(a5)
+	beq.s   @loc_65C
+	bsr.w   sub_203E
 
 @loc_65C:
-		movem.l (sp)+,d0-a6
-		rte
+	movem.l (sp)+,d0-a6
+	rte
 
 ; =============== S U B M O D U L E =========================================
 	include "submodules\led.asm"
@@ -635,11 +686,11 @@ scdInterrupt:
 
 
 sub_73C:                ; CODE XREF: initCdc+42p sub_1F1E+6p
-		clr.l   4(a4)
-		move.l  d0,0(a4)
-		move.l  d1,8(a4)
-		move.l  a0,$C(a4)
-		rts
+	clr.l   4(a4)
+	move.l  d0,0(a4)
+	move.l  d1,8(a4)
+	move.l  a0,$C(a4)
+	rts
 ; End of function sub_73C
 
 
@@ -1527,7 +1578,7 @@ loc_E9E:                ; CODE XREF: sub_E74+2Ej
 
 loc_EBE:                ; CODE XREF: sub_E74+20j sub_E74+38j
 	movem.l (sp)+,d7/a4
-	move.w  #$1E,word_5A02(a5)
+	move.w  #$1E,cddWatchdogCounter(a5)
 
 loc_EC8:                ; CODE XREF: sub_E74+10j
 	bclr    #0,byte_580A(a5)
@@ -2650,12 +2701,12 @@ loc_17DA:               ; CODE XREF: sub_12CE+3A0j
 
 
 sub_17EE:               ; CODE XREF: BIOS:000005FCp
-	subq.w #1, word_5A02(a5)
+	subq.w #1, cddWatchdogCounter(a5)
 	bcc.s @locret_1806
 
 	; Watchdog counter hit -1, set the error flag
 	bset #2, byte_580A(a5)
-	move.w #$1E, word_5A02(a5)
+	move.w #$1E, cddWatchdogCounter(a5)
 
 	; HOCK on, abort CDD transfers
 	move.b #4, (GA_CDD_CONTROL).w

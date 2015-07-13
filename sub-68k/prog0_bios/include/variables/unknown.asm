@@ -88,7 +88,7 @@ word_582E equ $582E
 word_5830 equ $5830
 word_584E equ $584E
 word_5A00 equ $5A00
-word_5A02 equ $5A02
+cddWatchdogCounter equ $5A02
 cddFaderCache equ $5ABC
 word_5ABE equ $5ABE
 word_5AC0 equ $5AC0
@@ -113,4 +113,4 @@ word_5B7C equ $5B7C
 word_5B7E equ $5B7E
 word_5B80 equ $5B80
 word_5B82 equ $5B82
-word_5EA2 equ $5EA2
+_usermode equ $5EA2
