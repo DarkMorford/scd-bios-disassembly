@@ -25,7 +25,6 @@ byte_5B12 equ $5B12
 byte_5B13 equ $5B13
 byte_5B18 equ $5B18
 byte_5B19 equ $5B19
-byte_5B52 equ $5B52
 byte_5BC2 equ $5BC2
 byte_5BC3 equ $5BC3
 dword_5822 equ $5822
@@ -48,16 +47,6 @@ dword_5AA4 equ $5AA4
 dword_5AA8 equ $5AA8
 dword_5AD8 equ $5AD8
 dword_5B02 equ $5B02
-cbtInterruptHandler equ $5B26
-cbtInterruptData equ $5B2A
-dword_5B2E equ $5B2E
-dword_5B34 equ $5B34
-dword_5B38 equ $5B38
-dword_5B3E equ $5B3E
-dword_5B42 equ $5B42
-dword_5B46 equ $5B46
-dword_5B4A equ $5B4A
-dword_5B4E equ $5B4E
 dword_5B54 equ $5B54
 dword_5B58 equ $5B58
 dword_5B5C equ $5B5C
@@ -79,8 +68,6 @@ dword_5BBA equ $5BBA
 dword_5BBE equ $5BBE
 unk_40000 equ $40000
 unk_5B9E equ $5B9E
-unk_80000 equ $80000
-unk_C0000 equ $C0000
 word_5816 equ $5816
 word_581C equ $581C
 word_582A equ $582A
@@ -106,8 +93,6 @@ word_5B16 equ $5B16
 word_5B1E equ $5B1E
 word_5B20 equ $5B20
 word_5B22 equ $5B22
-word_5B32 equ $5B32
-word_5B3C equ $5B3C
 word_5B7A equ $5B7A
 word_5B7C equ $5B7C
 word_5B7E equ $5B7E

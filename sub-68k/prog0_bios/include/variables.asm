@@ -20,11 +20,25 @@ masterVolume    equ $5AB8
 systemVolume    equ $5ABA
 volumeSlope     equ $5AC6
 
+; CDBOOT variables
+bootBitfield            equ $5B24
+cbtInterruptHandler     equ $5B26
+cbtInterruptData        equ $5B2A
+cbtReturnAddress        equ $5B2E
+word_5B32               equ $5B32
+readSectorStart         equ $5B34
+readSectorCount         equ $5B38
+readSectorLoopCount     equ $5B3C
+bootHeaderAddress       equ $5B3E
+ipDstAddress            equ $5B42
+spDstAddress            equ $5B46
+dataBufferAddress       equ $5B4A
+headerBuffer            equ $5B4E
+frameCheckValue         equ $5B52
+
 JumpTable equ $5EE0
 tempJumpTarget equ $5AD4
 vBlankFlag equ $5EA4
-
-bootBitfield equ $5B24
 
 cdcBitfield0 equ $5A06
 cdcBitfield1 equ $5A07

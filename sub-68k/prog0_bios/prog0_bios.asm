@@ -8,6 +8,7 @@
 ;   ======================================================================
 
 	include "constants.asm"
+	include "structs.asm"
 	include "variables.asm"
 	include "macros.asm"
 
@@ -436,18 +437,20 @@ beginDiscBoot:
 loc_4BC:
 	movea.l a1, a0
 
+	; Load initial program (IP) from disc
 	lea   (bootModule).w,a0
 	moveq #CBTIPDISK,d0
 	bsr.w _CDBOOT
 	bcs.s beginDiscBoot
 
-loc_4CA:
-	bsr.w _waitForVBlank
-	bsr.w loc_51E
+	@loc_4CA:
+		bsr.w _waitForVBlank
+		bsr.w loc_51E
 
-	moveq #CBTIPSTAT,d0
-	bsr.w _CDBOOT
-	bcs.s loc_4CA
+		; Check if IP is done loading
+		moveq #CBTIPSTAT,d0
+		bsr.w _CDBOOT
+		bcs.s @loc_4CA
 
 	bclr  #7,(GA_COMM_SUBFLAGS).w
 	lea   (GA_MEMORY_MODE).w,a0
@@ -4999,18 +5002,18 @@ loc_272E:               ; CODE XREF: sub_262E+CEj sub_2724+2j
 ; =============== S U B R O U T I N E =======================================
 
 
-_wonderreq:             ; CODE XREF: sub_2946+6Aj
-		or.w    d1,d1
-		rts
+_wonderreq:
+	or.w d1, d1
+	rts
 ; End of function _wonderreq
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-_wonderchk:             ; CODE XREF: sub_2946+6Ej
-		move.w  #0,d0
-		rts
+_wonderchk:
+	move.w #0, d0
+	rts
 ; End of function _wonderchk
 
 ; =============== S U B M O D U L E =========================================
@@ -5112,11 +5115,11 @@ locret_29B8:                ; CODE XREF: sub_2946+8j
 		rts
 ; ---------------------------------------------------------------------------
 
-_cdbchk:                ; CODE XREF: sub_2946:loc_2954j
-		btst    #7,cddCommand(a5)
-		sne d0
-		lsr.b   #1,d0
-		rts
+_cdbchk:
+	btst  #7, cddCommand(a5)
+	sne   d0
+	lsr.b #1, d0
+	rts
 ; ---------------------------------------------------------------------------
 
 _cdbstat:               ; CODE XREF: sub_2946+12j
@@ -5148,38 +5151,38 @@ loc_29FA:               ; CODE XREF: _cdbtocwrite+6j
 ; =============== S U B R O U T I N E =======================================
 
 
-_cdbtocwrite:               ; CODE XREF: sub_2946+16j
-		cmpi.l  #$FFFFFFFF,(a0)
-		bne.s   loc_29FA
-		rts
+_cdbtocwrite:
+	cmpi.l #$FFFFFFFF, (a0)
+	bne.s  loc_29FA
+	rts
 ; End of function _cdbtocwrite
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-_cdbtocread:                ; CODE XREF: sub_2946+1Aj
-		move.w  d1,d0
-		bsr.w   getTocForTrack
-		rts
+_cdbtocread:
+	move.w d1, d0
+	bsr.w  getTocForTrack
+	rts
 ; End of function _cdbtocread
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-_ledset:                ; CODE XREF: sub_2946+62j
-		move.w  d1,userLedMode(a5)
-		rts
+_ledset:
+	move.w d1, userLedMode(a5)
+	rts
 ; End of function _ledset
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-_cdbpause:              ; CODE XREF: sub_2946+1Ej
-		move.w  d1,cddSpindownDelay(a5)
-		rts
+_cdbpause:
+	move.w d1, cddSpindownDelay(a5)
+	rts
 ; End of function _cdbpause
 
 
@@ -6818,177 +6821,190 @@ loc_3922:
 		bra.w   _cbtspstat
 ; ---------------------------------------------------------------------------
 
-_cbtipstat:             ; CODE XREF: BIOS:0000393Ej
-		moveq   #4,d1
-		bra.s   loc_3958
+_cbtipstat:
+	moveq #4, d1
+	bra.s loc_3958
 ; ---------------------------------------------------------------------------
 
-_cbtspstat:             ; CODE XREF: BIOS:00003946j
-		moveq   #3,d1
-		bra.s   loc_3958
+_cbtspstat:
+	moveq #3, d1
+	bra.s loc_3958
 ; ---------------------------------------------------------------------------
 
-_cbtopenstat:               ; CODE XREF: BIOS:0000392Ej
-		moveq   #6,d1
-		bra.s   loc_3958
+_cbtopenstat:
+	moveq #6, d1
+	bra.s loc_3958
 ; ---------------------------------------------------------------------------
 
-_cbtchkstat:                ; CODE XREF: BIOS:00003936j
-		moveq   #5,d1
+_cbtchkstat:
+	moveq #5, d1
 
-loc_3958:               ; CODE XREF: BIOS:0000394Cj
-					; BIOS:00003950j ...
-		move.w  (_BOOTSTAT).w,d0
-		btst    d1,bootBitfield(a5)
-		sne d1
-		lsr.w   #1,d1
-		rts
+loc_3958:
+	move.w (_BOOTSTAT).w, d0
+	btst   d1, bootBitfield(a5)
+	sne    d1
+	lsr.w  #1, d1
+	rts
 ; ---------------------------------------------------------------------------
 
-_cbtopendisc:               ; CODE XREF: BIOS:0000392Aj
-		bset    #0,bootBitfield(a5)
-		bne.s   loc_3986
-		bsr.w   sub_3A6C
+_cbtopendisc:
+	bset    #0,bootBitfield(a5)
+	bne.s   loc_3986
+	bsr.w   sub_3A6C
 ; ---------------------------------------------------------------------------
-		clr.b   byte_5A05(a5)
-		bset    #6,bootBitfield(a5)
-		bclr    #0,bootBitfield(a5)
-		or.w    d1,d1
-		bra.s   locret_398A
-; ---------------------------------------------------------------------------
-
-loc_3986:               ; CODE XREF: BIOS:0000396Cj
-		move    #1,ccr
-
-locret_398A:                ; CODE XREF: BIOS:00003984j
-		rts
+	clr.b   byte_5A05(a5)
+	bset    #6,bootBitfield(a5)
+	bclr    #0,bootBitfield(a5)
+	or.w    d1,d1
+	bra.s   locret_398A
 ; ---------------------------------------------------------------------------
 
-_cbtchkdisc:                ; CODE XREF: BIOS:00003932j
-		bset    #0,bootBitfield(a5)
-		bne.s   loc_39B4
-		bset    #5,bootBitfield(a5)
-		bne.s   loc_39AA
-		move.l  a0,dword_5B3E(a5)
-		bsr.w   sub_3A6C
-; ---------------------------------------------------------------------------
-		bset    #5,bootBitfield(a5)
+loc_3986:
+	move    #1,ccr
 
-loc_39AA:               ; CODE XREF: BIOS:0000399Aj
-		bclr    #0,bootBitfield(a5)
-		or.w    d1,d1
-		bra.s   locret_39B8
+locret_398A:
+	rts
 ; ---------------------------------------------------------------------------
 
-loc_39B4:               ; CODE XREF: BIOS:00003992j
-		move    #1,ccr
+_cbtchkdisc:
+	bset    #0,bootBitfield(a5)
+	bne.s   loc_39B4
+	bset    #5,bootBitfield(a5)
+	bne.s   loc_39AA
+	move.l  a0,bootHeaderAddress(a5)
+	bsr.w   sub_3A6C
+; ---------------------------------------------------------------------------
+	bset    #5,bootBitfield(a5)
 
-locret_39B8:                ; CODE XREF: BIOS:000039B2j
-		rts
+loc_39AA:
+	bclr    #0,bootBitfield(a5)
+	or.w    d1,d1
+	bra.s   locret_39B8
 ; ---------------------------------------------------------------------------
 
-_cbtipdisc:             ; CODE XREF: BIOS:0000393Aj
-		bset    #0,bootBitfield(a5)
-		bne.s   loc_39E8
-		cmpi.w  #4,(_BOOTSTAT).w
-		beq.s   loc_39D0
-		cmpi.w  #6,(_BOOTSTAT).w
+loc_39B4:
+	move    #1,ccr
 
-loc_39D0:               ; CODE XREF: BIOS:000039C8j
-		bne.s   loc_39E8
-		move.l  a0,dword_5B3E(a5)
-		move.l  a1,dword_5B42(a5)
-		bsr.w   loc_3A84
-; ---------------------------------------------------------------------------
-		move.b  #$90,bootBitfield(a5)
-		or.w    d1,d1
-		bra.s   locret_39EC
+locret_39B8:
+	rts
 ; ---------------------------------------------------------------------------
 
-loc_39E8:               ; CODE XREF: BIOS:000039C0j
-					; BIOS:loc_39D0j
-		move    #1,ccr
+_cbtipdisc:
+	; Error if loader is busy
+	bset   #0, bootBitfield(a5)
+	bne.s  loc_39E8
 
-locret_39EC:                ; CODE XREF: BIOS:000039E6j
-		rts
+	cmpi.w #CD_GAMESYSTEM, (_BOOTSTAT).w
+	beq.s  loc_39D0
+
+	cmpi.w #CD_GAMEBOOT, (_BOOTSTAT).w
+
+loc_39D0:
+	; Error if disc not bootable
+	bne.s  loc_39E8
+
+	; Disc is either Game System or Game Boot
+	move.l a0, bootHeaderAddress(a5)
+	move.l a1, ipDstAddress(a5)
+	bsr.w  loc_3A84
+; ---------------------------------------------------------------------------
+	move.b #$90, bootBitfield(a5)       ; Set flags 7/4, clear other flags
+	or.w   d1, d1
+	bra.s  locret_39EC
 ; ---------------------------------------------------------------------------
 
-_cbtspdisc:             ; CODE XREF: BIOS:00003942j
-		bset    #0,bootBitfield(a5)
-		bne.s   loc_3A1A
-		cmpi.w  #4,(_BOOTSTAT).w
-		beq.s   loc_3A04
-		cmpi.w  #6,(_BOOTSTAT).w
+loc_39E8:
+	move #1, ccr
 
-loc_3A04:               ; CODE XREF: BIOS:000039FCj
-		bne.s   loc_3A1A
-		move.l  a1,dword_5B46(a5)
-		bset    #3,bootBitfield(a5)
-		bclr    #0,bootBitfield(a5)
-		or.w    d1,d1
-		bra.s   locret_3A1E
+locret_39EC:
+	rts
 ; ---------------------------------------------------------------------------
 
-loc_3A1A:               ; CODE XREF: BIOS:000039F4j
-					; BIOS:loc_3A04j
-		move    #1,ccr
+_cbtspdisc:
+	; Error if loader is busy
+	bset   #0, bootBitfield(a5)
+	bne.s  loc_3A1A
 
-locret_3A1E:                ; CODE XREF: BIOS:00003A18j
-		rts
+	cmpi.w #CD_GAMESYSTEM, (_BOOTSTAT).w
+	beq.s  loc_3A04
+
+	cmpi.w #CD_GAMEBOOT, (_BOOTSTAT).w
+
+loc_3A04:
+	; Error if disc not bootable
+	bne.s loc_3A1A
+
+	; Disc is either Game System or Game Boot
+	move.l a1, spDstAddress(a5)
+	bset   #3, bootBitfield(a5)         ; Set xx flag
+	bclr   #0, bootBitfield(a5)         ; Clear busy flag
+	or.w   d1, d1
+	bra.s  locret_3A1E
 ; ---------------------------------------------------------------------------
 
-_cbtint:                ; CODE XREF: BIOS:00003926j
-		movem.l d7,-(sp)
+loc_3A1A:
+	move #1, ccr
 
-		; Return if updater flag already set
-		bset    #0,bootBitfield(a5)
-		bne.s   loc_3A46
+locret_3A1E:
+	rts
+; ---------------------------------------------------------------------------
 
-		; Return if bit 7 clear
-		btst    #7,bootBitfield(a5)
-		beq.s   loc_3A40
+_cbtint:
+	movem.l d7,-(sp)
 
-		; Fetch interrupt handler address and data
-		movea.l cbtInterruptHandler(a5),a0
-		movem.l cbtInterruptData(a5),d7
-		jsr (a0)
+	; Return if busy flag already set
+	bset    #0, bootBitfield(a5)
+	bne.s   loc_3A46
 
-loc_3A40:               ; CODE XREF: BIOS:00003A32j
-		bclr    #0,bootBitfield(a5)
+	; Return if bit 7 clear
+	btst    #7, bootBitfield(a5)
+	beq.s   loc_3A40
 
-loc_3A46:               ; CODE XREF: BIOS:00003A2Aj
-		movem.l (sp)+,d7
-		rts
+	; Fetch interrupt handler address and data
+	movea.l cbtInterruptHandler(a5), a0
+	movem.l cbtInterruptData(a5), d7
+
+	; Run interrupt handler
+	jsr (a0)
+
+loc_3A40:
+	bclr    #0, bootBitfield(a5)
+
+loc_3A46:
+	movem.l (sp)+, d7
+	rts
 
 ; =============== S U B R O U T I N E =======================================
 
 
-cbtSetIntData:               ; CODE XREF: sub_3CDA+54p
-		movem.l d7,cbtInterruptData(a5)
-; End of function cbtSetIntData
+cbtSetIntData:
+	movem.l d7, cbtInterruptData(a5)
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-cbtSetIntHandler:               ; CODE XREF: sub_3A6C:loc_3A84p
-					; sub_3A6C:loc_3AECp ...
-		move.l  (sp)+,cbtInterruptHandler(a5)
-		rts
+cbtSetIntHandler:
+	move.l (sp)+, cbtInterruptHandler(a5)
+	rts
 ; End of function cbtSetIntHandler
 
+; End of function cbtSetIntData
+
 ; ---------------------------------------------------------------------------
 
-_cbtinit:               ; CODE XREF: BIOS:loc_3922j
-		lea bootBitfield(a5),a0
-		moveq   #0,d0
-		moveq   #5,d1
+_cbtinit:
+	lea bootBitfield(a5), a0
+	moveq #0, d0
+	moveq #5, d1
 
-loc_3A60:               ; CODE XREF: BIOS:00003A64j
-		move.l  d0,(a0)+
-		move.l  d0,(a0)+
-		dbf d1,loc_3A60
-		clr.b   byte_5A05(a5)
+	; Clear RAM from $5B24-$5B53
+	@loc_3A60:
+		move.l d0, (a0)+
+		move.l d0, (a0)+
+		dbf d1, @loc_3A60
+
+	clr.b byte_5A05(a5)
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -6996,90 +7012,109 @@ loc_3A60:               ; CODE XREF: BIOS:00003A64j
 
 sub_3A6C:               ; CODE XREF: BIOS:0000396Ep
 					; BIOS:000039A0p
-		andi.b  #$87,bootBitfield(a5)
-		move.w  #$FFFF,(_BOOTSTAT).w
-		bclr    #1,bootBitfield(a5)
-		bset    #7,bootBitfield(a5)
+	andi.b #$87, bootBitfield(a5)
+	move.w #CD_NOTREADY, (_BOOTSTAT).w
+	bclr   #1, bootBitfield(a5)
+	bset   #7, bootBitfield(a5)
 
-loc_3A84:               ; CODE XREF: BIOS:000039DAp
-					; sub_3A6C+3Aj ...
-		bsr.s   cbtSetIntHandler
-		btst    #5,bootBitfield(a5)
-		bne.s   loc_3AE0
-		btst    #4,bootBitfield(a5)
-		bne.s   loc_3AE0
-		btst    #3,bootBitfield(a5)
-		bne.s   loc_3AE0
-		btst    #6,bootBitfield(a5)
-		bne.s   loc_3AA8
-		bra.s   loc_3A84
+loc_3A84:
+	bsr.s cbtSetIntHandler
+
+	btst  #5, bootBitfield(a5)
+	bne.s loc_3AE0
+
+	btst  #4, bootBitfield(a5)
+	bne.s loc_3AE0
+
+	btst  #3, bootBitfield(a5)
+	bne.s loc_3AE0
+
+	btst  #6, bootBitfield(a5)
+	bne.s loc_3AA8
+
+	bra.s loc_3A84
 ; ---------------------------------------------------------------------------
 
 loc_3AA8:               ; CODE XREF: sub_3A6C+38j
-		bsr.w   sub_3DD6
-		andi.b  #$C7,bootBitfield(a5)
-		moveq   #DRVOPEN,d0
-		bsr.w   sub_3CBE
-		bclr    #6,bootBitfield(a5)
-		bra.s   loc_3A84
+	bsr.w   sub_3DD6
+
+	andi.b  #$C7, bootBitfield(a5)
+	moveq   #DRVOPEN, d0
+	bsr.w   waitForCdbComplete
+
+	bclr    #6, bootBitfield(a5)
+
+	bra.s   loc_3A84
 ; ---------------------------------------------------------------------------
-word_3AC0:  dc.w $101       ; DATA XREF: sub_3A6C:loc_3AE0o
-word_3AC2:  dc.w $2FF       ; DATA XREF: sub_3A6C:loc_3ADAo
-					; sub_3A6C+1D4o
+word_3AC0:
+	dc.b 1      ; First track
+	dc.b 1      ; Last track
+word_3AC2:
+	dc.b 2      ; First track
+	dc.b $FF    ; Last track
 ; ---------------------------------------------------------------------------
 
-loc_3AC4:               ; CODE XREF: sub_3A6C:loc_3C06j
-		move.w  #3,(_BOOTSTAT).w
-		bra.s   loc_3ADA
-; ---------------------------------------------------------------------------
-		move.w  #2,(_BOOTSTAT).w
-		bra.s   loc_3ADA
+loc_3AC4:
+	move.w  #CD_MIXED, (_BOOTSTAT).w
+	bra.s   loc_3ADA
 ; ---------------------------------------------------------------------------
 
-loc_3AD4:               ; CODE XREF: sub_3A6C+12Ej
-		move.w  #1,(_BOOTSTAT).w
+loc_3ACC:
+	move.w  #CD_ROM, (_BOOTSTAT).w
+	bra.s   loc_3ADA
+; ---------------------------------------------------------------------------
 
-loc_3ADA:               ; CODE XREF: sub_3A6C+5Ej sub_3A6C+66j
-		lea word_3AC2(pc),a0
-		bra.s   loc_3AE4
+loc_3AD4:
+	move.w  #CD_MUSIC, (_BOOTSTAT).w
+
+loc_3ADA:
+	lea word_3AC2(pc), a0
+	bra.s   loc_3AE4
 ; ---------------------------------------------------------------------------
 
 loc_3AE0:               ; CODE XREF: sub_3A6C+20j sub_3A6C+28j ...
-		lea word_3AC0(pc),a0
+	lea word_3AC0(pc), a0
 
 loc_3AE4:               ; CODE XREF: sub_3A6C+72j
-		move.w  #DRVINIT,d0
-		bsr.w   sub_3CBE
+	move.w #DRVINIT, d0
+	bsr.w  waitForCdbComplete
 
 loc_3AEC:               ; CODE XREF: sub_3A6C+AAj
-		bsr.w   cbtSetIntHandler
-		move.w  #CDBSTAT,d0
-		jsr _CDBIOS
-		lea (_CDSTAT).w,a0
-		move.b  0(a0),d0
-		cmpi.b  #$10,d0
-		beq.w   loc_3B1E
-		cmpi.b  #$40,d0 ; '@'
-		beq.w   loc_3B18
-		andi.w  #$F0,d0 ; 'ð'
-		beq.s   loc_3B78
-		bra.s   loc_3AEC
+	bsr.w  cbtSetIntHandler
+
+	move.w #CDBSTAT, d0
+	jsr    _CDBIOS
+
+	lea (_CDSTAT).w, a0
+	move.b 0(a0), d0
+
+	; Check for "no disc" status
+	cmpi.b #$10, d0
+	beq.w  loc_3B1E
+
+	; Check for "open tray" status
+	cmpi.b #$40, d0
+	beq.w  loc_3B18
+
+	; Check for "not ready" or "reading TOC" status
+	andi.w #$F0,d0
+	beq.s  loc_3B78
+	bra.s  loc_3AEC
 ; ---------------------------------------------------------------------------
 
-loc_3B18:               ; CODE XREF: sub_3A6C+A0j
-					; sub_3A6C+154j
-		nop
-		nop
-		nop
+loc_3B18:
+	nop
+	nop
+	nop
 
 loc_3B1E:               ; CODE XREF: sub_3A6C+98j
-		move.w  #0,(_BOOTSTAT).w
+	move.w  #CD_NODISC, (_BOOTSTAT).w
 
 loc_3B24:               ; CODE XREF: sub_3A6C+11Ej
-		bsr.w   sub_3DD6
-		bclr    #5,bootBitfield(a5)
-		bclr    #4,bootBitfield(a5)
-		bra.w   loc_3A84
+	bsr.w   sub_3DD6
+	bclr    #5, bootBitfield(a5)
+	bclr    #4, bootBitfield(a5)
+	bra.w   loc_3A84
 ; ---------------------------------------------------------------------------
 asc_3B38:
 	dc.b 'SEGADISC        '
@@ -7089,243 +7124,317 @@ asc_3B38:
 ; ---------------------------------------------------------------------------
 
 loc_3B78:               ; CODE XREF: sub_3A6C+A8j
-		st  byte_5A05(a5)
-		cmpi.w  #$FFFF,(_BOOTSTAT).w
-		beq.s   loc_3B8C
-		cmpi.w  #4,(_BOOTSTAT).w
-		bcs.s   loc_3B24
+	st  byte_5A05(a5)
 
-loc_3B8C:               ; CODE XREF: sub_3A6C+116j
-		move.w  #1,d1
-		move.w  #CDBTOCREAD,d0
-		jsr _CDBIOS
-		tst.b   d1
-		beq.w   loc_3AD4
-		move.l  #0,dword_5B34(a5)
+	cmpi.w  #CD_NOTREADY, (_BOOTSTAT).w
+	beq.s   loc_3B8C
+
+	cmpi.w  #CD_GAMESYSTEM, (_BOOTSTAT).w
+	bcs.s   loc_3B24
+
+loc_3B8C:
+	move.w #1,d1
+	move.w #CDBTOCREAD, d0
+	jsr    _CDBIOS
+
+	tst.b   d1
+	beq.w   loc_3AD4
+
+	move.l  #0, readSectorStart(a5)
 
 loc_3BA6:               ; CODE XREF: sub_3A6C+198j
-		move.l  dword_5B34(a5),d0
-		lsl.l   #8,d0
-		lsl.l   #3,d0
-		movea.l d0,a1
-		move.l  #$800,d1
-		move.l  dword_5B3E(a5),dword_5B4A(a5)
-		bsr.w   sub_3CDA
-		bcs.w   loc_3B18
-		move.l  dword_5B4E(a5),d0
-		bsr.w   sub_7EE
-		subi.l  #$96,d0 ; '–'
-		move.w  d0,word_5B32(a5)
-		movea.l dword_5B3E(a5),a0
-		lea asc_3B38(pc),a1 ; "SEGADISC    "
-		moveq   #3,d0
+	move.l  readSectorStart(a5), d0
+	lsl.l   #8, d0
+	lsl.l   #3, d0
+	movea.l d0, a1
+	move.l  #$800, d1
+	move.l  bootHeaderAddress(a5), dataBufferAddress(a5)
+	bsr.w   readSectorsFromDisc
+	bcs.w   loc_3B18
 
-loc_3BE0:               ; CODE XREF: sub_3A6C+18Aj
-		movem.l a0-a1,-(sp)
-		moveq   #3,d1
+	move.l  headerBuffer(a5), d0
+	bsr.w   sub_7EE
 
-loc_3BE6:               ; CODE XREF: sub_3A6C+17Cj
-		cmpm.l  (a0)+,(a1)+
-		dbne    d1,loc_3BE6
-		movem.l (sp)+,a0-a1
+	subi.l  #$96, d0 ; '–'
+	move.w  d0, word_5B32(a5)
+	movea.l bootHeaderAddress(a5), a0
+	lea asc_3B38(pc), a1 ; "SEGADISC        "
+
+	moveq #3, d0
+	loc_3BE0:
+		movem.l a0-a1, -(sp)
+
+		moveq #3, d1
+		loc_3BE6:
+			cmpm.l (a0)+, (a1)+
+			dbne   d1, loc_3BE6
+
+		movem.l (sp)+, a0-a1
 		beq.s   loc_3C0A
-		adda.w  #$10,a1
-		dbf d0,loc_3BE0
-		lea dword_5B34(a5),a0
-		cmpi.l  #$F,(a0)
-		bls.s   loc_3BA6
+
+		adda.w #$10, a1
+		dbf d0, loc_3BE0
+
+	lea readSectorStart(a5), a0
+	cmpi.l  #$F, (a0)
+	bls.s   loc_3BA6
 
 loc_3C06:               ; CODE XREF: sub_3A6C+1BAj
-		bra.w   loc_3AC4
+	bra.w   loc_3AC4
 ; ---------------------------------------------------------------------------
 
 loc_3C0A:               ; CODE XREF: sub_3A6C+184j
-		cmpi.w  #0,d0
-		beq.s   loc_3C16
-		cmpi.w  #2,d0
-		bne.s   loc_3C28
+	; Check if disc is bootable
+	cmpi.w  #0, d0
+	beq.s   loc_3C16
 
-loc_3C16:               ; CODE XREF: sub_3A6C+1A2j
-		movem.l d0/a0,-(sp)
-		lea $200(a0),a0
-		bsr.w   checkDiscBootBlock
-		movem.l (sp)+,d0/a0
-		bcs.s   loc_3C06
+	cmpi.w  #2, d0
+	bne.s   loc_3C28
 
-loc_3C28:               ; CODE XREF: sub_3A6C+1A8j
-		addq.w  #4,d0
-		move.w  d0,(_BOOTSTAT).w
-		bset    #1,bootBitfield(a5)
-		bsr.w   sub_3DD6
-		btst    #4,bootBitfield(a5)
-		bne.s   loc_3C56
-		lea word_3AC2(pc),a0
-		move.w  #$10,d0
-		bsr.w   sub_3CBE
-		bclr    #5,bootBitfield(a5)
-		bra.w   loc_3A84
+loc_3C16:
+	; Bootable disc, check security block
+	movem.l d0/a0, -(sp)
+
+	lea     $200(a0), a0
+	bsr.w   checkDiscBootBlock
+
+	movem.l (sp)+, d0/a0
+	bcs.s   loc_3C06
+
+loc_3C28:
+	addq.w  #4, d0
+	move.w  d0, (_BOOTSTAT).w
+	bset    #1, bootBitfield(a5)
+	bsr.w   sub_3DD6
+
+	; Load IP/SP if needed
+	btst    #4, bootBitfield(a5)
+	bne.s   loadInitialProgram
+
+	lea word_3AC2(pc), a0
+	move.w  #DRVINIT, d0
+	bsr.w   waitForCdbComplete
+
+	bclr    #5, bootBitfield(a5)
+	bra.w   loc_3A84
 ; ---------------------------------------------------------------------------
 
-loc_3C56:               ; CODE XREF: sub_3A6C+1D2j
-		movea.l dword_5B42(a5),a0
-		bsr.w   sub_3DBC
-		move.l  a0,dword_5B4A(a5)
-		movea.l dword_5B3E(a5),a0
-		movea.l $30(a0),a1
-		cmpa.l  #$200,a1
-		bne.s   loc_3C80
-		cmpi.l  #$600,$34(a0)
-		bne.s   loc_3C80
-		bra.w   loc_3C88
+loadInitialProgram:              
+	movea.l ipDstAddress(a5), a0
+	bsr.w   copySector0
+
+	move.l  a0, dataBufferAddress(a5)
+	movea.l bootHeaderAddress(a5), a0
+
+	movea.l SYSTEMHEADER.ipAddress(a0), a1
+	cmpa.l  #$200, a1
+	bne.s   loc_3C80
+
+	cmpi.l  #$600, SYSTEMHEADER.ipSize(a0)
+	bne.s   loc_3C80
+	bra.w   loc_3C88
 ; ---------------------------------------------------------------------------
 
-loc_3C80:               ; CODE XREF: sub_3A6C+204j
-					; sub_3A6C+20Ej
-		bsr.w   sub_3CDA
-		bcs.w   loc_3A84
+loc_3C80:             
+	; Read IP from disc
+	bsr.w   readSectorsFromDisc
+	
+	; Jump back if error
+	bcs.w   loc_3A84
 
-loc_3C88:               ; CODE XREF: sub_3A6C+210j
-		bclr    #4,bootBitfield(a5)
+loc_3C88:
+	; Signal IP loaded
+	bclr    #4, bootBitfield(a5)
 
-loc_3C8E:               ; CODE XREF: sub_3A6C+22Cj
-		bsr.w   cbtSetIntHandler
-		btst    #3,bootBitfield(a5)
-		beq.s   loc_3C8E
-		movea.l dword_5B3E(a5),a0
-		movea.l $40(a0),a1
-		move.l  $44(a0),d1
-		move.l  dword_5B46(a5),dword_5B4A(a5)
-		bsr.w   sub_3CDA
-		bcs.w   loc_3A84
-		bclr    #3,$5B24(a5)
-		bra.w   loc_3A84
+	; Wait for "SP not loaded" flag
+	@loc_3C8E:
+		bsr.w cbtSetIntHandler
+
+		btst  #3, bootBitfield(a5)
+		beq.s @loc_3C8E
+
+loadSystemProgram:
+	; Read SP from disc
+	movea.l bootHeaderAddress(a5), a0
+	movea.l SYSTEMHEADER.spAddress(a0), a1
+	move.l  SYSTEMHEADER.spSize(a0), d1
+	move.l  spDstAddress(a5), dataBufferAddress(a5)
+	bsr.w   readSectorsFromDisc
+
+	; Jump back if error
+	bcs.w loc_3A84
+
+	; Signal SP loaded
+	bclr  #3, bootBitfield(a5)
+	bra.w loc_3A84
 ; End of function sub_3A6C
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3CBE:               ; CODE XREF: sub_3A6C+48p sub_3A6C+7Cp ...
-		move.l  (sp)+,dword_5B2E(a5)
-		jsr _CDBIOS
+waitForCdbComplete:               ; CODE XREF: sub_3A6C+48p sub_3A6C+7Cp ...
+	move.l (sp)+, cbtReturnAddress(a5)
+	jsr    _CDBIOS
 
-loc_3CC6:               ; CODE XREF: sub_3CBE+14j
-		bsr.w   cbtSetIntHandler
-		move.w  #CDBCHK,d0
-		jsr _CDBIOS
-		bcs.s   loc_3CC6
-		movea.l dword_5B2E(a5),a0
-		jmp (a0)
-; End of function sub_3CBE
+	@loc_3CC6:
+		bsr.w  cbtSetIntHandler
+		move.w #CDBCHK, d0
+		jsr    _CDBIOS
+		bcs.s  @loc_3CC6
+
+	movea.l cbtReturnAddress(a5), a0
+	jmp (a0)
+; End of function waitForCdbComplete
 
 
 ; =============== S U B R O U T I N E =======================================
 
+; Inputs:
+;   a1: Address on disc to begin reading (will round down to sector)
+;   d1: Number of bytes to read (will round up to sector)
 
-sub_3CDA:               ; CODE XREF: sub_3A6C+150p
+readSectorsFromDisc:               ; CODE XREF: sub_3A6C+150p
 					; sub_3A6C:loc_3C80p ...
-		move.l  (sp)+,dword_5B2E(a5)
-		lea dword_5B34(a5),a0
-		move.l  a1,d0
-		lsr.l   #8,d0
-		lsr.l   #3,d0
-		move.l  d0,(a0)
-		divu.w  #$4B,d0 ; 'K'
-		swap    d0
-		bsr.w   convertToBcd
-		move.b  d0,byte_5B52(a5)
-		move.l  d1,d0
-		lsr.l   #8,d0
-		lsr.l   #3,d0
-		andi.w  #$7FF,d1
-		beq.s   loc_3D06
-		addq.l  #1,d0
+	move.l  (sp)+, cbtReturnAddress(a5)
+	lea readSectorStart(a5), a0
 
-loc_3D06:               ; CODE XREF: sub_3CDA+28j
-		move.l  d0,4(a0)
-		move.w  d0,word_5B3C(a5)
+	; Convert start address to sector number
+	move.l  a1, d0
+	lsr.l   #8, d0
+	lsr.l   #3, d0
+	move.l  d0, (a0)
 
-loc_3D0E:               ; CODE XREF: sub_3CDA+64j sub_3CDA+74j ...
-		tst.b   byte_5A05(a5)
-		beq.w   loc_3DAC
-		lea dword_5B34(a5),a0
-		move.w  #ROMREADN,d0
-		jsr _CDBIOS
-		move.w  #$258,d7
+	divu.w  #75, d0
+	swap    d0
+	bsr.w   convertToBcd
+	move.b  d0, frameCheckValue(a5)
 
-loc_3D26:               ; CODE XREF: sub_3CDA+60j
-		tst.b   byte_5A05(a5)
-		beq.w   loc_3DAC
-		bsr.w   cbtSetIntData
+	; Convert bytes to sector count
+	move.l  d1, d0
+	lsr.l   #8, d0
+	lsr.l   #3, d0
 
-loc_3D32:               ; CODE XREF: sub_3CDA+CCj
-		move.w  #CDCSTAT,d0
-		jsr _CDBIOS
-		dbcc    d7,loc_3D26
-		bcs.s   loc_3D0E
-		move.b  #3,(GA_CDC_TRANSFER).w
-		move.w  #CDCREAD,d0
-		jsr _CDBIOS
-		bcs.s   loc_3D0E
-		lsr.w   #8,d0
-		cmp.b   byte_5B52(a5),d0
-		bne.s   loc_3D0E
-		movea.l dword_5B4A(a5),a0
-		lea dword_5B4E(a5),a1
-		move.w  #CDCTRN,d0
-		jsr _CDBIOS
-		bcs.s   loc_3D0E
-		move.l  dword_5B4E(a5),d0
-		lsr.w   #8,d0
-		cmp.b   byte_5B52(a5),d0
-		bne.s   loc_3D0E
-		moveq   #1,d1
-		move    #4,ccr
-		abcd    d1,d0
-		cmpi.b  #$75,d0 ; 'u'
-		bcs.s   loc_3D86
-		moveq   #0,d0
+	andi.w  #$7FF, d1
+	beq.s   @loc_3D06
 
-loc_3D86:               ; CODE XREF: sub_3CDA+A8j
-		move.b  d0,byte_5B52(a5)
-		move.l  a0,dword_5B4A(a5)
-		move.w  #CDCACK,d0
-		jsr _CDBIOS
-		move.w  #6,d7
-		addq.l  #1,dword_5B34(a5)
-		subq.l  #1,dword_5B38(a5)
-		subq.w  #1,word_5B3C(a5)
-		bne.s   loc_3D32
-		or.w    d1,d1
-		bra.s   loc_3DB6
+	addq.l  #1, d0
+
+@loc_3D06:
+	move.l  d0, 4(a0)
+	move.w  d0, readSectorLoopCount(a5)
+
+@beginRead:
+	; Error if byte is 0
+	tst.b   byte_5A05(a5)
+	beq.w   @returnError
+
+	lea readSectorStart(a5), a0
+	move.w  #ROMREADN, d0
+	jsr     _CDBIOS
+
+	move.w  #600, d7
+	@loc_3D26:
+		; Error if byte is 0
+		tst.b  byte_5A05(a5)
+		beq.w  @returnError
+
+		bsr.w  cbtSetIntData
+
+	@loc_3D32:
+		move.w #CDCSTAT, d0
+		jsr    _CDBIOS
+
+		; Leave loop if data is ready
+		dbcc d7, @loc_3D26
+
+	; Retry if data not present
+	bcs.s   @beginRead
+
+	move.b  #3, (GA_CDC_TRANSFER).w     ; Sub-CPU READ transfer mode
+	move.w  #CDCREAD, d0
+	jsr     _CDBIOS
+
+	; Retry if data not present
+	bcs.s   @beginRead
+
+	lsr.w   #8, d0
+	cmp.b   frameCheckValue(a5), d0
+
+	; Retry if wrong frame
+	bne.s   @beginRead
+
+	movea.l dataBufferAddress(a5), a0
+	lea     headerBuffer(a5), a1
+	move.w  #CDCTRN, d0
+	jsr     _CDBIOS
+
+	; Retry if transfer incomplete
+	bcs.s   @beginRead
+
+	move.l  headerBuffer(a5), d0
+	lsr.w   #8, d0
+	cmp.b   frameCheckValue(a5), d0
+
+	; Retry if wrong frame
+	bne.s   @beginRead
+
+	; Increment frame check value
+	moveq   #1, d1
+	move    #4, ccr
+	abcd    d1, d0
+	cmpi.b  #$75, d0
+	bcs.s   @loc_3D86
+
+	; Reset to 0 if we hit frame 75
+	moveq   #0, d0
+
+@loc_3D86:
+	; Update check value and buffer address for next frame
+	move.b  d0, frameCheckValue(a5)
+	move.l  a0, dataBufferAddress(a5)
+
+	; Tell the CDC we read the sector correctly
+	move.w  #CDCACK, d0
+	jsr     _CDBIOS
+
+	move.w  #6, d7
+	addq.l  #1, readSectorStart(a5)
+	subq.l  #1, readSectorCount(a5)
+	subq.w  #1, readSectorLoopCount(a5)
+	bne.s   @loc_3D32
+
+	or.w    d1, d1
+	bra.s   @returnSuccess
 ; ---------------------------------------------------------------------------
 
-loc_3DAC:               ; CODE XREF: sub_3CDA+38j sub_3CDA+50j
-		move.w  #$FFFF,(_BOOTSTAT).w
-		move    #1,ccr
+@returnError:
+	move.w  #CD_NOTREADY, (_BOOTSTAT).w
+	move    #1, ccr
 
-loc_3DB6:               ; CODE XREF: sub_3CDA+D0j
-		movea.l dword_5B2E(a5),a0
-		jmp (a0)
-; End of function sub_3CDA
+@returnSuccess:
+	movea.l cbtReturnAddress(a5), a0
+	jmp (a0)
+; End of function readSectorsFromDisc
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3DBC:               ; CODE XREF: sub_3A6C+1EEp
-		movea.l dword_5B3E(a5),a1
-		adda.w  #$200,a1
-		move.w  #$5F,d1 ; '_'
+copySector0:               ; CODE XREF: sub_3A6C+1EEp
+	movea.l bootHeaderAddress(a5), a1
+	adda.w  #$200, a1
+	move.w  #95, d1
 
-loc_3DC8:               ; CODE XREF: sub_3DBC+14j
-		move.l  (a1)+,(a0)+
-		move.l  (a1)+,(a0)+
-		move.l  (a1)+,(a0)+
-		move.l  (a1)+,(a0)+
-		dbf d1,loc_3DC8
-		rts
-; End of function sub_3DBC
+	@loc_3DC8:
+		move.l (a1)+, (a0)+
+		move.l (a1)+, (a0)+
+		move.l (a1)+, (a0)+
+		move.l (a1)+, (a0)+
+		dbf d1, @loc_3DC8
+
+	rts
+; End of function copySector0
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -7333,43 +7442,53 @@ loc_3DC8:               ; CODE XREF: sub_3DBC+14j
 
 sub_3DD6:               ; CODE XREF: sub_3A6C:loc_3AA8p
 					; sub_3A6C:loc_3B24p ...
-		move.l  (sp)+,dword_5B2E(a5)
-		bra.s   loc_3DE0
+	move.l  (sp)+, cbtReturnAddress(a5)
+	bra.s   loc_3DE0
 ; ---------------------------------------------------------------------------
 
-loc_3DDC:               ; CODE XREF: sub_3DD6+2Aj
-		bsr.w   cbtSetIntHandler
+loc_3DDC:
+	bsr.w   cbtSetIntHandler
 
-loc_3DE0:               ; CODE XREF: sub_3DD6+4j
-		lea unk_3E36(pc),a0
-		cmpi.w  #4,(_BOOTSTAT).w
-		bcs.s   loc_3E14
-		cmpi.w  #$FFFF,(_BOOTSTAT).w
-		beq.s   loc_3E14
-		lea unk_3E32(pc),a0
-		move.w  #WONDERREQ,d0
-		jsr _CDBIOS
-		bcs.s   loc_3DDC
+loc_3DE0:
+	lea unk_3E36(pc), a0
 
-loc_3E02:               ; CODE XREF: sub_3DD6+38j
-		bsr.w   cbtSetIntHandler
-		move.w  #WONDERCHK,d0
-		jsr _CDBIOS
-		bcs.s   loc_3E02
-		nop
-		nop
+	; Jump if not a GAME* disc
+	cmpi.w #CD_GAMESYSTEM, (_BOOTSTAT).w
+	bcs.s  loc_3E14
 
-loc_3E14:               ; CODE XREF: sub_3DD6+14j sub_3DD6+1Cj
-		move.w  #0,d0
-		cmpi.w  #4,(_BOOTSTAT).w
-		bcs.s   loc_3E2C
-		cmpi.w  #$FFFF,(_BOOTSTAT).w
-		beq.s   loc_3E2C
-		move.w  #1,d0
+	; Jump if NOTREADY status
+	cmpi.w #CD_NOTREADY,(_BOOTSTAT).w
+	beq.s  loc_3E14
 
-loc_3E2C:               ; CODE XREF: sub_3DD6+48j sub_3DD6+50j
-		movea.l dword_5B2E(a5),a0
-		jmp (a0)
+	lea    unk_3E32(pc), a0
+	move.w #WONDERREQ, d0
+	jsr    _CDBIOS
+	bcs.s  loc_3DDC
+
+loc_3E02:
+	bsr.w  cbtSetIntHandler
+	move.w #WONDERCHK, d0
+	jsr    _CDBIOS
+	bcs.s  loc_3E02
+	nop
+	nop
+
+loc_3E14:
+	move.w  #0, d0
+
+	; Jump if not a GAME* disc
+	cmpi.w  #CD_GAMESYSTEM, (_BOOTSTAT).w
+	bcs.s   loc_3E2C
+
+	; Jump if NOTREADY status
+	cmpi.w  #CD_NOTREADY, (_BOOTSTAT).w
+	beq.s   loc_3E2C
+
+	move.w  #1, d0
+
+loc_3E2C:
+	movea.l cbtReturnAddress(a5), a0
+	jmp (a0)
 ; End of function sub_3DD6
 
 ; ---------------------------------------------------------------------------
@@ -7386,25 +7505,29 @@ unk_3E36:   dc.b $E0 ; à        ; DATA XREF: sub_3DD6:loc_3DE0o
 
 
 checkDiscBootBlock:             ; CODE XREF: sub_3A6C+1B2p
-		movem.l d0/a0-a1,-(sp)
-		lea regionBootBlock(pc),a1
-		move.w  #$2C1,d0
+	movem.l d0/a0-a1,-(sp)
 
-loc_3E46:               ; CODE XREF: checkDiscBootBlock+Ej
-		cmpm.w  (a0)+,(a1)+
-		dbne    d0,loc_3E46
-		beq.s   loc_3E52
-		move    #1,ccr
+	lea    regionBootBlock(pc), a1
+	move.w #705, d0
 
-loc_3E52:               ; CODE XREF: checkDiscBootBlock+12j
-		movem.l (sp)+,d0/a0-a1
-		rts
+	@loc_3E46:
+		cmpm.w (a0)+, (a1)+
+		dbne   d0, @loc_3E46
+
+	; Raise error (carry) flag if not equal
+	beq.s loc_3E52
+	move  #1, ccr
+
+loc_3E52:
+	movem.l (sp)+, d0/a0-a1
+	rts
 ; End of function checkDiscBootBlock
 
 ; ---------------------------------------------------------------------------
 regionBootBlock:
 	incbin "us_boot_block.bin"
 
+; ---------------------------------------------------------------------------
 unk_43DC:   dc.b   0        ; DATA XREF: BIOS:0000450Co
 		dc.b   0
 		dc.b   0
