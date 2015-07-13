@@ -23,3 +23,15 @@ m_restoreStatusRegister:    macro
 m_restoreConditionBits:    macro
 	move (sp)+, ccr
 	endm
+
+;   Error conditions
+;   CD-BIOS uses the carry flag to indicate success/failure
+;   Carry flag set   -> failure
+;   Carry flag clear -> success
+m_setErrorFlag: macro
+	move #1, ccr
+	endm
+
+m_clearErrorFlag:   macro
+	or.w d1, d1
+	endm

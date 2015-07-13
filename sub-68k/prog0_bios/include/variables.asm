@@ -25,7 +25,7 @@ bootBitfield            equ $5B24
 cbtInterruptHandler     equ $5B26
 cbtInterruptData        equ $5B2A
 cbtReturnAddress        equ $5B2E
-word_5B32               equ $5B32
+dataStartSector         equ $5B32
 readSectorStart         equ $5B34
 readSectorCount         equ $5B38
 readSectorLoopCount     equ $5B3C
