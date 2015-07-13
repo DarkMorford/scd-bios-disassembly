@@ -14,7 +14,7 @@
 
 	org $6000
 
-loc_6000:
+header_6000:
 	; User header (see BIOS pg 33)
 	dc.b 'MAINBOOTUSR'  ; Module name
 	dc.b 0              ; Boot flag

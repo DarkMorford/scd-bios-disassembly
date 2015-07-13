@@ -7,7 +7,7 @@ _BOOTSTAT   equ $5EA0
 _USERMODE   equ $5EA6
 
 ;   CD types
-CD_NOTREADY     equ $FF
+CD_NOTREADY     equ $FFFF
 CD_NODISC       equ 0
 CD_MUSIC        equ 1
 CD_ROM          equ 2
