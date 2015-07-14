@@ -11,6 +11,7 @@ SubCPU_Base2    equ $38000
 ;   Word RAM
 WordRAM_Bank0   equ $200000 ; 2 Mbit, real memory in 1 Mbit mode
 WordRAM_Bank1   equ $220000 ; VRAM image in 1 Mbit mode
+
 dword_220E00    equ $220E00
 unk_200080      equ $200080
 unk_201880      equ $201880

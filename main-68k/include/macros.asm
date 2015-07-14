@@ -25,6 +25,10 @@ m_disableInterrupts:    macro
 	ori	#$700, sr
 	endm
 
+m_enableInterrupts: macro
+	andi #$F8FF, sr
+	endm
+
 ;   Status register
 m_saveStatusRegister:   macro
 	move sr, -(sp)
