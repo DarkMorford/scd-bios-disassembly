@@ -13754,22 +13754,11 @@ byte_6A9A:
 unk_6ABE:
 	dc.b   4
 	dc.b   8
-	dc.b   0
-	dc.b   0
-	dc.b $6A ; j
-	dc.b $D0 ; Ð
-	dc.b   0
-	dc.b   0
-	dc.b $6A ; j
-	dc.b $D8 ; Ø
-	dc.b   0
-	dc.b   0
-	dc.b $6A ; j
-	dc.b $E0 ; à
-	dc.b   0
-	dc.b   0
-	dc.b $6A ; j
-	dc.b $E8 ; è
+
+	dc.l $6AD0
+	dc.l $6AD8
+	dc.l $6AE0
+	dc.l $6AE8
 	dc.b   0
 	dc.b   0
 	dc.b $F8 ; ø
@@ -14024,8 +14013,7 @@ loc_73B0:
 ; =============== S U B R O U T I N E =======================================
 
 
-waitForWordRam:             ; CODE XREF: waitForWordRam+8j
-					; sub_73CA+2Aj ...
+waitForWordRam:             ; CODE XREF: sub_73CA+2Aj ...
 	btst  #GA_RET, (GA_MEM_MODE).l
 	beq.s waitForWordRam
 
@@ -14245,19 +14233,21 @@ sub_751A:               ; CODE XREF: ROM:00007516j sub_751A+8j
 
 
 sub_752C:               ; CODE XREF: ROM:loc_74F6j
-		bset    #7,(word_FFFFFF02).w
-		bne.s   loc_7540
-		bsr.w   sub_754E
-		bsr.w   sub_7594
-		bsr.w   sub_760C
+	bset  #7, (word_FFFFFF02).w
+	bne.s @loc_7540
 
-loc_7540:               ; CODE XREF: sub_752C+6j
-		bsr.w   sub_7A1E
-		beq.s   locret_754C
-		move.w  #4,(word_FFFFFF02).w
+	bsr.w sub_754E
+	bsr.w sub_7594
+	bsr.w sub_760C
 
-locret_754C:                ; CODE XREF: sub_752C+18j
-		rts
+@loc_7540:
+	bsr.w  sub_7A1E
+	beq.s  @locret_754C
+
+	move.w #4, (word_FFFFFF02).w
+
+@locret_754C:
+	rts
 ; End of function sub_752C
 
 
@@ -14265,16 +14255,21 @@ locret_754C:                ; CODE XREF: sub_752C+18j
 
 
 sub_754E:               ; CODE XREF: sub_752C+8p
-		bsr.w   sub_7876
-		movem.w word_757C(pc),d0-d2
-		bsr.w   sub_77FA
-		movem.w word_7582(pc),d0-d2
-		bsr.w   sub_77FA
-		movem.w word_7588(pc),d0-d2
-		bsr.w   sub_77FA
-		movem.w word_758E(pc),d0-d2
-		bsr.w   sub_77FA
-		rts
+	bsr.w   sub_7876
+
+	movem.w word_757C(pc), d0-d2
+	bsr.w   sub_77FA
+
+	movem.w word_7582(pc), d0-d2
+	bsr.w   sub_77FA
+
+	movem.w word_7588(pc), d0-d2
+	bsr.w   sub_77FA
+
+	movem.w word_758E(pc), d0-d2
+	bsr.w   sub_77FA
+
+	rts
 ; End of function sub_754E
 
 ; ---------------------------------------------------------------------------
@@ -16282,23 +16277,23 @@ sub_85C8:               ; CODE XREF: ROM:00007512j
 ; ---------------------------------------------------------------------------
 
 loc_85E0:
-		bra.w   sub_8604
+	bra.w   sub_8604
 ; ---------------------------------------------------------------------------
-		bra.w   sub_866A
+	bra.w   sub_866A
 ; ---------------------------------------------------------------------------
-		bra.w   sub_834E
+	bra.w   sub_834E
 ; ---------------------------------------------------------------------------
-		bra.w   sub_8630
+	bra.w   sub_8630
 ; ---------------------------------------------------------------------------
-		bra.w   sub_83FC
+	bra.w   sub_83FC
 ; ---------------------------------------------------------------------------
-		bra.w   sub_7C34
+	bra.w   sub_7C34
 ; ---------------------------------------------------------------------------
-		bra.w   sub_844C
+	bra.w   sub_844C
 ; ---------------------------------------------------------------------------
-		bra.w   sub_84DC
+	bra.w   sub_84DC
 ; ---------------------------------------------------------------------------
-		bra.w   sub_8562
+	bra.w   sub_8562
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -16534,6 +16529,7 @@ palette_881E:
 	dc.b 0
 	dc.b 47
 
+palette_8820:
 	dc.w $000
 	dc.w $000
 	dc.w $C86
@@ -16551,6 +16547,7 @@ palette_881E:
 	dc.w $EEE
 	dc.w $A40
 
+palette_8840:
 	dc.w $000
 	dc.w $000
 	dc.w $C86
@@ -16568,6 +16565,7 @@ palette_881E:
 	dc.w $4EE
 	dc.w $000
 
+palette_8860:
 	dc.w $000
 	dc.w $666
 	dc.w $444
@@ -16586,1017 +16584,566 @@ palette_881E:
 	dc.w $000
 
 byte_8880:
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   1
-		dc.b   1
-		dc.b   1
-		dc.b   0
-		dc.b   1
-		dc.b $57 ; W
-		dc.b $A6 ; ¦
-		dc.b $71 ; q
-		dc.b $4B ; K
-		dc.b $C6 ; Æ
-		dc.b $19
-		dc.b $A7 ; §
-		dc.b $72 ; r
-		dc.b $4C ; L
-		dc.b $C7 ; Ç
-		dc.b $1A
-		dc.b   1
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   1
-		dc.b   1
-		dc.b $14
-		dc.b $3A ; :
-		dc.b $38 ; 8
-		dc.b $12
-		dc.b $1A
-		dc.b   6
-		dc.b $3B ; ;
-		dc.b $39 ; 9
-		dc.b $13
-		dc.b $1B
-		dc.b   7
-		dc.b   1
-a___________:   dc.b '___________',0    ; DATA XREF: ROM:00008F18o
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $40 ; @
-aSega_cd_rom:   dc.b 'SEGA_CD_ROM',0    ; DATA XREF: ROM:00008F6Eo
-		dc.b   1
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b 'RAM_CARTRIDGE___'
+	dc.b   0
+	dc.b   0
+	dc.b   0
+	dc.b   1
+	dc.b   1
+	dc.b   1
+	dc.b   0
+	dc.b   1
+	dc.b $57 ; W
+	dc.b $A6 ; ¦
+	dc.b $71 ; q
+	dc.b $4B ; K
+	dc.b $C6 ; Æ
+	dc.b $19
+	dc.b $A7 ; §
+	dc.b $72 ; r
+	dc.b $4C ; L
+	dc.b $C7 ; Ç
+	dc.b $1A
+	dc.b   1
+
+byte_8894:
+	dc.b   0
+	dc.b   0
+	dc.b   0
+	dc.b   0
+	dc.b   1
+	dc.b   1
+	dc.b $14
+	dc.b $3A ; :
+	dc.b $38 ; 8
+	dc.b $12
+	dc.b $1A
+	dc.b   6
+	dc.b $3B ; ;
+	dc.b $39 ; 9
+	dc.b $13
+	dc.b $1B
+	dc.b   7
+	dc.b   1
+
+asc_88A6:    ; DATA XREF: ROM:00008F18o
+	dc.b '___________', 0
+	dc.b 0
+	dc.b 0
+	dc.b 0
+	dc.b $40
+asc_88B6:    ; DATA XREF: ROM:00008F6Eo
+	dc.b 'SEGA_CD_ROM', 0
+	dc.b 1
+	dc.b 0
+	dc.b 0
+	dc.b 0
+
+asc_88C6:
+	dc.b 'RAM_CARTRIDGE___'
+
 off_88D6:   dc.l unk_600000     ; DATA XREF: sub_98B2+38r sub_9922+Cr
 off_88DA:   dc.l unk_7FFFFF     ; DATA XREF: ROM:00008F10r sub_9922+4r
-		dc.b $21 ; !
-		dc.b $7A ; z
-		dc.b   0
-		dc.b  $C
-		dc.b   0
-		dc.b   2
-		dc.b $30 ; 0
-		dc.b $BA ; º
-		dc.b   0
-		dc.b   4
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $4E ; N
-		dc.b $F9 ; ù
-		dc.b   0
-		dc.b   0
-		dc.b $88 ; ˆ
-		dc.b $F0 ; ð
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b   0
-		dc.b $24 ; $
-		dc.b $2A ; *
-		dc.b $7C ; |
-		dc.b $FF
-		dc.b $FF
-		dc.b $FE ; þ
-		dc.b $80 ; €
-		dc.b $D0 ; Ð
-		dc.b $40 ; @
-		dc.b $D0 ; Ð
-		dc.b $40 ; @
-		dc.b $4E ; N
-		dc.b $BB ; »
-		dc.b   0
-		dc.b $10
-		dc.b $24 ; $
-		dc.b $7A ; z
-		dc.b $FF
-		dc.b $D6 ; Ö
-		dc.b   8
-		dc.b $92 ; ’
-		dc.b   0
-		dc.b   0
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b $24 ; $
-		dc.b   0
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   0
-		dc.b $6A ; j
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   1
-		dc.b $E6 ; æ
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   2
-		dc.b $22 ; "
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   3
-		dc.b $18
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   3
-		dc.b $78 ; x
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   4
-		dc.b $B2 ; ²
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   5
-		dc.b $D2 ; Ò
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   6
-		dc.b $64 ; d
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   2
-		dc.b $84 ; „
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   0
-		dc.b   6
-		dc.b $60 ; `
-		dc.b   0
-		dc.b   0
-		dc.b $12
-		dc.b $22 ; "
-		dc.b $7A ; z
-		dc.b $FF
-		dc.b $98 ; ˜
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $C1 ; Á
-		dc.b $49 ; I
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $B
-		dc.b $B4 ; ´
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b   0
-		dc.b $30 ; 0
-		dc.b $24 ; $
-		dc.b $7A ; z
-		dc.b $FF
-		dc.b $88 ; ˆ
-		dc.b   8
-		dc.b $D2 ; Ò
-		dc.b   0
-		dc.b   0
-		dc.b $26 ; &
-		dc.b $48 ; H
-		dc.b $22 ; "
-		dc.b $7A ; z
-		dc.b $FF
-		dc.b $7A ; z
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $C1 ; Á
-		dc.b $49 ; I
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $C
-		dc.b $F2 ; ò
-		dc.b   1
-		dc.b $4A ; J
-		dc.b   0
-		dc.b   0
-		dc.b $B0 ; °
-		dc.b $93 ; “
-		dc.b $67 ; g
-		dc.b   4
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b  $C
-		dc.b   0
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $20
-		dc.b $38 ; 8
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b   0
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   2
-		dc.b   0
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b   4
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b   8
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   1
-		dc.b   0
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b  $C
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   1
-		dc.b   0
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b $10
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b $14
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b $18
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   1
-		dc.b   0
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b $5A ; Z
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $2B ; +
-		dc.b $48 ; H
-		dc.b   0
-		dc.b $6A ; j
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b   0
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b $3E ; >
-		dc.b $24 ; $
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   8
-		dc.b   1
-		dc.b   0
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $18
-		dc.b $43 ; C
-		dc.b $FA ; ú
-		dc.b $FE ; þ
-		dc.b $A4 ; ¤
-		dc.b $26 ; &
-		dc.b $6D ; m
-		dc.b   0
-		dc.b   8
-		dc.b $28 ; (
-		dc.b $6D ; m
-		dc.b   0
-		dc.b  $C
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b $4C ; L
-		dc.b $24 ; $
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   6
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $18
-		dc.b $43 ; C
-		dc.b $FA ; ú
-		dc.b $FE ; þ
-		dc.b $9E ; ž
-		dc.b $26 ; &
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $10
-		dc.b $28 ; (
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $14
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b $32 ; 2
-		dc.b $42 ; B
-		dc.b $AD ; ­
-		dc.b   0
-		dc.b $30 ; 0
-		dc.b $42 ; B
-		dc.b $AD ; ­
-		dc.b   0
-		dc.b $34 ; 4
-		dc.b $42 ; B
-		dc.b $AD ; ­
-		dc.b   0
-		dc.b $66 ; f
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   2
-		dc.b   0
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $E
-		dc.b $9C ; œ
-		dc.b $65 ; e
-		dc.b   0
-		dc.b   0
-		dc.b $90 ; 
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $22 ; "
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $5A ; Z
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $60 ; `
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $10
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $A
-		dc.b $CC ; Ì
-		dc.b $22 ; "
-		dc.b $4A ; J
-		dc.b $24 ; $
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $5A ; Z
-		dc.b $41 ; A
-		dc.b $FA ; ú
-		dc.b $FE ; þ
-		dc.b $8C ; Œ
-		dc.b $B5 ; µ
-		dc.b $88 ; ˆ
-		dc.b $67 ; g
-		dc.b  $A
-		dc.b $B5 ; µ
-		dc.b $88 ; ˆ
-		dc.b $67 ; g
-		dc.b   6
-		dc.b $B5 ; µ
-		dc.b $88 ; ˆ
-		dc.b $66 ; f
-		dc.b   0
-		dc.b   0
-		dc.b $5C ; \
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b  $C
-		dc.b $34 ; 4
-		dc.b   1
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $A
-		dc.b $A0 ;  
-		dc.b $22 ; "
-		dc.b $4A ; J
-		dc.b $45 ; E
-		dc.b $FA ; ú
-		dc.b $FE ; þ
-		dc.b $54 ; T
-		dc.b $32 ; 2
-		dc.b   2
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $C
-		dc.b $18
-		dc.b $66 ; f
-		dc.b   0
-		dc.b   0
-		dc.b $58 ; X
-		dc.b $20
-		dc.b $2D ; -
-		dc.b   0
-		dc.b $30 ; 0
-		dc.b $E0 ; à
-		dc.b $80 ; €
-		dc.b $EA ; ê
-		dc.b $80 ; €
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b $1C
-		dc.b   4
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $34 ; 4
-		dc.b   1
-		dc.b $D4 ; Ô
-		dc.b $42 ; B
-		dc.b $D4 ; Ô
-		dc.b $42 ; B
-		dc.b $43 ; C
-		dc.b $FA ; ú
-		dc.b   0
-		dc.b $52 ; R
-		dc.b $22 ; "
-		dc.b $71 ; q
-		dc.b $20
-		dc.b   0
-		dc.b $34 ; 4
-		dc.b   1
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b  $D
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $C
-		dc.b $1E
-		dc.b $22 ; "
-		dc.b $4A ; J
-		dc.b $32 ; 2
-		dc.b   2
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $D6 ; Ö
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $E
-		dc.b $7C ; |
-		dc.b $64 ; d
-		dc.b  $A
-		dc.b $70 ; p
-		dc.b   0
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   0
-		dc.b $60 ; `
-		dc.b   0
-		dc.b $FF
-		dc.b $CE ; Î
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   1
-		dc.b $20
-		dc.b $2D ; -
-		dc.b   0
-		dc.b $30 ; 0
-		dc.b $E0 ; à
-		dc.b $80 ; €
-		dc.b $EA ; ê
-		dc.b $80 ; €
-		dc.b $60 ; `
-		dc.b   0
-		dc.b $FF
-		dc.b $BE ; ¾
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b  $B
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $E
-		dc.b $9E ; ž
-		dc.b $65 ; e
-		dc.b $E6 ; æ
-		dc.b $20
-		dc.b $2D ; -
-		dc.b   0
-		dc.b $30 ; 0
-		dc.b $E0 ; à
-		dc.b $80 ; €
-		dc.b $EA ; ê
-		dc.b $80 ; €
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   2
-		dc.b $60 ; `
-		dc.b $C2 ; Â
-		dc.b   0
-		dc.b   0
-		dc.b $8A ; Š
-		dc.b $E4 ; ä
-		dc.b   0
-		dc.b   0
-		dc.b $8A ; Š
-		dc.b $F0 ; ð
-		dc.b $4E ; N
-		dc.b $4F ; O
-		dc.b $54 ; T
-		dc.b $5F ; _
-		dc.b $45 ; E
-		dc.b $58 ; X
-		dc.b $49 ; I
-		dc.b $53 ; S
-		dc.b $54 ; T
-		dc.b $5F ; _
-		dc.b $5F ; _
-		dc.b   0
-		dc.b $55 ; U
-		dc.b $4E ; N
-		dc.b $46 ; F
-		dc.b $4F ; O
-		dc.b $52 ; R
-		dc.b $4D ; M
-		dc.b $41 ; A
-		dc.b $54 ; T
-		dc.b $5F ; _
-		dc.b $5F ; _
-		dc.b $5F ; _
-		dc.b   0
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $30 ; 0
-		dc.b $20
-		dc.b $70 ; p
-		dc.b   0
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $D
-		dc.b $56 ; V
-		dc.b $65 ; e
-		dc.b $26 ; &
-		dc.b $36 ; 6
-		dc.b   0
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $D
-		dc.b $7A ; z
-		dc.b $65 ; e
-		dc.b $1E
-		dc.b $4A ; J
-		dc.b $40 ; @
-		dc.b $6C ; l
-		dc.b   2
-		dc.b $70 ; p
-		dc.b   0
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $43 ; C
-		dc.b $FA ; ú
-		dc.b $FD ; ý
-		dc.b $9C ; œ
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b  $C
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $B
-		dc.b $94 ; ”
-		dc.b $22 ; "
-		dc.b $4A ; J
-		dc.b $32 ; 2
-		dc.b   3
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   4
-		dc.b  $C
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $30 ; 0
-		dc.b $3C ; <
-		dc.b $FF
-		dc.b $FF
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b $FF
-		dc.b $FF
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $EC ; ì
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $30 ; 0
-		dc.b $3A ; :
-		dc.b $26 ; &
-		dc.b $48 ; H
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $D
-		dc.b $16
-		dc.b $32 ; 2
-		dc.b   0
-		dc.b $6F ; o
-		dc.b $66 ; f
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $53 ; S
-		dc.b $41 ; A
-		dc.b $91 ; ‘
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $51 ; Q
-		dc.b $C9 ; É
-		dc.b $FF
-		dc.b $F8 ; ø
-		dc.b $34 ; 4
-		dc.b   0
-		dc.b $53 ; S
-		dc.b $42 ; B
-		dc.b $24 ; $
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $5A ; Z
-		dc.b $4D ; M
-		dc.b $ED ; í
-		dc.b   0
-		dc.b $1C
-		dc.b $26 ; &
-		dc.b $16
-		dc.b $42 ; B
-		dc.b $96 ; –
-		dc.b $22 ; "
-		dc.b $4A ; J
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $20
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b $42 ; B
-		dc.b $65 ; e
-		dc.b  $C
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b  $B
-		dc.b $22 ; "
-		dc.b $4B ; K
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $B
-		dc.b   2
-		dc.b $67 ; g
-		dc.b   8
-		dc.b $2C ; ,
-		dc.b $83 ; ƒ
-		dc.b $51 ; Q
-		dc.b $CA ; Ê
-		dc.b $FF
-		dc.b $E4 ; ä
-		dc.b $60 ; `
-		dc.b $26 ; &
-		dc.b $20
-		dc.b $7A ; z
-		dc.b $FD ; ý
-		dc.b $4A ; J
-		dc.b $34 ; 4
-		dc.b $2A ; *
-		dc.b   0
-		dc.b  $C
-		dc.b $6F ; o
-		dc.b   0
-		dc.b   0
-		dc.b $1C
-		dc.b $53 ; S
-		dc.b $42 ; B
-		dc.b $D1 ; Ñ
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b $80 ; €
-		dc.b $51 ; Q
-		dc.b $CA ; Ê
-		dc.b $FF
-		dc.b $F8 ; ø
-		dc.b $12
-		dc.b $2A ; *
-		dc.b   0
-		dc.b  $B
-		dc.b $30 ; 0
-		dc.b $2A ; *
-		dc.b   0
-		dc.b  $E
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b $5C ; \
-		dc.b  $C
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $F4 ; ô
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $20
-		dc.b $12
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $61 ; a
-		dc.b   0
-		dc.b $FF
-		dc.b $7E ; ~
-		dc.b $65 ; e
-		dc.b   0
-		dc.b   0
-		dc.b $64 ; d
-		dc.b $4A ; J
-		dc.b   1
-		dc.b $67 ; g
-		dc.b   0
-		dc.b   0
-		dc.b $30 ; 0
-		dc.b $4D ; M
-		dc.b $ED ; í
-		dc.b   0
-		dc.b $1C
-		dc.b $42 ; B
-		dc.b $96 ; –
-		dc.b $53 ; S
-		dc.b $40 ; @
-		dc.b $34 ; 4
-		dc.b   0
-		dc.b $26 ; &
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $5A ; Z
-		dc.b $22 ; "
-		dc.b $4B ; K
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   7
-		dc.b $D4 ; Ô
-		dc.b $22 ; "
-		dc.b $4B ; K
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $20
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $A
-		dc.b $96 ; –
-		dc.b $66 ; f
-		dc.b   0
-		dc.b   0
-		dc.b $3E ; >
-		dc.b $D4 ; Ô
-		dc.b $C1 ; Á
-		dc.b $51 ; Q
-		dc.b $C8 ; È
-		dc.b $FF
-		dc.b $E4 ; ä
-		dc.b $60 ; `
-		dc.b $24 ; $
-		dc.b $26 ; &
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $5A ; Z
-		dc.b $53 ; S
-		dc.b $40 ; @
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $22 ; "
-		dc.b $4B ; K
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b $F6 ; ö
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $22 ; "
-		dc.b $4B ; K
-		dc.b $61 ; a
-		dc.b   0
-		dc.b  $A
-		dc.b $70 ; p
-		dc.b $66 ; f
-		dc.b $18
-		dc.b $D4 ; Ô
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $51 ; Q
-		dc.b $C8 ; È
-		dc.b $FF
-		dc.b $E4 ; ä
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b $48 ; H
-		dc.b   4
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $30 ; 0
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   0
-		dc.b $60 ; `
-		dc.b   4
-		dc.b $30 ; 0
-		dc.b $3C ; <
-		dc.b $FF
-		dc.b $FF
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $EA ; ê
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $20
-		dc.b   2
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $61 ; a
-		dc.b   0
-		dc.b $FE ; þ
-		dc.b $FC ; ü
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   2
-		dc.b   0
-		dc.b $48 ; H
-		dc.b $A7 ; §
-		dc.b $C0 ; À
-		dc.b   0
-		dc.b $65 ; e
-		dc.b   0
-		dc.b   0
-		dc.b $48 ; H
-		dc.b $4A ; J
-		dc.b   1
-		dc.b $67 ; g
-		dc.b   0
-		dc.b   0
-		dc.b $26 ; &
-		dc.b $4D ; M
-		dc.b $ED ; í
-		dc.b   0
-		dc.b $1C
-		dc.b $42 ; B
-		dc.b $96 ; –
-		dc.b $53 ; S
-		dc.b $40 ; @
-		dc.b $34 ; 4
-		dc.b   0
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   7
-		dc.b $50 ; P
-		dc.b $51 ; Q
-		dc.b $C8 ; È
-		dc.b $FF
-		dc.b $F6 ; ö
-		dc.b $41 ; A
-		dc.b $ED ; í
-		dc.b   0
-		dc.b $1C
-		dc.b   8
-		dc.b $28 ; (
-		dc.b   0
-		dc.b   7
-		dc.b   0
-		dc.b   0
-		dc.b $67 ; g
-		dc.b $10
-		dc.b $60 ; `
-		dc.b $1C
-		dc.b $53 ; S
-		dc.b $40 ; @
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b $40 ; @
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b $7C ; |
-		dc.b $51 ; Q
-		dc.b $C8 ; È
-		dc.b $FF
-		dc.b $F6 ; ö
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b $4C ; L
-		dc.b $9F ; Ÿ
-		dc.b   0
-		dc.b   3
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b $40 ; @
-		dc.b   4
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $F0 ; ð
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $3F ; ?
-		dc.b $3A ; :
+
+sub_88DE:
+	move.l dword_88EC(pc), 2(a0)
+	move.w word_88EA(pc), (a0)
+	rts
+
+word_88EA:
+	dc.w $4EF9
+
+dword_88EC:
+	dc.l $88F0
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_88F0:
+	movem.l a2/a5, -(sp)
+
+	movea.l #$FFFFFE80, a5
+	add.w d0, d0
+	add.w d0, d0
+	jsr loc_8910(pc, d0.w)
+
+	movea.l off_88DA(pc), a2
+	bclr #0, (a2)
+
+	movem.l (sp)+, a2/a5
+	rts
+; End of function sub_88F0
+
+; ---------------------------------------------------------------------------
+
+loc_8910:
+	bra.w sub_897C
+; ---------------------------------------------------------------------------
+	bra.w sub_8AFC
+; ---------------------------------------------------------------------------
+	bra.w sub_8B3C
+; ---------------------------------------------------------------------------
+	bra.w sub_8C36
+; ---------------------------------------------------------------------------
+	bra.w sub_8C9A
+; ---------------------------------------------------------------------------
+	bra.w sub_8DD8
+; ---------------------------------------------------------------------------
+	bra.w sub_8EFC
+; ---------------------------------------------------------------------------
+	bra.w sub_8F92
+; ---------------------------------------------------------------------------
+	bra.w sub_8BB6
+; ---------------------------------------------------------------------------
+	bra.w sub_893C
+; ---------------------------------------------------------------------------
+	bra.w sub_894C
+; ---------------------------------------------------------------------------
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_893C:
+	movea.l off_88D6(pc), a1
+	move.w #$40, d1
+	exg a0, a1
+	bsr.w sub_94FC
+	rts
+; End of function sub_893C
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_894C:
+	movem.l a2/a3, -(sp)
+
+	movea.l off_88DA(pc), a2
+	bset #0, (a2)
+	movea.l a0, a3
+
+	movea.l off_88D6(pc), a1
+	movea.l a1, a2
+	move.w #$40, d1
+	exg a0, a1
+	bsr.w sub_965A
+
+	movep.l 0(a2), d0
+	cmp.l (a3), d0
+	beq.s @locret_8976
+
+	move.w #1, ccr
+
+@locret_8976:
+	movem.l (sp)+, a2/a3
+	rts
+; End of function sub_894C
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_897C:
+	movem.l d2/a2-a4, -(sp)
+	movem.l a1, -(sp)
+
+	move.l a0, 0(a5)
+
+	lea $200(a0), a0
+	move.l a0, 4(a5)
+
+	lea $40(a0), a0
+	move.l a0, 8(a5)
+
+	lea $100(a0), a0
+	move.l a0, $C(a5)
+
+	lea $100(a0), a0
+	move.l a0, $10(a5)
+
+	lea $40(a0), a0
+	move.l a0, $14(a5)
+
+	lea $40(a0), a0
+	move.l a0, $18(a5)
+
+	lea $100(a0), a0
+	move.l a0, $5A(a5)
+
+	lea $40(a0), a0
+	move.l a0, $6A(a5)
+
+	movea.l 0(a5), a0
+	bsr.w sub_920C
+
+	move.l #$80100, d2
+	movea.l $18(a5), a0
+
+	lea byte_8880(pc), a1
+	movea.l 8(a5), a3
+	movea.l $C(a5), a4
+	bsr.w sub_9234
+
+	move.l #$60040, d2
+	movea.l $18(a5), a0
+
+	lea byte_8894(pc), a1
+	movea.l $10(a5), a3
+	movea.l $14(a5), a4
+	bsr.w sub_9234
+
+	clr.l $30(a5)
+	clr.l $34(a5)
+	clr.l $66(a5)
+
+	movem.l (sp)+, a1
+
+	bsr.w sub_98B2
+	bcs.w loc_8AAA
+
+	movea.l a1, a2
+	movea.l $5A(a5), a1
+	movea.l $38(a5), a0
+
+	lea $60(a0), a0
+
+	move.w #$10, d1
+	bsr.w sub_94FC
+
+	movea.l a2, a1
+	movea.l $5A(a5), a2
+
+	lea asc_88C6(pc), a0
+
+	cmpm.l (a0)+, (a2)+
+	beq.s @loc_8A4A
+
+	cmpm.l (a0)+, (a2)+
+	beq.s @loc_8A4A
+
+	cmpm.l (a0)+, (a2)+
+	bne.w loc_8AA4
+
+@loc_8A4A:
+	movea.l a1, a2
+	movea.l $38(a5), a0
+
+	lea $40(a0), a0
+	move.w #$C, d1
+	move.w d1, d2
+	bsr.w sub_94FC
+
+	movea.l a2, a1
+	lea asc_88B6(pc), a2
+
+	move.w d2, d1
+	bsr.w sub_9680
+	bne.w sub_8AC4
+
+	move.l $30(a5), d0
+	asr.l #8, d0
+	asr.l #5, d0
+
+	move.w #0, ccr
+
+loc_8A7A:
+	movem.l (sp)+, d2/a2-a4
+	rts
+; End of function sub_897C
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8A80:
+	movea.l a1, a2
+	move.w d1, d2
+	add.w d2, d2
+	add.w d2, d2
+
+	lea dword_8ADC(pc), a1
+	movea.l 0(a1, d2.w), a1
+	move.w d1, d2
+	move.w #$D, d1
+	bsr.w sub_96B6
+
+	movea.l a2, a1
+	move.w d2, d1
+
+loc_8A9E:
+	move.w #1, ccr
+	bra.s loc_8A7A
+
+loc_8AA4:
+	bsr.w sub_9922
+	bcc.s loc_8AB4
+
+loc_8AAA:
+	moveq #0, d0
+	move.w #0, d1
+	bra.w sub_8A80
+
+loc_8AB4:
+	move.w #1, d1
+	move.l $30(a5), d0
+	asr.l #8, d0
+	asr.l #5, d0
+	bra.w sub_8A80
+; End of function sub_8A80
+
+sub_8AC4:
+	move.w #$B, d1
+	bsr.w sub_9968
+	bcs.s loc_8AB4
+
+	move.l $30(a5), d0
+	asr.l #8, d0
+	asr.l #5, d0
+	move.w #2, d1
+	bra.s loc_8A9E
+
+dword_8ADC:
+	dc.l $8AE4
+	dc.l $8AF0
+	dc.b 'NOT_EXIST__',0
+	dc.b 'UNFORMAT___',0
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8AFC:
+	movem.l d2-d3/a2, -(sp)
+
+	moveq #0, d0
+	bsr.w sub_985A
+	bcs.s loc_8B2E
+
+	move.w d0, d3
+	bsr.w sub_9886
+	bcs.s loc_8B2E
+
+	tst.w d0
+	bge.s loc_8B16
+
+	moveq #0, d0
+
+loc_8B16:
+	movea.l a1, a2
+
+	lea asc_88B6(pc), a1
+	move.w #$C, d1
+	bsr.w sub_96B6
+
+	movea.l a2, a1
+	move.w d3, d1
+
+loc_8B28:
+	movem.l (sp)+, d2-d3/a2
+	rts
+
+loc_8B2E:
+	move.w #$FFFF, d0
+	move.w #$FFFF, d1
+	move.w #1, ccr
+	bra.s loc_8B28
+; End of function sub_8AFC
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8B3C:
+	movem.l d2-d3/a2-a4/a6, -(sp)
+
+	movea.l a0, a3
+	bsr.w sub_985A
+
+	move.w d0, d1
+	ble.s @loc_8BB0
+
+	movea.l $38(a5), a0
+
+	subq.w #1, d1
+	@loc_8B50:
+		suba.l #$40, a0
+		dbf d1, @loc_8B50
+
+	move.w d0, d2
+	subq.w #1, d2
+
+	movea.l $5A(a5), a2
+	lea $1C(a5), a6
+	move.l (a6), d3
+	clr.l (a6)
+
+	@loc_8B6A:
+		movea.l a2, a1
+		move.w #$20, d1
+		bsr.w sub_93B4
+		bcs.s @loc_8B82
+
+		move.w #$B, d1
+		movea.l a3, a1
+		bsr.w sub_9680
+		beq.s @loc_8B8A
+
+	@loc_8B82:
+		move.l d3, (a6)
+		dbf d2, @loc_8B6A
+
+	bra.s @loc_8BB0
+
+@loc_8B8A:
+	movea.l off_88D6(pc), a0
+
+	move.w $C(a2), d2
+	ble.w @loc_8BB0
+
+	subq.w #1, d2
+	@loc_8B98:
+		adda.l #$80, a0
+		dbf d2, @loc_8B98
+
+	move.b $B(a2), d1
+	move.w $E(a2), d0
+
+@loc_8BAA:
+	movem.l (sp)+, d2-d3/a2-a4/a6
+	rts
+
+@loc_8BB0:
+	move.w #1, ccr
+	bra.s @loc_8BAA
+; End of function sub_8B3C
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8BB6:
+	movem.l d2/a3/a6, -(sp)
+	movea.l a1, a2
+	bsr.w sub_8B3C
+	bcs.w @loc_8C26
+
+	tst.b d1
+	beq.w @loc_8BF8
+
+	lea $1C(a5), a6
+	clr.l (a6)
+	subq.w #1, d0
+	move.w d0, d2
+	movea.l $5A(a5), a3
+
+	@loc_8BD8:
+		movea.l a3, a1
+		move.w #$40, d1
+		bsr.w sub_93B4
+
+		movea.l a3, a1
+		move.w #$20, d1
+		bsr.w sub_9680
+		bne.w @loc_8C2C
+
+		adda.w d1, a2
+		dbf d0, @loc_8BD8
+
+	bra.s @loc_8C1C
+
+@loc_8BF8:
+	movea.l $5A(a5), a3
+	subq.w #1, d0
+
+	@loc_8BFE:
+		move.w #$40, d1
+		movea.l a3, a1
+		bsr.w sub_94FC
+
+		move.w #$40, d1
+		movea.l a3, a1
+		bsr.w sub_9680
+		bne.s @loc_8C2C
+
+		adda.w #$40, a2
+		dbf d0, @loc_8BFE
+
+@loc_8C1C:
+	move.w #0, ccr
+
+@loc_8C20:
+	movem.l (sp)+, d2/a3/a6
+	rts
+
+@loc_8C26:
+	move.w #0, d0
+	bra.s @loc_8C30
+
+@loc_8C2C:
+	move.w #$FFFF, d0
+
+@loc_8C30:
+	move.w #1, ccr
+	bra.s @loc_8C20
+; End of function sub_8BB6
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8C36:
+	movem.l d2/a6, -(sp)
+
+	movem.l a1, -(sp)
+	bsr.w sub_8B3C
+	movem.l (sp)+, a1
+
+	movem.w d0-d1, -(sp)
+	bcs.w @loc_8C94
+
+	tst.b d1
+	beq.w @loc_8C78
+
+	lea $1C(a5), a6
+	clr.l (a6)
+
+	subq.w #1, d0
+	move.w d0, d2
+	@loc_8C5E:
+		move.w #$40, d1
+		bsr.w sub_93B4
+		dbf d0, @loc_8C5E
+
+	lea $1C(a5), a0
+	btst #7, 0(a0)
+	beq.s @loc_8C86
+	bra.s @loc_8C94
+
+@loc_8C78:
+	subq.w #1, d0
+	@loc_8C7A:
+		move.w #$40, d1
+		bsr.w sub_94FC
+		dbf d0, @loc_8C7A
+
+@loc_8C86:
+	move.w #0, ccr
+
+@loc_8C8A:
+	movem.w (sp)+, d0-d1
+	movem.l (sp)+, d2/a6
+	rts
+
+@loc_8C94:
+	move.w #1, ccr
+	bra.s @loc_8C8A
+; End of function sub_8C36
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8C9A:
+	movem.l d2-d7/a2-a4/a6, -(sp)
 		dc.b $24 ; $
 		dc.b $7A ; z
 		dc.b $FC ; ü
@@ -17899,22 +17446,22 @@ off_88DA:   dc.l unk_7FFFFF     ; DATA XREF: ROM:00008F10r sub_9922+4r
 		dc.b   0
 		dc.b   9
 		dc.b $28 ; (
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b $5C ; \
-		dc.b $FC ; ü
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $F4 ; ô
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $38 ; 8
-		dc.b $3E ; >
+
+@loc_8DCC:
+	movem.l (sp)+, d2-d7/a2-a4/a6
+	rts
+
+@loc_8DD2:
+	move.w #1, ccr
+	bra.s @loc_8DCC
+; End of function sub_8C9A
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8DD8:
+	movem.l d2-d4/a2-a6, -(sp)
 		dc.b $24 ; $
 		dc.b $7A ; z
 		dc.b $FA ; ú
@@ -18187,19 +17734,22 @@ off_88DA:   dc.l unk_7FFFFF     ; DATA XREF: ROM:00008F10r sub_9922+4r
 		dc.b $ED ; í
 		dc.b   0
 		dc.b $4A ; J
-		dc.b $61 ; a
-		dc.b   0
-		dc.b   8
-		dc.b   4
-; ---------------------------------------------------------------------------
+	bsr.w sub_96F2
 
-loc_8EF0:               ; CODE XREF: ROM:00008EFAj
-		movem.l (sp)+,d2-d4/a2-a6
-		rts
-; ---------------------------------------------------------------------------
-		move    #1,ccr
-		bra.s   loc_8EF0
-; ---------------------------------------------------------------------------
+@loc_8EF0:
+	movem.l (sp)+, d2-d4/a2-a6
+	rts
+
+@loc_8EF6:
+	move #1, ccr
+	bra.s @loc_8EF0
+; End of function sub_8DD8
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_8EFC:
 		movem.l a3,-(sp)
 		bsr.w   sub_98B2
 		bcs.w   loc_8F8C
@@ -18207,7 +17757,7 @@ loc_8EF0:               ; CODE XREF: ROM:00008EFAj
 		bcs.w   loc_8F8C
 		movea.l off_88DA,a3
 		bset    #0,(a3)
-		lea a___________,a1 ; "___________"
+		lea asc_88A6,a1 ; "___________"
 		movea.l $38(a5),a0
 		move.w  #$10,d1
 		bsr.w   sub_965A
@@ -18233,7 +17783,7 @@ loc_8EF0:               ; CODE XREF: ROM:00008EFAj
 		movep.l d0,1(a0)
 		adda.l  #8,a0
 		movep.l d0,1(a0)
-		lea aSega_cd_rom,a1 ; "SEGA_CD_ROM"
+		lea asc_88B6,a1 ; "SEGA_CD_ROM"
 		movea.l $38(a5),a0
 		lea $40(a0),a0
 		move.w  #$20,d1 ; ' '
@@ -18250,6 +17800,8 @@ loc_8F8C:               ; CODE XREF: ROM:00008F04j
 		move    #1,ccr
 		bra.s   loc_8F86
 ; ---------------------------------------------------------------------------
+
+sub_8F92:
 		movem.l d2-d5/a2-a4/a6,-(sp)
 		movea.l a1,a4
 		move.w  d1,d4
@@ -18618,29 +18170,42 @@ loc_9200:
 		rts
 ; End of function sub_91F8
 
-; ---------------------------------------------------------------------------
-		movem.l d7,-(sp)
-		moveq   #0,d7
 
-loc_9212:               ; CODE XREF: ROM:0000922Cj
-		move.w  d7,d0
-		lsl.w   #8,d0
-		moveq   #7,d1
+; =============== S U B R O U T I N E =======================================
 
-loc_9218:               ; CODE XREF: ROM:loc_9220j
-		lsl.w   #1,d0
-		bcc.s   loc_9220
-		eori.w  #$1021,d0
 
-loc_9220:               ; CODE XREF: ROM:0000921Aj
-		dbf d1,loc_9218
-		move.w  d0,(a0)+
-		addq.w  #1,d7
-		cmpi.w  #$100,d7
-		bcs.s   loc_9212
-		movem.l (sp)+,d7
-		rts
-; ---------------------------------------------------------------------------
+sub_920C:
+	movem.l d7, -(sp)
+	moveq   #0, d7
+
+	@loc_9212:
+		move.w  d7, d0
+		lsl.w   #8, d0
+
+		moveq   #7, d1
+		@loc_9218:
+			lsl.w  #1, d0
+			bcc.s  @loc_9220
+
+			eori.w #$1021, d0
+
+		@loc_9220:
+			dbf d1, @loc_9218
+
+		move.w  d0, (a0)+
+		addq.w  #1, d7
+		cmpi.w  #$100, d7
+		bcs.s   @loc_9212
+
+	movem.l (sp)+, d7
+	rts
+; End of function sub_920C
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_9234:
 		movem.l d6-d7,-(sp)
 		swap    d2
 		moveq   #0,d7
@@ -19371,7 +18936,11 @@ loc_969E:               ; CODE XREF: sub_9680+Aj sub_9680+16j
 		rts
 ; End of function sub_9680
 
-; ---------------------------------------------------------------------------
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_96A4:
 		dc.b $48 ; H
 		dc.b $E7 ; ç
 		dc.b $40 ; @
@@ -19388,8 +18957,9 @@ loc_969E:               ; CODE XREF: sub_9680+Aj sub_9680+16j
 		dc.b $DF ; ß
 		dc.b   6
 		dc.b   2
-		dc.b $4E ; N
-		dc.b $75 ; u
+	rts
+; End of function sub_96A4
+
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -19420,43 +18990,34 @@ loc_96CC:               ; CODE XREF: sub_96B6+10j
 		rts
 ; End of function sub_96B6
 
-; ---------------------------------------------------------------------------
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $40 ; @
-		dc.b $60 ; `
-		dc.b $D3 ; Ó
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   1
-		dc.b $D5 ; Õ
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b   0
-		dc.b   1
-		dc.b $14
-		dc.b $91 ; ‘
-		dc.b $54 ; T
-		dc.b $49 ; I
-		dc.b $54 ; T
-		dc.b $4A ; J
-		dc.b $55 ; U
-		dc.b $41 ; A
-		dc.b $6E ; n
-		dc.b $F6 ; ö
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   6
-		dc.b   2
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $F8 ; ø
-		dc.b $E0 ; à
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_96D2:
+	movem.l d1/a1-a2, -(sp)
+
+	adda.l #1, a1
+	adda.l #1, a2
+
+	@loc_96E2:
+		move.b (a1), (a2)
+		addq.w #2, a1
+		addq.w #2, a2
+
+		subq.w #2, d1
+		bgt.s @loc_96E2
+
+	movem.l (sp)+, d1/a1-a2
+	rts
+; End of function sub_96D2
+
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_96F2:
+	movem.l d0-d4/a0-a2, -(sp)
 		dc.b $4A ; J
 		dc.b   0
 		dc.b $67 ; g
@@ -19693,82 +19254,87 @@ loc_96CC:               ; CODE XREF: sub_96B6+10j
 		dc.b   1
 		dc.b $46 ; F
 		dc.b $DF ; ß
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   7
-		dc.b $1F
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $F4 ; ô
+	move.w #0, ccr
+
+@loc_97E6:
+	movem.l (sp)+, d0-d4/a0-a2
+	rts
+
+@loc_97EC:
+	move.w #1, ccr
+	bra.s @loc_97E6
+; End of function sub_96F2
+
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_97F2:               ; CODE XREF: sub_985A+22p
-		movem.l d1-d5/a1-a4,-(sp)
-		moveq   #0,d2
-		moveq   #1,d3
-		moveq   #2,d4
-		movea.l a1,a2
+	movem.l d1-d5/a1-a4, -(sp)
 
-loc_97FE:               ; CODE XREF: sub_97F2+4Ej
-		movea.l a2,a3
+	moveq #0, d2
+	moveq #1, d3
+	moveq #2, d4
 
-loc_9800:               ; CODE XREF: sub_97F2+3Cj
-		adda.l  #2,a3
-		movea.l a3,a4
+	movea.l a1, a2
 
-loc_9808:               ; CODE XREF: sub_97F2+30j
-		adda.l  #2,a4
-		move.w  (a3),d0
-		cmp.w   (a2),d0
-		bne.s   loc_981E
-		move.w  (a4),d0
-		cmp.w   (a2),d0
-		bne.s   loc_981E
-		move.w  (a2),d0
-		bra.s   loc_9846
+@loc_97FE:
+	movea.l a2, a3
+
+@loc_9800:
+	adda.l  #2, a3
+	movea.l a3, a4
+
+@loc_9808:
+	adda.l #2, a4
+
+	move.w (a3), d0
+	cmp.w  (a2), d0
+	bne.s  @loc_981E
+
+	move.w (a4), d0
+	cmp.w  (a2), d0
+	bne.s  @loc_981E
+
+	move.w (a2), d0
+	bra.s  @loc_9846
 ; ---------------------------------------------------------------------------
 
-loc_981E:               ; CODE XREF: sub_97F2+20j sub_97F2+26j
-		addq.w  #1,d4
-		cmp.w   d4,d1
-		bgt.w   loc_9808
-		addq.w  #1,d3
-		move.w  d3,d5
-		addq.w  #1,d5
-		cmp.w   d5,d1
-		bgt.w   loc_9800
-		adda.l  #2,a2
-		addq.w  #1,d2
-		move.w  d2,d5
-		addq.w  #2,d5
-		cmp.w   d5,d1
-		bgt.w   loc_97FE
-		bra.s   loc_9850
+@loc_981E:
+	addq.w #1, d4
+
+	cmp.w  d4, d1
+	bgt.w  @loc_9808
+
+	addq.w #1, d3
+	move.w d3, d5
+	addq.w #1, d5
+
+	cmp.w  d5, d1
+	bgt.w  @loc_9800
+
+	adda.l #2, a2
+	addq.w #1, d2
+	move.w d2, d5
+	addq.w #2, d5
+
+	cmp.w  d5, d1
+	bgt.w  @loc_97FE
+	bra.s  @loc_9850
 ; ---------------------------------------------------------------------------
 
-loc_9846:               ; CODE XREF: sub_97F2+2Aj
-		move    #0,ccr
+@loc_9846:
+	move #0, ccr
 
-loc_984A:               ; CODE XREF: sub_97F2+66j
-		movem.l (sp)+,d1-d5/a1-a4
-		rts
+@loc_984A:
+	movem.l (sp)+, d1-d5/a1-a4
+	rts
 ; ---------------------------------------------------------------------------
 
-loc_9850:               ; CODE XREF: sub_97F2+52j
-		move.w  #$FFFF,d0
-		move    #1,ccr
-		bra.s   loc_984A
+@loc_9850:
+	move.w #$FFFF, d0
+	move   #1, ccr
+	bra.s  @loc_984A
 ; End of function sub_97F2
 
 
@@ -19776,67 +19342,54 @@ loc_9850:               ; CODE XREF: sub_97F2+52j
 
 
 sub_985A:               ; CODE XREF: ROM:00008FB2p
-		movem.l d1-d2/a0-a2,-(sp)
-		move.w  #8,d1
-		move.w  d1,d2
-		movea.l $38(a5),a0
-		lea $30(a0),a0
-		lea $5E(a5),a1
-		movea.l a1,a2
-		bsr.w   sub_94FC
-		move.w  d2,d1
-		asr.w   #1,d1
-		movea.l a2,a1
-		bsr.w   sub_97F2
-		movem.l (sp)+,d1-d2/a0-a2
-		rts
+	movem.l d1-d2/a0-a2, -(sp)
+
+	move.w  #8, d1
+	move.w  d1, d2
+
+	movea.l $38(a5), a0
+	lea     $30(a0), a0
+	lea     $5E(a5), a1
+	movea.l a1, a2
+	bsr.w   sub_94FC
+
+	move.w  d2, d1
+	asr.w   #1, d1
+	movea.l a2, a1
+	bsr.w   sub_97F2
+
+	movem.l (sp)+, d1-d2/a0-a2
+	rts
 ; End of function sub_985A
 
-; ---------------------------------------------------------------------------
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $20
-		dc.b $E0 ; à
-		dc.b $32 ; 2
-		dc.b $3C ; <
-		dc.b   0
-		dc.b   8
-		dc.b $34 ; 4
-		dc.b   1
-		dc.b $20
-		dc.b $6D ; m
-		dc.b   0
-		dc.b $38 ; 8
-		dc.b $41 ; A
-		dc.b $E8 ; è
-		dc.b   0
-		dc.b $20
-		dc.b $43 ; C
-		dc.b $ED ; í
-		dc.b   0
-		dc.b $5E ; ^
-		dc.b $24 ; $
-		dc.b $49 ; I
-		dc.b $61 ; a
-		dc.b   0
-		dc.b $FC ; ü
-		dc.b $5C ; \
-		dc.b $32 ; 2
-		dc.b   2
-		dc.b $E2 ; â
-		dc.b $41 ; A
-		dc.b $22 ; "
-		dc.b $4A ; J
-		dc.b $61 ; a
-		dc.b   0
-		dc.b $FF
-		dc.b $48 ; H
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   7
-		dc.b   4
-		dc.b $4E ; N
-		dc.b $75 ; u
+
+; =============== S U B R O U T I N E =======================================
+
+
+sub_9886:
+	movem.l d2/a0-a2, -(sp)
+
+	move.w #8, d1
+	move.w d1, d2
+
+	movea.l $38(a5), a0
+	
+	lea $20(a0), a0
+	lea $5E(a5), a1
+	
+	movea.l a1, a2
+	bsr.w sub_94FC
+	
+	move.w d2, d1
+	asr.w #1, d1
+	movea.l a2, a1
+	bsr.w sub_97F2
+
+@loc_98AC:
+	movem.l (sp)+, d2/a0-a2
+	rts
+; End of function sub_9886
+
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -19916,64 +19469,50 @@ loc_9962:               ; CODE XREF: sub_9922+20j sub_9922+2Aj
 		bra.s   loc_9954
 ; End of function sub_9922
 
-; ---------------------------------------------------------------------------
-		dc.b $48 ; H
-		dc.b $E7 ; ç
-		dc.b $E0 ; à
-		dc.b $C0 ; À
-		dc.b $53 ; S
-		dc.b $41 ; A
-		dc.b $14
-		dc.b $19
-		dc.b $41 ; A
-		dc.b $FA ; ú
-		dc.b   0
-		dc.b $26 ; &
-		dc.b $30 ; 0
-		dc.b $18
-		dc.b $B4 ; ´
-		dc.b $18
-		dc.b $65 ; e
-		dc.b $18
-		dc.b $B4 ; ´
-		dc.b $18
-		dc.b $63 ; c
-		dc.b   6
-		dc.b $51 ; Q
-		dc.b $C8 ; È
-		dc.b $FF
-		dc.b $F6 ; ö
-		dc.b $60 ; `
-		dc.b  $E
-		dc.b $51 ; Q
-		dc.b $C9 ; É
-		dc.b $FF
-		dc.b $E8 ; è
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   0
-		dc.b $4C ; L
-		dc.b $DF ; ß
-		dc.b   3
-		dc.b   7
-		dc.b $4E ; N
-		dc.b $75 ; u
-		dc.b $44 ; D
-		dc.b $FC ; ü
-		dc.b   0
-		dc.b   1
-		dc.b $60 ; `
-		dc.b $F4 ; ô
-		dc.b   0
-		dc.b   2
-		dc.b $30 ; 0
-		dc.b $39 ; 9
-		dc.b $41 ; A
-		dc.b $5A ; Z
-		dc.b $5F ; _
-		dc.b $5F ; _
 
+; =============== S U B R O U T I N E =======================================
+
+
+sub_9968:
+	movem.l d0-d2/a0-a1, -(sp)
+
+	subq.w #1, d1
+
+	@loc_996E:
+		move.b (a1)+, d2
+
+		lea word_9998(pc), a0
+		move.w (a0)+, d0
+		@loc_9976:
+			cmp.b (a0)+, d2
+			bcs.s @loc_9992
+
+			cmp.b (a0)+, d2
+			bls.s @loc_9984
+
+			dbf d0, @loc_9976
+
+		bra.s @loc_9992
+
+	@loc_9984:
+		dbf d1, @loc_996E
+
+	move.w #0, ccr
+
+@loc_998C:
+	movem.l (sp)+, d0-d2/a0-a1
+	rts
+
+@loc_9992:
+	move.w #1, ccr
+	bra.s @loc_998C
+; End of function sub_9968
+
+word_9998:
+	dc.w 2
+	dc.b '09AZ__'
+
+fill_99A0:
 	dcb.b 608, $FF
 
 unk_9C00:
