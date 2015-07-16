@@ -9,7 +9,7 @@ vdpRegCache equ $FFFFFDB4
 vblankCode  equ $FFFFFE26
 
 ; User routine called during V-blank
-vblankJumpTarget    equ $FFFFFDA8
+vblankUserRoutine   equ $FFFFFDA8
 
 ; Buffer for all 4 color palettes
 paletteBuffer0  equ $FFFFFB80
