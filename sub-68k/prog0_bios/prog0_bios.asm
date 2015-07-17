@@ -4968,35 +4968,40 @@ unk_2454:
 
 
 sub_24D4:               ; CODE XREF: sub_23B8+6p
-		move.l  a2,-(sp)
-		lea unk_2454(pc),a6
-		lea dword_5A9C(a5),a0
-		lea 1(a0),a1
-		lea 2(a0),a3
-		lea 3(a0),a4
-		move.b  (a2)+,d0
-		move.b  d0,(a0)
-		move.b  d0,(a1)
-		move.b  d0,(a3)
-		move.b  d0,(a4)
-		clr.w   d0
-		move.w  #$16,d1
+	move.l  a2, -(sp)
 
-loc_24FA:               ; CODE XREF: sub_24D4+42j
-		move.b  (a1),d0
-		move.b  -$40(a6,d0.w),(a1)
-		move.b  (a3),d0
-		move.b  (a6,d0.w),(a3)
-		move.b  (a4),d0
-		move.b  $40(a6,d0.w),(a4)
-		move.b  (a2)+,d0
-		eor.b   d0,(a0)
-		eor.b   d0,(a1)
-		eor.b   d0,(a3)
-		eor.b   d0,(a4)
-		dbf d1,loc_24FA
-		movea.l (sp)+,a2
-		rts
+	lea unk_2454(pc), a6
+	lea dword_5A9C(a5), a0
+	lea 1(a0), a1
+	lea 2(a0), a3
+	lea 3(a0), a4
+
+	move.b (a2)+, d0
+
+	move.b d0, (a0)
+	move.b d0, (a1)
+	move.b d0, (a3)
+	move.b d0, (a4)
+
+	clr.w  d0
+
+	move.w #22,d1
+	@loc_24FA:
+		move.b (a1), d0
+		move.b -64(a6, d0.w), (a1)
+		move.b (a3), d0
+		move.b (a6, d0.w), (a3)
+		move.b (a4), d0
+		move.b 64(a6, d0.w), (a4)
+		move.b (a2)+, d0
+		eor.b  d0, (a0)
+		eor.b  d0, (a1)
+		eor.b  d0, (a3)
+		eor.b  d0, (a4)
+		dbf    d1, @loc_24FA
+
+	movea.l (sp)+, a2
+	rts
 ; End of function sub_24D4
 
 
@@ -5185,99 +5190,116 @@ unk_25EE:   dc.b $15        ; DATA XREF: sub_262E:loc_267Eo
 
 
 sub_262E:               ; CODE XREF: sub_23B8:loc_23F0p
-		lea dword_5AA0+2(a5),a0
-		clr.w   d0
-		clr.w   d1
-		move.b  (a0)+,d0
-		move.b  (a4,d0.w),d2
-		move.b  (a0)+,d0
-		move.b  (a4,d0.w),d3
-		move.b  (a0),d0
-		move.b  (a4,d0.w),d4
-		move.b  d3,d1
-		move.b  d2,d0
-		sub.w   d0,d1
-		bcc.s   loc_2654
-		addi.w  #$3F,d1 ; '?'
+	lea dword_5AA0+2(a5),a0
+	clr.w   d0
+	clr.w   d1
+	move.b  (a0)+,d0
+	move.b  (a4,d0.w),d2
+	move.b  (a0)+,d0
+	move.b  (a4,d0.w),d3
+	move.b  (a0),d0
+	move.b  (a4,d0.w),d4
+	move.b  d3,d1
+	move.b  d2,d0
+	sub.w   d0,d1
+	bcc.s   loc_2654
+
+	addi.w  #$3F,d1
 
 loc_2654:               ; CODE XREF: sub_262E+20j
-		move.b  d1,d6
-		move.b  (a3,d1.w),d5
-		move.b  d4,d1
-		move.b  d3,d0
-		sub.w   d0,d1
-		bcc.s   loc_2666
-		addi.w  #$3F,d1 ; '?'
+	move.b  d1,d6
+	move.b  (a3,d1.w),d5
+	move.b  d4,d1
+	move.b  d3,d0
+	sub.w   d0,d1
+	bcc.s   loc_2666
+
+	addi.w  #$3F,d1
 
 loc_2666:               ; CODE XREF: sub_262E+32j
-		move.b  d2,d0
-		add.w   d0,d1
-		cmpi.w  #$3F,d1 ; '?'
-		bcs.s   loc_2674
-		subi.w  #$3F,d1 ; '?'
+	move.b  d2,d0
+	add.w   d0,d1
+	cmpi.w  #$3F,d1
+	bcs.s   loc_2674
+
+	subi.w  #$3F,d1
 
 loc_2674:               ; CODE XREF: sub_262E+40j
-		move.b  d3,d0
-		sub.w   d0,d1
-		bcc.s   loc_267E
-		addi.w  #$3F,d1 ; '?'
+	move.b  d3,d0
+	sub.w   d0,d1
+	bcc.s   loc_267E
+
+	addi.w  #$3F,d1
 
 loc_267E:               ; CODE XREF: sub_262E+4Aj
-		lea unk_25EE(pc),a0
-		move.b  (a0),d1
-		move.b  d6,d0
-		add.w   d0,d1
-		cmpi.w  #$3F,d1 ; '?'
-		bcs.s   loc_2692
-		subi.w  #$3F,d1 ; '?'
+	lea unk_25EE(pc),a0
+	move.b  (a0),d1
+	move.b  d6,d0
+	add.w   d0,d1
+	cmpi.w  #$3F,d1
+	bcs.s   loc_2692
+
+	subi.w  #$3F,d1
 
 loc_2692:               ; CODE XREF: sub_262E+5Ej
-		move.b  d1,dword_5AA4+2(a5)
-		move.b  (a3,d1.w),d1
-		eor.b   d5,d1
-		move.b  (a4,d1.w),dword_5AA4+3(a5)
-		move.b  dword_5AA4+2(a5),d1
-		move.b  dword_5A9C(a5),d0
-		move.b  (a4,d0.w),d0
-		add.b   d0,d1
-		move.b  (a3,d1.w),d1
-		move.b  dword_5A9C+1(a5),d0
-		eor.b   d0,d1
-		move.b  (a4,d1.w),d1
-		move.b  d6,d0
-		sub.w   d0,d1
-		bcc.s   loc_26C8
-		addi.w  #$3F,d1 ; '?'
+	move.b  d1,dword_5AA4+2(a5)
+
+	move.b  (a3,d1.w),d1
+	eor.b   d5,d1
+	move.b  (a4,d1.w),dword_5AA4+3(a5)
+
+	move.b  dword_5AA4+2(a5),d1
+	move.b  dword_5A9C(a5),d0
+	move.b  (a4,d0.w),d0
+	add.b   d0,d1
+	move.b  (a3,d1.w),d1
+	move.b  dword_5A9C+1(a5),d0
+	eor.b   d0,d1
+
+	move.b  (a4,d1.w),d1
+	move.b  d6,d0
+	sub.w   d0,d1
+	bcc.s   loc_26C8
+
+	addi.w  #$3F,d1
 
 loc_26C8:               ; CODE XREF: sub_262E+94j
-		move.b  (a3,d1.w),d1
-		move.b  d1,dword_5AA8+1(a5)
-		move.b  dword_5A9C(a5),d0
-		eor.b   d0,d1
-		move.b  d1,dword_5AA8(a5)
-		move.b  (a4,d1.w),d1
-		add.b   dword_5AA4+2(a5),d1
-		move.b  (a3,d1.w),d1
-		move.b  dword_5AA8+1(a5),d0
-		move.b  (a4,d0.w),d0
-		add.b   dword_5AA4+3(a5),d0
-		move.b  (a3,d0.w),d0
-		eor.b   d1,d0
-		cmp.b   dword_5A9C+1(a5),d0
-		bne.s   loc_272E
-		move.b  dword_5AA4+2(a5),d1
-		move.w  #$17,d2
-		move.b  dword_5AA8(a5),d3
-		bsr.s   sub_2724
-		m_saveStatusRegister
-		move.b  dword_5AA4+3(a5),d1
-		move.w  #$17,d2
-		move.b  dword_5AA8+1(a5),d3
-		bsr.s   sub_2724
-		move    sr,d0
-		or.w    d0,(sp)
-		m_restoreConditionBits
-		rts
+	move.b  (a3,d1.w),d1
+	move.b  d1,dword_5AA8+1(a5)
+
+	move.b  dword_5A9C(a5),d0
+	eor.b   d0,d1
+	move.b  d1,dword_5AA8(a5)
+
+	move.b  (a4,d1.w),d1
+	add.b   dword_5AA4+2(a5),d1
+	move.b  (a3,d1.w),d1
+
+	move.b  dword_5AA8+1(a5),d0
+	move.b  (a4,d0.w),d0
+
+	add.b   dword_5AA4+3(a5),d0
+	move.b  (a3,d0.w),d0
+	eor.b   d1,d0
+
+	cmp.b   dword_5A9C+1(a5),d0
+	bne.s   loc_272E
+
+	move.b  dword_5AA4+2(a5),d1
+	move.w  #$17,d2
+	move.b  dword_5AA8(a5),d3
+	bsr.s   sub_2724
+
+	m_saveStatusRegister
+	move.b  dword_5AA4+3(a5),d1
+	move.w  #$17,d2
+	move.b  dword_5AA8+1(a5),d3
+	bsr.s   sub_2724
+
+	move    sr,d0
+	or.w    d0,(sp)
+	m_restoreConditionBits
+	rts
 ; End of function sub_262E
 
 
@@ -5285,10 +5307,10 @@ loc_26C8:               ; CODE XREF: sub_262E+94j
 
 
 sub_2724:               ; CODE XREF: sub_262E+DCp sub_262E+ECp
-	sub.w   d1,d2
-	bcs.s   loc_272E
+	sub.w d1, d2
+	bcs.s loc_272E
 
-	eor.b   d3,(a2,d2.w)
+	eor.b d3, (a2, d2.w)
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -5804,12 +5826,12 @@ loc_2BF0:               ; CODE XREF: BIOS:00002B94j
 		move.w  #1,word_5B00(a5)
 		move.l  #$20000,dword_5B02(a5)
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$E,d0
 		beq.w   loc_2C24
-		
+
 		cmpi.b  #5,d0
 		beq.w   loc_2C24
 		bra.w   loc_2C98
@@ -5824,12 +5846,12 @@ loc_2C24:               ; CODE XREF: BIOS:00002C14j
 loc_2C2E:               ; CODE XREF: BIOS:00002C44j
 					; BIOS:00002C6Aj
 		bsr.w   cddSuspendExecution
-		
+
 		btst    #7,cddCommand(a5)
 		bne.w   loc_2AB6
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2C2E
 		bra.s   loc_2C90
@@ -5840,21 +5862,21 @@ loc_2C48:               ; CODE XREF: BIOS:loc_2CB4j
 
 loc_2C4A:               ; CODE XREF: BIOS:00002C66j
 		bsr.w   cddSuspendExecution
-		
+
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
-		
+
 		cmpi.w  #$800A,cddCommand(a5)
 		beq.w   loc_2AB6
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_2C4A
-		
+
 		tst.b   d0
 		bne.s   loc_2C2E
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #0,d0
 		bne.w   loc_2D5A
 
@@ -5862,40 +5884,40 @@ loc_2C78:               ; CODE XREF: initCdd+5Ej
 					; BIOS:00002B24j
 		move.w  #LEDREADY,ledMode(a5)
 		bsr.w   _cdcstop
-		
+
 		move.w  #1,word_5B00(a5)
 		move.l  #$20000,dword_5B02(a5)
 
 loc_2C90:               ; CODE XREF: BIOS:00002C46j
 					; BIOS:00002CD8j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_D0E
 
 loc_2C98:               ; CODE XREF: BIOS:00002C20j
 		cmpi.b  #0,d0
 		beq.s   loc_2CDE
-		
+
 		cmpi.b  #1,d0
 		beq.s   loc_2CDE
-		
+
 		cmpi.b  #4,d0
 		beq.s   loc_2CDE
-		
+
 		cmpi.b  #$C,d0
 		beq.s   loc_2CDE
-		
+
 		cmpi.b  #5,d0
 
 loc_2CB4:               ; CODE XREF: BIOS:00002CC2j
 		beq.s   loc_2C48
-		
+
 		cmpi.b  #$B,d0
 		beq.w   loc_2D5A
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2CB4
-		
+
 		move.w  #$8010,d0
 		bsr.w   sub_B0C
 
@@ -5903,10 +5925,10 @@ loc_2CCC:               ; CODE XREF: BIOS:00002CD4j
 		bsr.w   cddSuspendExecution
 		bsr.w   sub_AF6
 		bcs.s   loc_2CCC
-		
+
 		tst.b   d0
 		bne.s   loc_2C90
-		
+
 		bsr.w   sub_2B9A
 
 loc_2CDE:               ; CODE XREF: BIOS:00002C9Cj
@@ -5920,23 +5942,23 @@ loc_2CDE:               ; CODE XREF: BIOS:00002C9Cj
 
 loc_2CF6:               ; CODE XREF: BIOS:00002D0Ej
 		bsr.w   cddSuspendExecution
-		
+
 		cmpi.w  #$800A,cddCommand(a5)
 		beq.s   loc_2D6A
-		
+
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.s   loc_2D6A
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_2CF6
-		
+
 		tst.b   d0
 		bne.w   loc_2D5A
-		
+
 		move.w  #$22,d0
 		btst    #7,cddArg1Cache(a5)
 		beq.s   loc_2D26
-		
+
 		move.w  #$23,d0
 
 loc_2D26:               ; CODE XREF: BIOS:00002D20j
@@ -5945,12 +5967,12 @@ loc_2D26:               ; CODE XREF: BIOS:00002D20j
 		clr.w   word_5AF4(a5)
 		clr.w   word_5B0A(a5)
 		bsr.w   getFirstTrack
-		
+
 		andi.w  #$FF,d0
 		move.w  d0,word_5B16(a5)
 		move.w  d0,word_5B00(a5)
 		bsr.w   getTocForTrack
-		
+
 		move.l  d0,dword_5B02(a5)
 		clr.b   byte_5B13(a5)
 		move.b  #3,byte_5B12(a5)
@@ -5989,7 +6011,7 @@ loc_2D7C:               ; CODE XREF: BIOS:00002D76j
 
 loc_2D9C:               ; CODE XREF: BIOS:00002B70j
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #1,d0
 		beq.s   loc_2DAA
 		bra.w   loc_2DCC
@@ -6010,10 +6032,10 @@ loc_2DCC:               ; CODE XREF: BIOS:00002D78j
 					; BIOS:00002DA6j
 		cmpi.b  #5,d0
 		beq.s   loc_2DE2
-		
+
 		cmpi.b  #$B,d0
 		beq.s   loc_2DE2
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2DE2
 		bra.w   loc_2AB6
@@ -6029,13 +6051,13 @@ loc_2DEC:               ; CODE XREF: BIOS:loc_2AE4j
 		move.w  #LEDREADY,ledMode(a5)
 		move.w  #$1000,cddControlStatus(a5)
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #5,d0
 		beq.s   loc_2E12
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2E12
-		
+
 		cmpi.b  #9,d0
 		beq.s   loc_2E12
 		bra.w   loc_2AB6
@@ -6050,12 +6072,12 @@ loc_2E12:               ; CODE XREF: BIOS:00002E00j
 loc_2E1C:               ; CODE XREF: BIOS:00002E32j
 					; BIOS:00002EA6j
 		bsr.w   cddSuspendExecution
-		
+
 		btst    #7,cddCommand(a5)
 		bne.w   loc_2AB6
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2E1C
 		bra.s   loc_2EAA
@@ -6074,28 +6096,28 @@ loc_2E44:               ; CODE XREF: BIOS:00002B0Cj
 
 loc_2E50:               ; CODE XREF: BIOS:00002E42j
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #0,d0
 		beq.s   loc_2E82
-		
+
 		cmpi.b  #5,d0
 		beq.s   loc_2EAA
-		
+
 		cmpi.b  #$B,d0
 		beq.s   loc_2E82
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2E82
-		
+
 		move.w  #$8010,d0
 		bsr.w   sub_B0C
 
 loc_2E74:               ; CODE XREF: BIOS:00002E7Cj
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_2E74
-		
+
 		tst.b   d0
 		bne.s   loc_2E44
 
@@ -6107,13 +6129,13 @@ loc_2E82:               ; CODE XREF: BIOS:00002E58j
 
 loc_2E90:               ; CODE XREF: BIOS:00002EA2j
 		bsr.w   cddSuspendExecution
-		
+
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_2E90
-		
+
 		tst.b   d0
 		bne.w   loc_2E1C
 
@@ -6121,29 +6143,29 @@ loc_2EAA:               ; CODE XREF: BIOS:00002E34j
 					; BIOS:00002E5Ej ...
 		move.w  #$4000,cddControlStatus(a5)
 		bsr.w   cddSuspendExecution
-		
+
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #5,d0
 		beq.s   loc_2EAA
-		
+
 		cmpi.b  #6,d0
 		beq.s   loc_2EAA
-		
+
 		cmpi.b  #8,d0
 		beq.s   loc_2EAA
-		
+
 		cmpi.b  #7,d0
 		beq.s   loc_2EAA
-		
+
 		move.w  #$10,cddCommandCache(a5)
 		move.w  #$101,d0
 		bclr    #7,byte_5B19(a5)
 		beq.s   loc_2EF0
-		
+
 		move.w  #$1FF,d0
 
 loc_2EF0:               ; CODE XREF: BIOS:00002EEAj
@@ -6166,28 +6188,28 @@ loc_2F12:               ; CODE XREF: BIOS:00002F04j
 
 loc_2F18:               ; CODE XREF: BIOS:00002F48j
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #0,d0
 		beq.s   loc_2F4A
-		
+
 		cmpi.b  #5,d0
 		beq.s   loc_2F4A
-		
+
 		cmpi.b  #$B,d0
 		beq.s   loc_2F4A
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2F4A
-		
+
 		move.w  #$8010,d0
 		bsr.w   sub_B0C
 
 loc_2F3C:               ; CODE XREF: BIOS:00002F44j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_2F3C
-		
+
 		tst.b   d0
 		bne.s   loc_2F18
 
@@ -6199,15 +6221,15 @@ loc_2F4A:               ; CODE XREF: BIOS:00002F20j
 
 loc_2F5A:               ; CODE XREF: BIOS:00002B74j
 		bsr.w   sub_D0E
-		
+
 		move.w  #0,cddControlStatus(a5)
-		
+
 		cmpi.b  #5,d0
 		beq.s   loc_2F7A
-		
+
 		cmpi.b  #$B,d0
 		beq.s   loc_2F7A
-		
+
 		cmpi.b  #$E,d0
 		beq.s   loc_2F7A
 		bra.w   loc_2AB6
@@ -6302,27 +6324,27 @@ loc_306C:               ; CODE XREF: BIOS:00002FA2j
 					; BIOS:00002FB8j ...
 		cmpi.w  #$8010,cddCommand(a5)
 		beq.w   loc_2AB6
-		
+
 		cmpi.w  #$800A,cddCommand(a5)
 		beq.w   loc_2AB6
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #1,d0
 		beq.s   loc_30CC
-		
+
 		cmpi.b  #4,d0
 		beq.s   loc_30CC
-		
+
 		cmpi.b  #$C,d0
 		beq.s   loc_30CC
-		
+
 		cmpi.b  #5,d0
 		beq.w   loc_31E0
-		
+
 		cmpi.b  #$B,d0
 		beq.w   loc_31E0
-		
+
 		cmpi.b  #$E,d0
 		beq.w   loc_31E0
 		bra.s   loc_30B4
@@ -6339,10 +6361,10 @@ loc_30B4:               ; CODE XREF: BIOS:000030AEj
 
 loc_30BE:               ; CODE XREF: BIOS:000030C6j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_30BE
-		
+
 		tst.b   d0
 		bne.s   loc_306C
 
@@ -6350,11 +6372,11 @@ loc_30CC:               ; CODE XREF: BIOS:00003088j
 					; BIOS:0000308Ej ...
 		move.w  #0,word_5B0A(a5)
 		bsr.w   sub_2BBC
-		
+
 		move.w  #$800,cddControlStatus(a5)
 		btst    #1,byte_5B18(a5)
 		beq.s   loc_30EA
-		
+
 		move.w  #$808,cddControlStatus(a5)
 
 loc_30EA:               ; CODE XREF: BIOS:000030E2j
@@ -6363,15 +6385,15 @@ loc_30EA:               ; CODE XREF: BIOS:000030E2j
 
 loc_30EC:               ; CODE XREF: BIOS:00003112j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #1,d0
 		beq.s   loc_3106
-		
+
 		cmpi.b  #4,d0
 		beq.s   loc_3106
-		
+
 		cmpi.b  #$C,d0
 		bne.s   loc_30B4
 
@@ -6381,7 +6403,7 @@ loc_3106:               ; CODE XREF: BIOS:loc_30EAj
 		move.w  #$A0,d0 ; ' '
 		bsr.w   sub_B0C
 		bcs.s   loc_30EC
-		
+
 		bra.s   loc_311A
 ; ---------------------------------------------------------------------------
 
@@ -6396,7 +6418,7 @@ loc_311A:               ; CODE XREF: BIOS:00003114j
 
 loc_3128:               ; CODE XREF: BIOS:00003146j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_D0E
 		cmpi.b  #8,d0
 		bne.s   loc_3142
@@ -6467,7 +6489,7 @@ loc_31E0:               ; CODE XREF: BIOS:0000309Aj
 
 loc_31EA:               ; CODE XREF: BIOS:000031F2j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_31EA
 		tst.b   d0
@@ -6491,10 +6513,10 @@ loc_3222:               ; CODE XREF: BIOS:0000321Aj
 					; BIOS:0000324Ej
 		bsr.w   getCurrentTrackNumber
 		bcs.w   loc_2AB6
-		
+
 		cmp.w   word_5B00(a5),d0
 		beq.w   loc_2AB6
-		
+
 		move.w  d0,word_5B00(a5)
 		bra.w   loc_2AB6
 ; ---------------------------------------------------------------------------
@@ -6514,16 +6536,16 @@ loc_3244:               ; CODE XREF: BIOS:00003214j
 loc_3250:               ; CODE XREF: BIOS:00002B80j
 		move.w  #$100,cddControlStatus(a5)
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$C,d0
 		beq.s   loc_3284
-		
+
 		cmpi.b  #8,d0
 		beq.s   loc_3298
-		
+
 		cmpi.b  #6,d0
 		beq.s   loc_3274
-		
+
 		cmpi.b  #1,d0
 		bne.w   loc_31E0
 
@@ -6531,7 +6553,7 @@ loc_3274:               ; CODE XREF: BIOS:0000326Aj
 					; BIOS:000032A4j
 		bsr.w   getCurrentTrackNumber
 		bcs.w   loc_2AB6
-		
+
 		cmp.w   word_5B00(a5),d0
 		bls.w   loc_2AB6
 
@@ -6545,7 +6567,7 @@ loc_3284:               ; CODE XREF: BIOS:0000325Ej
 
 loc_3298:               ; CODE XREF: BIOS:00003264j
 		bsr.w   sub_D7C
-		
+
 		cmpi.b  #6,d0
 		bcc.w   loc_31E0
 		bra.s   loc_3274
@@ -6554,16 +6576,16 @@ loc_3298:               ; CODE XREF: BIOS:00003264j
 loc_32A6:               ; CODE XREF: BIOS:00002B7Cj
 		move.w  #$100,cddControlStatus(a5)
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$C,d0
 		beq.s   loc_32DA
-		
+
 		cmpi.b  #8,d0
 		beq.s   loc_32E4
-		
+
 		cmpi.b  #6,d0
 		beq.s   loc_32CA
-		
+
 		cmpi.b  #1,d0
 		bne.w   loc_31E0
 
@@ -6571,7 +6593,7 @@ loc_32CA:               ; CODE XREF: BIOS:000032C0j
 					; BIOS:000032F0j
 		bsr.w   getCurrentTrackNumber
 		bcs.w   loc_2AB6
-		
+
 		cmp.w   word_5B00(a5),d0
 		bls.w   loc_2AB6
 
@@ -6604,42 +6626,42 @@ loc_3314:               ; CODE XREF: BIOS:00002AF8j
 		move.w  #LEDACCESS,ledMode(a5)
 		andi.b  #$CF,byte_5B18(a5)
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$C,d0
 		beq.w   loc_3440
 
 loc_332C:               ; CODE XREF: BIOS:000032FEj
 					; BIOS:00003312j ...
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$C,d0
 		beq.w   loc_33CA
-		
+
 		cmpi.b  #1,d0
 		beq.w   loc_33CA
-		
+
 		cmpi.b  #4,d0
 		beq.w   loc_33CA
-		
+
 		cmpi.b  #5,d0
 		beq.w   loc_344A
-		
+
 		cmpi.b  #$B,d0
 		beq.w   loc_344A
-		
+
 		cmpi.b  #$E,d0
 		beq.w   loc_344A
-		
+
 		cmpi.b  #0,d0
 		bne.s   loc_3370
-		
+
 		bclr    #2,byte_5B18(a5)
 		bne.w   loc_2F84
 
 loc_3370:               ; CODE XREF: BIOS:00003364j
 		btst    #7,byte_5B18(a5)
 		bne.s   loc_3382
-		
+
 		move.w  #$8070,d0
 		bsr.w   sub_B0C
 		bra.s   loc_33BA
@@ -6653,17 +6675,17 @@ loc_3382:               ; CODE XREF: BIOS:00003376j
 
 loc_3394:               ; CODE XREF: BIOS:0000339Cj
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_3394
-		
+
 		tst.b   d0
 		move.w  #$FFFF,word_5B0A(a5)
 		bsr.w   sub_2BBC
-		
+
 		move.l  dword_59F8(a5),d0
 		bpl.s   loc_33B6
-		
+
 		move.l  #$20000,d0
 
 loc_33B6:               ; CODE XREF: BIOS:000033AEj
@@ -6672,10 +6694,10 @@ loc_33B6:               ; CODE XREF: BIOS:000033AEj
 loc_33BA:               ; CODE XREF: BIOS:00003380j
 					; BIOS:000033C2j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_33BA
-		
+
 		tst.b   d0
 		bra.w   loc_332C
 ; ---------------------------------------------------------------------------
@@ -6684,11 +6706,11 @@ loc_33CA:               ; CODE XREF: BIOS:00003334j
 					; BIOS:0000333Cj ...
 		btst    #5,byte_5B18(a5)
 		bne.s   loc_3412
-		
+
 		move.w  #$80,d0 ; '€'
 		bchg    #4,byte_5B18(a5)
 		beq.s   loc_33E2
-		
+
 		move.w  #$90,d0 ; ''
 
 loc_33E2:               ; CODE XREF: BIOS:000033DCj
@@ -6706,13 +6728,13 @@ loc_33EC:               ; CODE XREF: BIOS:000033E6j
 
 loc_33F6:               ; CODE XREF: BIOS:000033FEj
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_33F6
-		
+
 		tst.b   d0
 		bne.s   loc_344A
-		
+
 		move.w  #$300,cddControlStatus(a5)
 		bset    #5,byte_5B18(a5)
 		bra.s   loc_3440
@@ -6722,7 +6744,7 @@ loc_3412:               ; CODE XREF: BIOS:000033D0j
 		bclr    #5,byte_5B18(a5)
 		btst    #7,byte_5B18(a5)
 		bne.s   loc_3436
-		
+
 		move.w  #$100,cddControlStatus(a5)
 		lea word_5AEA(a5),a0
 		lea cddCommandCache(a5),a1
@@ -6750,22 +6772,22 @@ loc_344A:               ; CODE XREF: BIOS:0000334Cj
 loc_3454:               ; CODE XREF: BIOS:00002B88j
 		move.w  #$300,cddControlStatus(a5)
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #2,d0
 		beq.s   loc_3490
-		
+
 		cmpi.b  #1,d0
 		beq.s   loc_3490
-		
+
 		cmpi.b  #$C,d0
 		beq.s   loc_3490
-		
+
 		cmpi.b  #3,d0
 		beq.w   loc_2AB6
-		
+
 		cmpi.b  #6,d0
 		beq.w   loc_2AB6
-		
+
 		cmpi.b  #8,d0
 		beq.s   loc_349A
 
@@ -6817,34 +6839,34 @@ loc_34D8:               ; CODE XREF: BIOS:000034E0j
 loc_34E4:               ; CODE XREF: BIOS:000034BAj
 					; BIOS:000034CEj
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #$A,d0
 		beq.s   loc_34D0
-		
+
 		cmpi.b  #5,d0
 		beq.w   loc_3606
-		
+
 		cmpi.b  #$B,d0
 		beq.w   loc_3606
-		
+
 		cmpi.b  #$E,d0
 		beq.w   loc_3606
-		
+
 		btst    #7,byte_5B18(a5)
 		bne.w   loc_3590
-		
+
 		cmpi.b  #$C,d0
 		beq.w   loc_3576
-		
+
 		cmpi.b  #4,d0
 		beq.s   loc_3576
-		
+
 		cmpi.b  #0,d0
 		beq.s   loc_34D0
-		
+
 		move.w  #0,word_5B0A(a5)
 		bsr.w   sub_2BBC
-		
+
 		move.w  #3,word_5B20(a5)
 		bra.s   loc_353A
 ; ---------------------------------------------------------------------------
@@ -6860,13 +6882,13 @@ loc_353A:               ; CODE XREF: BIOS:00003534j
 
 loc_3544:               ; CODE XREF: BIOS:0000354Cj
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_3544
-		
+
 		tst.b   d0
 		beq.s   loc_355C
-		
+
 		subq.w  #1,word_5B20(a5)
 		bcc.s   loc_353A
 		bra.w   loc_35FC
@@ -7182,13 +7204,13 @@ loc_3832:               ; CODE XREF: BIOS:000037F4j
 loc_3850:               ; CODE XREF: BIOS:000037EEj
 		cmpi.b  #$C,d0
 		beq.s   loc_3890
-		
+
 		cmpi.b  #1,d0
 		beq.s   loc_3890
-		
+
 		cmpi.b  #0,d0
 		beq.w   loc_3664
-		
+
 		move.w  #3,word_5B20(a5)
 		bra.s   loc_3870
 ; ---------------------------------------------------------------------------
@@ -7203,13 +7225,13 @@ loc_3870:               ; CODE XREF: BIOS:0000386Aj
 
 loc_387A:               ; CODE XREF: BIOS:00003882j
 		bsr.w   cddSuspendExecution
-		
+
 		bsr.w   sub_AF6
 		bcs.s   loc_387A
-		
+
 		tst.b   d0
 		beq.s   loc_3890
-		
+
 		bsr.w   loc_2BA2
 		bra.w   loc_3664
 ; ---------------------------------------------------------------------------
@@ -7217,9 +7239,9 @@ loc_387A:               ; CODE XREF: BIOS:00003882j
 loc_3890:               ; CODE XREF: BIOS:00003854j
 					; BIOS:0000385Aj ...
 		bsr.w   sub_19D4
-		
+
 		bsr.w   loc_2BA2
-		
+
 		move.w  #$101,cddControlStatus(a5)
 		bclr    #6,byte_5B18(a5)
 		move.w  #$2A,cddCommandCache(a5) ; '*'
@@ -7235,16 +7257,16 @@ loc_38AE:               ; CODE XREF: BIOS:000037D4j
 loc_38B8:               ; CODE XREF: BIOS:00002B90j
 		move.w  #$505,cddControlStatus(a5)
 		bsr.w   sub_D0E
-		
+
 		cmpi.b  #8,d0
 		beq.s   loc_38F4
-		
+
 		cmpi.b  #6,d0
 		beq.s   loc_38DA
-		
+
 		cmpi.b  #$C,d0
 		beq.s   loc_38DA
-		
+
 		cmpi.b  #4,d0
 		bne.s   loc_38AE
 
@@ -7260,7 +7282,7 @@ loc_38DA:               ; CODE XREF: BIOS:000038CCj
 
 loc_38F4:               ; CODE XREF: BIOS:000038C6j
 		bsr.w   sub_D7C
-		
+
 		cmpi.b  #6,d0
 		bcc.s   loc_38AE
 		bra.s   loc_38DA
