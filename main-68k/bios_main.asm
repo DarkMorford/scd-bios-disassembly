@@ -378,30 +378,30 @@ _start:
 	@loc_498:
 		move.l d0, -(a6)
 		dbf    d6, @loc_498
-	
+
 	move.l (a5)+, (a4)
 	move.l (a5)+, (a4)
-	
+
 	moveq #31, d3
 	@loc_4A4:
 		move.l d0, (a3)
 		dbf    d3, @loc_4A4
-	
+
 	move.l (a5)+, (a4)
-	
+
 	moveq #19, d4
 	@loc_4AE:
 		move.l d0, (a3)
 		dbf    d4, @loc_4AE
-	
+
 	moveq #3, d5
 	@loc_4B6:
 		move.b (a5)+, $11(a3)
 		dbf    d5, @loc_4B6
-	
+
 	move.w  d0, (a2)
 	movem.l (a6), d0-a6
-	
+
 	move    #$2700, sr
 
 @loc_4C8:
@@ -487,13 +487,16 @@ InitData:
 ; ---------------------------------------------------------------------------
 
 loc_536:                ; CODE XREF: ROM:loc_4C8j
-	tst.w   (VDP_CONTROL).l
+	tst.w (VDP_CONTROL).l
+
 	m_disableInterrupts
-	moveq   #$FFFFFFFF,d1
-	bsr.w   sub_183A
-	clr.b   (byte_FFFFFE54).w
-	btst    #6,(JOYCTRL3).l
-	beq.s   loc_598
+
+	moveq #$FFFFFFFF, d1
+	bsr.w sub_183A
+
+	clr.b (byte_FFFFFE54).w
+	btst  #JOYCTRL_PC6, (JOYCTRL3).l
+	beq.s loc_598
 
 	movea.l (InitialSSP).w,sp ; Warm boot
 
@@ -925,11 +928,12 @@ loc_976:                ; CODE XREF: ROM:00000304j
 
 
 enableUserHInt:             ; CODE XREF: ROM:00000314j
-		move.l  a1,(_LEVEL4+2).w
-		move.w  a1,(GA_HINT_VECTOR).l
-		bset    #4,(vdpRegCache+1).w
-		move.w  (vdpRegCache).w,(VDP_CONTROL).l
-		rts
+	move.l a1, (_LEVEL4+2).w
+	move.w a1, (GA_HINT_VECTOR).l
+
+	bset   #4, (vdpRegCache+1).w
+	move.w (vdpRegCache).w, (VDP_CONTROL).l
+	rts
 ; End of function enableUserHInt
 
 
@@ -937,11 +941,12 @@ enableUserHInt:             ; CODE XREF: ROM:00000314j
 
 
 enableDefaultHInt:          ; CODE XREF: ROM:00000294j
-		move.l  a1,(_LEVEL4+2).w
-		move.w  #$FD0C,(GA_HINT_VECTOR).l
-		bset    #4,(vdpRegCache+1).w
-		move.w  (vdpRegCache).w,(VDP_CONTROL).l
-		rts
+	move.l a1, (_LEVEL4+2).w
+	move.w #$FD0C, (GA_HINT_VECTOR).l
+
+	bset   #4, (vdpRegCache+1).w
+	move.w (vdpRegCache).w, (VDP_CONTROL).l
+	rts
 ; End of function enableDefaultHInt
 
 
@@ -949,9 +954,9 @@ enableDefaultHInt:          ; CODE XREF: ROM:00000294j
 
 
 disableHInt:                ; CODE XREF: ROM:00000318j
-		bclr    #4,(vdpRegCache+1).w
-		move.w  (vdpRegCache).w,(VDP_CONTROL).l
-		rts
+	bclr   #4, (vdpRegCache+1).w
+	move.w (vdpRegCache).w, (VDP_CONTROL).l
+	rts
 ; End of function disableHInt
 
 
@@ -959,31 +964,31 @@ disableHInt:                ; CODE XREF: ROM:00000318j
 
 
 loadDefaultVdpRegs:         ; CODE XREF: ROM:000002ACj
-					; ROM:loc_598p ...
-		lea defaultVdpRegs(pc),a1
-		move.w  #$80,(vdpLineIncrement).w ; 'Γé¼'
+	lea defaultVdpRegs(pc), a1
+	move.w #$80, (vdpLineIncrement).w
 
 loadVdpRegs:                ; CODE XREF: ROM:000002B0j
-					; sub_1CFA+2Ap ...
-		lea (vdpRegCache).w,a2
-		moveq   #0,d0
+	lea (vdpRegCache).w, a2
 
-loc_9E0:                ; CODE XREF: loadDefaultVdpRegs+28j
-		move.b  (a1),d0
-		bpl.s   locret_9FA
-		move.w  (a1)+,d1
-		cmpi.b  #$92,d0
-		bhi.s   loc_9F2
-		add.b   d0,d0
-		move.w  d1,(a2,d0.w)
+	moveq #0, d0
+	@loc_9E0:
+		move.b (a1), d0
+		bpl.s  @locret_9FA
 
-loc_9F2:                ; CODE XREF: loadDefaultVdpRegs+1Aj
-		move.w  d1,(VDP_CONTROL).l
-		bra.s   loc_9E0
+		move.w (a1)+, d1
+		cmpi.b #$92, d0
+		bhi.s  @loc_9F2
+
+		add.b  d0, d0
+		move.w d1, (a2, d0.w)
+
+	@loc_9F2:
+		move.w d1, (VDP_CONTROL).l
+		bra.s  @loc_9E0
 ; ---------------------------------------------------------------------------
 
-locret_9FA:             ; CODE XREF: loadDefaultVdpRegs+12j
-		rts
+@locret_9FA:
+	rts
 ; End of function loadDefaultVdpRegs
 
 ; ---------------------------------------------------------------------------
@@ -999,7 +1004,7 @@ defaultVdpRegs:
 	dc.w $855C  ; Reg #05: Sprite attribute table $B800
 	dc.w $8D2F  ; Reg #13: H-scroll table $BC00
 	dc.w $8700  ; Reg #07: Background color palette 0, color 0
-	dc.w $8A00  ; Reg #10: H-interrupt timing set to 0
+	dc.w $8A00  ; Reg #10: H-interrupt every line (skip 0)
 	dc.w $8F02  ; Reg #15: Auto-increment VDP set to 2
 	dc.w $9100  ; Reg #17: Window H position set to 0
 	dc.w $9200  ; Reg #18: Window V position set to 0
@@ -1010,15 +1015,15 @@ defaultVdpRegs:
 
 clearAllVram:               ; CODE XREF: ROM:000002A0j
 	; Set Palette0:Color0 to black
-	move.l  #$C0000000,(VDP_CONTROL).l
-	move.w  #0,(VDP_DATA).l
+	move.l #$C0000000, (VDP_CONTROL).l
+	move.w #0, (VDP_DATA).l
 
-	bsr.w   clearVsram
+	bsr.w clearVsram
 
 	; DMA fill VRAM with 0
-	move.l  #$40000000,d0
-	move.w  #$FFFF,d1
-	bra.w   dmaClearVramSegment
+	move.l #$40000000, d0
+	move.w #$FFFF, d1
+	bra.w  dmaClearVramSegment
 ; End of function clearAllVram
 
 
@@ -1026,10 +1031,10 @@ clearAllVram:               ; CODE XREF: ROM:000002A0j
 
 
 clearVdpPatternTables:          ; CODE XREF: ROM:000002A4j
-	bsr.s   clearSpriteTable
-	bsr.w   dmaClearScrollTableA
-	bsr.w   dmaClearScrollTableB
-	bra.w   dmaClearWindowTable
+	bsr.s clearSpriteTable
+	bsr.w dmaClearScrollTableA
+	bsr.w dmaClearScrollTableB
+	bra.w dmaClearWindowTable
 ; End of function clearVdpPatternTables
 
 
@@ -1038,9 +1043,9 @@ clearVdpPatternTables:          ; CODE XREF: ROM:000002A4j
 ; Clear VRAM dword at $BC00
 
 sub_A4E:
-		move.l  #$7C000002,(VDP_CONTROL).l
-		move.l  #0,(VDP_DATA).l
-		rts
+	move.l #$7C000002,(VDP_CONTROL).l
+	move.l #0,(VDP_DATA).l
+	rts
 ; End of function sub_A4E
 
 
@@ -1049,10 +1054,10 @@ sub_A4E:
 ; Clear VRAM dword at $B800
 
 clearSpriteTable:           ; CODE XREF: clearVdpPatternTablesp
-		clr.l   (spriteTable).w
-		move.l  #$78000002,(VDP_CONTROL).l
-		move.l  #0,(VDP_DATA).l
-		rts
+	clr.l  (spriteTable).w
+	move.l #$78000002, (VDP_CONTROL).l
+	move.l #0, (VDP_DATA).l
+	rts
 ; End of function clearSpriteTable
 
 
@@ -1061,19 +1066,18 @@ clearSpriteTable:           ; CODE XREF: clearVdpPatternTablesp
 
 clearVsram:             ; CODE XREF: ROM:000002A8j
 					; clearAllVram+12p
-	move.l  #$40000010,d0
-	moveq   #39,d1
+	move.l #$40000010, d0
+	moveq  #39, d1
 
 clearVramSegment:           ; CODE XREF: ROM:000002B8j
-					; sub_1CFA+1Ap
-	moveq   #0,d2
+	moveq #0, d2
 
 fillVramSegment:            ; CODE XREF: ROM:000002B4j
-	move.l  d0,(VDP_CONTROL).l
+	move.l d0, (VDP_CONTROL).l
 
 	@loc_A8E:
-		move.w  d2,(VDP_DATA).l
-		dbf d1,@loc_A8E
+		move.w d2, (VDP_DATA).l
+		dbf    d1, @loc_A8E
 
 	rts
 ; End of function clearVsram
@@ -1084,9 +1088,9 @@ fillVramSegment:            ; CODE XREF: ROM:000002B4j
 ; Clear VRAM from $A000-$ADFF
 
 dmaClearWindowTable:            ; CODE XREF: clearVdpPatternTables+Aj
-	move.l  #$60000002,d0
-	move.w  #$DFF,d1
-	bra.s   dmaClearVramSegment
+	move.l #$60000002, d0
+	move.w #$DFF, d1
+	bra.s  dmaClearVramSegment
 ; End of function dmaClearWindowTable
 
 
@@ -1095,8 +1099,8 @@ dmaClearWindowTable:            ; CODE XREF: clearVdpPatternTables+Aj
 ; Clear VRAM from $C000-$DFFF
 
 dmaClearScrollTableA:           ; CODE XREF: clearVdpPatternTables+2p
-	move.l  #$40000003,d0
-	bra.s   loc_AB4
+	move.l #$40000003, d0
+	bra.s  loc_AB4
 ; End of function dmaClearScrollTableA
 
 
@@ -1105,16 +1109,16 @@ dmaClearScrollTableA:           ; CODE XREF: clearVdpPatternTables+2p
 ; Clear VRAM from $E000-$FFFF
 
 dmaClearScrollTableB:           ; CODE XREF: clearVdpPatternTables+6p
-		move.l  #$60000003,d0
+		move.l #$60000003, d0
 
 loc_AB4:                ; CODE XREF: dmaClearScrollTableA+6j
-		move.w  #$1FFF,d1
+		move.w #$1FFF, d1
 ; End of function dmaClearScrollTableB
 
 
 dmaClearVramSegment:            ; CODE XREF: ROM:000002BCj
 					; clearAllVram+20j ...
-		moveq   #0,d2
+		moveq #0, d2
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -1124,29 +1128,41 @@ dmaClearVramSegment:            ; CODE XREF: ROM:000002BCj
 ; d2 - Fill value
 
 dmaFillVramSegment:         ; CODE XREF: ROM:000002C0j
-		lea (VDP_CONTROL).l,a6
-		move.w  #$8F01,(a6)
-		move.w  (vdpRegCache+2).w,d3
-		bset    #4,d3
-		move.w  d3,(a6)
-		move.l  #$940000,d3
-		move.w  d1,d3
-		lsl.l   #8,d3
-		move.w  #$9300,d3
-		move.b  d1,d3
-		move.l  d3,(a6)
-		move.w  #$9780,(a6)
-		ori.l   #$40000080,d0
-		move.l  d0,(a6)
-		move.b  d2,-4(a6)
+	lea (VDP_CONTROL).l, a6
 
-@dmaWaitLoop:               ; CODE XREF: dmaFillVramSegment+3Cj
-		move.w  (a6),d3     ; Wait for DMA to finish
-		btst    #1,d3
-		bne.s   @dmaWaitLoop
-		move.w  (vdpRegCache+2).w,(a6)
-		move.w  #$8F02,(a6)
-		rts
+	; Set auto-increment 1
+	move.w #$8F01, (a6)
+
+	; Enable DMA
+	move.w (vdpRegCache+2).w, d3
+	bset   #4, d3
+	move.w d3, (a6)
+
+	move.l #$940000, d3
+	move.w d1, d3
+	lsl.l  #8, d3
+	move.w #$9300, d3
+	move.b d1, d3
+	move.l d3, (a6)
+
+	move.w #$9780, (a6)
+	ori.l  #$40000080, d0
+	move.l d0, (a6)
+
+	move.b d2, -4(a6)
+
+	; Wait for DMA to finish
+	@dmaWaitLoop:
+		move.w (a6), d3
+		btst   #VDP_DMA, d3
+		bne.s  @dmaWaitLoop
+
+	; Disable DMA
+	move.w (vdpRegCache+2).w, (a6)
+
+	; Set auto-increment 2
+	move.w #$8F02, (a6)
+	rts
 ; End of function dmaFillVramSegment
 
 
@@ -1158,35 +1174,44 @@ dmaFillVramSegment:         ; CODE XREF: ROM:000002C0j
 ; d2 - DMA length
 
 dmaTransferToVram:          ; CODE XREF: ROM:000002D0j
-		lea (VDP_CONTROL).l,a6
-		move.w  (vdpRegCache+2).w,d3
-		bset    #4,d3
-		move.w  d3,(a6)
-		asr.l   #1,d1
-		move.l  #$940000,d3
-		move.w  d2,d3
-		lsl.l   #8,d3
-		move.w  #$9300,d3
-		move.b  d2,d3
-		move.l  d3,(a6)
-		move.l  #$960000,d3
-		move.w  d1,d3
-		lsl.l   #8,d3
-		move.w  #$9500,d3
-		move.b  d1,d3
-		move.l  d3,(a6)
-		swap    d1
-		move.w  #$9700,d3
-		move.b  d1,d3
-		move.w  d3,(a6)
-		ori.l   #$40000080,d0
-		swap    d0
-		move.w  d0,(a6)
-		swap    d0
-		move.w  d0,-(sp)
-		move.w  (sp)+,(a6)
-		move.w  (vdpRegCache+2).w,(a6)
-		rts
+	lea (VDP_CONTROL).l,a6
+
+	; Enable DMA
+	move.w (vdpRegCache+2).w, d3
+	bset   #4, d3
+	move.w d3, (a6)
+
+	asr.l  #1, d1
+	move.l #$940000, d3
+	move.w d2, d3
+	lsl.l  #8, d3
+	move.w #$9300, d3
+	move.b d2, d3
+	move.l d3, (a6)
+
+	move.l #$960000, d3
+	move.w d1, d3
+	lsl.l  #8, d3
+	move.w #$9500, d3
+	move.b d1, d3
+	move.l d3, (a6)
+
+	swap   d1
+	move.w #$9700, d3
+	move.b d1, d3
+	move.w d3, (a6)
+
+	ori.l  #$40000080, d0
+	swap   d0
+	move.w d0, (a6)
+
+	swap   d0
+	move.w d0, -(sp)
+	move.w (sp)+, (a6)
+
+	; Disable DMA
+	move.w (vdpRegCache+2).w, (a6)
+	rts
 ; End of function dmaTransferToVram
 
 
@@ -1302,21 +1327,24 @@ readFromVram:
 
 writeTilemapToVram:             ; CODE XREF: ROM:000002C4j
 					; sub_1CFA+70p ...
-		lea (VDP_DATA).l,a5
-		move.w  #0,-(sp)
-		move.w  (vdpLineIncrement).w,-(sp)
+	lea (VDP_DATA).l, a5
 
-loc_C3C:                ; CODE XREF: writeTilemapToVram+1Cj
-		move.l  d0,4(a5)
-		move.w  d1,d3
+	move.w #0, -(sp)
+	move.w (vdpLineIncrement).w, -(sp)
 
-loc_C42:                ; CODE XREF: writeTilemapToVram+16j
-		move.w  (a1)+,(a5)
-		dbf d3,loc_C42
-		add.l   (sp),d0
-		dbf d2,loc_C3C
-		addq.w  #4,sp
-		rts
+	@loc_C3C:
+		move.l d0, 4(a5)
+
+		move.w d1, d3
+		@loc_C42:
+			move.w (a1)+, (a5)
+			dbf    d3, @loc_C42
+
+		add.l (sp), d0
+		dbf   d2, @loc_C3C
+
+	addq.w #4, sp
+	rts
 ; End of function writeTilemapToVram
 
 
@@ -1330,22 +1358,25 @@ loc_C42:                ; CODE XREF: writeTilemapToVram+16j
 ; a1: Source data
 
 sub_C52:                ; CODE XREF: ROM:000002C8j
-		lea (VDP_DATA).l,a5
-		move.w  #0,-(sp)
-		move.w  (vdpLineIncrement).w,-(sp)
+	lea (VDP_DATA).l, a5
 
-loc_C60:                ; CODE XREF: sub_C52+1Ej
-		move.l  d0,4(a5)
-		move.w  d1,d4
+	move.w #0, -(sp)
+	move.w (vdpLineIncrement).w, -(sp)
 
-loc_C66:                ; CODE XREF: sub_C52+18j
-		move.b  (a1)+,d3
-		move.w  d3,(a5)
-		dbf d4,loc_C66
-		add.l   (sp),d0
-		dbf d2,loc_C60
-		addq.w  #4,sp
-		rts
+	@loc_C60:
+		move.l d0, 4(a5)
+
+		move.w d1, d4
+		@loc_C66:
+			move.b (a1)+, d3
+			move.w d3, (a5)
+			dbf    d4, @loc_C66
+
+		add.l (sp), d0
+		dbf   d2, @loc_C60
+
+	addq.w #4, sp
+	rts
 ; End of function sub_C52
 
 
@@ -1359,23 +1390,26 @@ loc_C66:                ; CODE XREF: sub_C52+18j
 ; a1: Source data
 
 sub_C78:                ; CODE XREF: sub_5764+60p
-		lea (VDP_DATA).l,a5
-		move.w  #0,-(sp)
-		move.w  (vdpLineIncrement).w,-(sp)
+	lea (VDP_DATA).l, a5
 
-loc_C86:                ; CODE XREF: sub_C78+20j
-		move.l  d0,4(a5)
-		move.w  d1,d5
+	move.w #0, -(sp)
+	move.w (vdpLineIncrement).w, -(sp)
 
-loc_C8C:                ; CODE XREF: sub_C78+1Aj
-		move.w  (a1)+,d4
-		or.w    d3,d4
-		move.w  d4,(a5)
-		dbf d5,loc_C8C
-		add.l   (sp),d0
-		dbf d2,loc_C86
-		addq.w  #4,sp
-		rts
+	@loc_C86:
+		move.l d0, 4(a5)
+
+		move.w d1, d5
+		@loc_C8C:
+			move.w (a1)+, d4
+			or.w   d3, d4
+			move.w d4, (a5)
+			dbf    d5, @loc_C8C
+
+		add.l (sp), d0
+		dbf   d2, @loc_C86
+
+	addq.w #4,sp
+	rts
 ; End of function sub_C78
 
 
@@ -1383,48 +1417,55 @@ loc_C8C:                ; CODE XREF: sub_C78+1Aj
 
 
 sub_CA0:                ; CODE XREF: ROM:0000036Cj
-		lea (VDP_DATA).l,a5
-		move.w  #0,-(sp)
-		move.w  (vdpLineIncrement).w,-(sp)
+	lea (VDP_DATA).l, a5
 
-loc_CAE:                ; CODE XREF: sub_CA0+1Ej
-		move.l  d0,4(a5)
-		move.w  d1,d4
+	move.w #0, -(sp)
+	move.w (vdpLineIncrement).w, -(sp)
 
-loc_CB4:                ; CODE XREF: sub_CA0+18j
-		move.w  d3,(a5)
-		addq.w  #1,d3
-		dbf d4,loc_CB4
-		add.l   (sp),d0
-		dbf d2,loc_CAE
-		addq.w  #4,sp
-		rts
+	@loc_CAE:
+		move.l d0, 4(a5)
+
+		move.w d1, d4
+		@loc_CB4:
+			move.w d3, (a5)
+			addq.w #1, d3
+			dbf    d4, @loc_CB4
+
+		add.l (sp), d0
+		dbf   d2, @loc_CAE
+
+	addq.w #4, sp
+	rts
 ; End of function sub_CA0
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_CC6:                ; CODE XREF: ROM:00000370j
-		lea (VDP_DATA).l,a5
-		move.w  #0,-(sp)
-		move.w  (vdpLineIncrement).w,-(sp)
-		sub.w   d1,d3
-		sub.w   d1,d3
-		subq.w  #2,d3
+sub_CC6:                        ; CODE XREF: ROM:00000370j
+	lea (VDP_DATA).l,a5
 
-loc_CDA:                ; CODE XREF: sub_CC6+24j
-		move.l  d0,4(a5)
-		move.w  d1,d4
+	move.w #0, -(sp)
+	move.w (vdpLineIncrement).w, -(sp)
 
-loc_CE0:                ; CODE XREF: sub_CC6+1Cj
-		move.w  (a1)+,(a5)
-		dbf d4,loc_CE0
-		adda.w  d3,a1
-		add.l   (sp),d0
-		dbf d2,loc_CDA
-		addq.w  #4,sp
-		rts
+	sub.w  d1, d3
+	sub.w  d1, d3
+	subq.w #2, d3
+
+	@loc_CDA:
+		move.l d0, 4(a5)
+
+		move.w d1, d4
+		@loc_CE0:
+			move.w (a1)+, (a5)
+			dbf    d4, @loc_CE0
+
+		adda.w d3,   a1
+		add.l  (sp), d0
+		dbf    d2, @loc_CDA
+
+	addq.w #4, sp
+	rts
 ; End of function sub_CC6
 
 
@@ -1437,39 +1478,40 @@ loc_CE0:                ; CODE XREF: sub_CC6+1Cj
 ; d3: Fill word
 
 fillVramTilemap:                ; CODE XREF: ROM:000002CCj
-					; sub_1CFA+11Ap ...
-		lea (VDP_DATA).l,a5
-		move.w  #0,-(sp)
-		move.w  (vdpLineIncrement).w,-(sp)
+	lea (VDP_DATA).l, a5
 
-loc_D00:                ; CODE XREF: fillVramTilemap+1Cj
-		move.l  d0,4(a5)
-		move.w  d1,d5
+	move.w  #0, -(sp)
+	move.w  (vdpLineIncrement).w, -(sp)
 
-loc_D06:                ; CODE XREF: fillVramTilemap+16j
-		move.w  d3,(a5)
-		dbf d5,loc_D06
-		add.l   (sp),d0
-		dbf d2,loc_D00
-		addq.w  #4,sp
-		rts
+	@loc_D00:
+		move.l d0, 4(a5)
+
+		move.w d1, d5
+		@loc_D06:
+			move.w d3, (a5)
+			dbf    d5, @loc_D06
+
+		add.l (sp), d0
+		dbf   d2, @loc_D00
+
+	addq.w #4, sp
+	rts
 ; End of function fillVramTilemap
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-displayOn:              ; CODE XREF: ROM:000002D8j
-					; checkRegion+3Cp ...
+displayOn:                      ; CODE XREF: ROM:000002D8j
 	bset  #6, (vdpRegCache+3).w
 	bra.s loc_D36
 ; ---------------------------------------------------------------------------
 
-displayBlack:               ; CODE XREF: ROM:00000384j
+displayBlack:                   ; CODE XREF: ROM:00000384j
 	move.l #$C0000000, (VDP_CONTROL).l  ; CRAM $0000
 	move.w #0, (VDP_DATA).l
 
-displayOff:             ; CODE XREF: ROM:000002DCj sub_1CFA+4p ...
+displayOff:                     ; CODE XREF: ROM:000002DCj
 	bclr #6, (vdpRegCache+3).w
 
 loc_D36:
@@ -1554,7 +1596,7 @@ dmaTransferPalettes:            ; CODE XREF: ROM:000002E8j
 ; d0: Color offset
 ; d1: Color count
 
-fadeOutColors:              ; CODE XREF: ROM:00000388j
+fadeOutColors:                  ; CODE XREF: ROM:00000388j
 	movem.l d0-d5/a0, -(sp)
 
 	lea (paletteBuffer0).w, a0
@@ -1868,7 +1910,7 @@ readSingleJoypad:
 
 
 setupJoypads:
-	moveq  #$40, d7
+	moveq #$40, d7
 
 	move.b d7, (JOYCTRL1).l
 	move.b d7, (JOYCTRL2).l
