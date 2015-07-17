@@ -319,106 +319,120 @@ setVblankUserRoutine:
 ; ---------------------------------------------------------------------------
 
 _start:
-	tst.l   ($A10008).l
-	bne.s   loc_434
-	tst.w   ($A1000C).l
+	tst.l ($A10008).l
+	bne.s @loc_434
 
-loc_434:                ; CODE XREF: ROM:0000042Cj
-	bne.w   loc_4C8
-	lea InitData(pc),a5
-	movem.w (a5)+,d5-d7
-	movem.l (a5)+,a0-a4
-	move.b  -$10FF(a1),d0
-	andi.b  #$F,d0
-	beq.s   loc_456
-	move.l  #'SEGA',$2F00(a1)
+	tst.w ($A1000C).l
 
-loc_456:                ; CODE XREF: ROM:0000044Cj
-	move.w  (a4),d0
-	moveq   #0,d0
-	move.l  #$C0000000,(VDP_CONTROL).l
-	move.w  #31,d1
+@loc_434:
+	bne.w @loc_4C8
 
-loc_468:                ; CODE XREF: ROM:0000046Aj
-	move.l  d0,(a3)
-	dbf d1,loc_468
+	lea     InitData(pc), a5
+	movem.w (a5)+, d5-d7
+	movem.l (a5)+, a0-a4
+
+	move.b -$10FF(a1), d0
+	andi.b #$F, d0
+	beq.s  @loc_456
+
+	move.l #'SEGA', $2F00(a1)
+
+@loc_456:
+	move.w (a4), d0
+	moveq  #0, d0
+	move.l #$C0000000, (VDP_CONTROL).l
+
+	move.w #31, d1
+	@loc_468:
+		move.l  d0, (a3)
+		dbf     d1, @loc_468
+
 	movea.l d0, a6
 	move.l  a6, usp
-	moveq   #23,d1
 
-loc_474:                ; CODE XREF: ROM:0000047Aj
-	move.b  (a5)+,d5
-	move.w  d5,(a4)
-	add.w   d7,d5
-	dbf d1,loc_474
-	move.l  (a5)+,(a4)
-	move.w  d0,(a3)
-	move.w  d7,(a1)
-	move.w  d7,(a2)
+	moveq #23, d1
+	@loc_474:
+		move.b (a5)+, d5
+		move.w d5, (a4)
+		add.w  d7, d5
+		dbf    d1, @loc_474
 
-loc_486:                ; CODE XREF: ROM:00000488j
-	btst    d0,(a1)
-	bne.s   loc_486
-	moveq   #37,d2
+	move.l (a5)+, (a4)
+	move.w d0, (a3)
+	move.w d7, (a1)
+	move.w d7, (a2)
 
-loc_48C:                ; CODE XREF: ROM:0000048Ej
-	move.b  (a5)+,(a0)+
-	dbf d2,loc_48C
-	move.w  d0,(a2)
-	move.w  d0,(a1)
-	move.w  d7,(a2)
+	@loc_486:
+		btst  d0, (a1)
+		bne.s @loc_486
 
-loc_498:                ; CODE XREF: ROM:0000049Aj
-	move.l  d0,-(a6)
-	dbf d6,loc_498
-	move.l  (a5)+,(a4)
-	move.l  (a5)+,(a4)
-	moveq   #31,d3
+	moveq #37, d2
+	@loc_48C:
+		move.b (a5)+, (a0)+
+		dbf    d2, @loc_48C
 
-loc_4A4:                ; CODE XREF: ROM:000004A6j
-	move.l  d0,(a3)
-	dbf d3,loc_4A4
-	move.l  (a5)+,(a4)
-	moveq   #19,d4
+	move.w d0, (a2)
+	move.w d0, (a1)
+	move.w d7, (a2)
 
-loc_4AE:                ; CODE XREF: ROM:000004B0j
-	move.l  d0,(a3)
-	dbf d4,loc_4AE
-	moveq   #3,d5
+	@loc_498:
+		move.l d0, -(a6)
+		dbf    d6, @loc_498
+	
+	move.l (a5)+, (a4)
+	move.l (a5)+, (a4)
+	
+	moveq #31, d3
+	@loc_4A4:
+		move.l d0, (a3)
+		dbf    d3, @loc_4A4
+	
+	move.l (a5)+, (a4)
+	
+	moveq #19, d4
+	@loc_4AE:
+		move.l d0, (a3)
+		dbf    d4, @loc_4AE
+	
+	moveq #3, d5
+	@loc_4B6:
+		move.b (a5)+, $11(a3)
+		dbf    d5, @loc_4B6
+	
+	move.w  d0, (a2)
+	movem.l (a6), d0-a6
+	
+	move    #$2700, sr
 
-loc_4B6:                ; CODE XREF: ROM:000004BAj
-	move.b  (a5)+,$11(a3)
-	dbf d5,loc_4B6
-	move.w  d0,(a2)
-	movem.l (a6),d0-a6
-	move    #$2700,sr
-
-loc_4C8:                ; CODE XREF: ROM:loc_434j
+@loc_4C8:
 	bra.s   loc_536
 ; ---------------------------------------------------------------------------
 InitData:
 	dc.w $8000
 	dc.w $3FFF
-	dc.w $100
+	dc.w $0100
+
 	dc.l $A00000
 	dc.l $A11100
 	dc.l $A11200
 	dc.l $C00000
 	dc.l $C00004
+
+	; VDP
 	dc.b   4
 	dc.b $14
-	dc.b $30 ; 0
-	dc.b $3C ; <
+	dc.b $30
+	dc.b $3C
 	dc.b   7
-	dc.b $6C ; l
+	dc.b $6C
 	dc.b   0
 	dc.b   0
 	dc.b   0
 	dc.b   0
 	dc.b $FF
 	dc.b   0
-	dc.b $81 ; ┬ü
-	dc.b $37 ; 7
+	dc.b $81
+	dc.b $37
 	dc.b   0
 	dc.b   1
 	dc.b   1
@@ -428,53 +442,47 @@ InitData:
 	dc.b $FF
 	dc.b   0
 	dc.b   0
-	dc.b $80 ; Γé¼
+	dc.b $80
+
 	dc.l $40000080
-	dc.b $AF ; ┬»
-	dc.b   1
-	dc.b $D9 ; ├Ö
-	dc.b $1F
-	dc.b $11
-	dc.b $27 ; '
-	dc.b   0
-	dc.b $21 ; !
-	dc.b $26 ; &
-	dc.b   0
-	dc.b $F9 ; ├╣
-	dc.b $77 ; w
-	dc.b $ED ; ├¡
-	dc.b $B0 ; ┬░
-	dc.b $DD ; ├¥
-	dc.b $E1 ; ├í
-	dc.b $FD ; ├╜
-	dc.b $E1 ; ├í
-	dc.b $ED ; ├¡
-	dc.b $47 ; G
-	dc.b $ED ; ├¡
-	dc.b $4F ; O
-	dc.b $D1 ; ├æ
-	dc.b $E1 ; ├í
-	dc.b $F1 ; ├▒
-	dc.b   8
-	dc.b $D9 ; ├Ö
-	dc.b $C1 ; ├ü
-	dc.b $D1 ; ├æ
-	dc.b $E1 ; ├í
-	dc.b $F1 ; ├▒
-	dc.b $F9 ; ├╣
-	dc.b $F3 ; ├│
-	dc.b $ED ; ├¡
-	dc.b $56 ; V
-	dc.b $36 ; 6
-	dc.b $E9 ; ├⌐
-	dc.b $E9 ; ├⌐
+
+	; Z80 init program
+	dc.b $AF
+	dc.b $01, $D9, $1F
+	dc.b $11, $27, $00
+	dc.b $21, $26, $00
+	dc.b $F9
+	dc.b $77
+	dc.b $ED, $B0
+	dc.b $DD, $E1
+	dc.b $FD, $E1
+	dc.b $ED, $47
+	dc.b $ED, $4F
+	dc.b $D1
+	dc.b $E1
+	dc.b $F1
+	dc.b $08
+	dc.b $D9
+	dc.b $C1
+	dc.b $D1
+	dc.b $E1
+	dc.b $F1
+	dc.b $F9
+	dc.b $F3
+	dc.b $ED, $56
+	dc.b $36, $E9
+	dc.b $E9
+
+	; VDP
 	dc.w $8104
 	dc.w $8F02
 	dc.l $C0000000
 	dc.l $40000010
-	dc.b $9F ; ┼╕
-	dc.b $BF ; ┬┐
-	dc.b $DF ; ├ƒ
+
+	; PSG volume registers
+	dc.b $9F
+	dc.b $BF
+	dc.b $DF
 	dc.b $FF
 ; ---------------------------------------------------------------------------
 
@@ -491,8 +499,8 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 
 	; Wait for DMA to finish
 	@loc_558:
-		move.w (VDP_CONTROL).l,d3
-		btst   #1,d3
+		move.w (VDP_CONTROL).l, d3
+		btst   #VDP_DMA, d3
 		bne.s  @loc_558
 
 	bsr.w   checkRegion

@@ -5,6 +5,16 @@
 ;   Graphics
 VDP_DATA    equ $C00000
 VDP_CONTROL equ $C00004
+	VDP_EMPT:   equ 9
+	VDP_FULL:   equ 8
+	VDP_F:      equ 7
+	VDP_SOVR:   equ 6
+	VDP_C:      equ 5
+	VDP_ODD:    equ 4
+	VDP_VB:     equ 3
+	VDP_HB:     equ 2
+	VDP_DMA:    equ 1
+	VDP_PAL:    equ 0
 VDP_COUNTER equ $C00008
 
 ;   System I/O (Joypad)
