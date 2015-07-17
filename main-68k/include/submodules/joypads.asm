@@ -2,6 +2,15 @@
 ;       Joypad subroutines
 ;   ======================================================================
 
+JOYBIT_START    equ 7
+JOYBIT_BTNA     equ 6
+JOYBIT_BTNC     equ 5
+JOYBIT_BTNB     equ 4
+JOYBIT_RIGHT    equ 3
+JOYBIT_LEFT     equ 2
+JOYBIT_DOWN     equ 1
+JOYBIT_UP       equ 0
+
 ; =============== S U B R O U T I N E =======================================
 
 
@@ -83,8 +92,10 @@ sub_1134:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 	m_z80RequestBus
 	m_z80WaitForBus
 
+	; Set the I/O port to normal joypad mode
 	moveq  #$40, d3
 	move.b d3, 6(a6)
+	
 	moveq  #0, d7
 
 	; Set TH bit high to read X1CBRLDU
@@ -111,7 +122,7 @@ sub_1174:               ; CODE XREF: sub_1134+26p sub_1134+2Ep
 	move.b (a6), d2
 	move.b d2, d3
 
-	andi.b #$C, d2
+	andi.b #$0C, d2
 	beq.s  @loc_1180
 
 	addq.w #1, d7
@@ -119,7 +130,7 @@ sub_1174:               ; CODE XREF: sub_1134+26p sub_1134+2Ep
 @loc_1180:
 	add.w  d7, d7
 
-	andi.w #3, d3
+	andi.w #$03, d3
 	beq.s  @locret_118A
 
 	addq.w #1, d7
@@ -359,8 +370,8 @@ sub_12F4:               ; CODE XREF: loc_11CC+2p sub_11D8+80p ...
 word_1318:
 	dc.w 8      ; $1320
 	dc.w $4C    ; $1364
-	dc.w $166   ; $147E
-	dc.w $166   ; $147E
+	dc.w $166   ; $147E     ; bchg d0, -(a6)
+	dc.w $166   ; $147E     ; bchg d0, -(a6)
 
 ; =============== S U B R O U T I N E =======================================
 

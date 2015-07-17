@@ -637,13 +637,14 @@ loc_67C:                ; CODE XREF: ROM:0000028Cj
 
 loc_684:                ; CODE XREF: ROM:00000288j
 	m_disableInterrupts
-	jsr (loadDefaultVdpRegs).w
-	jsr (clearAllVram).w
-	jsr installErrorVectors(pc)
-	bsr.w   setupJoypads
-	jsr (loadZ80Prg).w
-	bsr.w   sub_118C
-	bsr.w   loadSubCpuPrg
+
+	jsr   (loadDefaultVdpRegs).w
+	jsr   (clearAllVram).w
+	jsr   installErrorVectors(pc)
+	bsr.w setupJoypads
+	jsr   (loadZ80Prg).w
+	bsr.w sub_118C
+	bsr.w loadSubCpuPrg
 
 	jsr (waitForVblank).w
 
@@ -853,7 +854,7 @@ _nullrte:                ; DATA XREF: installErrorVectors+18o
 
 
 vblankHandler:
-	movem.l d0-a6,-(sp)
+	movem.l d0-a6, -(sp)
 	bsr.w   sub_15EE
 
 	tst.b (byte_FFFFFE28).w
@@ -861,11 +862,11 @@ vblankHandler:
 
 	bsr.w dmaTransferPalettes
 
-	btst  #1,(vblankCode).w
+	btst  #1, (vblankCode).w
 	beq.s @loc_926
 
 	jsr vblankUserRoutine
-	addq.b #1,(byte_FFFFFE27).w
+	addq.b #1, (byte_FFFFFE27).w
 
 @loc_926:
 	bsr.w   sub_118C
@@ -873,7 +874,7 @@ vblankHandler:
 	clr.b   (vblankCode).w
 	bsr.w   sub_1658
 	bsr.w   sub_1818
-	movem.l (sp)+,d0-a6
+	movem.l (sp)+, d0-a6
 	rte
 ; End of function vblankHandler
 
@@ -882,24 +883,24 @@ vblankHandler:
 
 
 altVblankHandler:           ; CODE XREF: ROM:00000290j
-	movem.l d0-a6,-(sp)
+	movem.l d0-a6, -(sp)
 	bsr.w   sub_15EE
 
-	tst.b   (byte_FFFFFE28).w
-	bne.s   @loc_962
+	tst.b (byte_FFFFFE28).w
+	bne.s @loc_962
 
-	bsr.w   dmaTransferPalettes
+	bsr.w dmaTransferPalettes
 
-	btst    #1,(vblankCode).w
-	beq.s   @loc_962
+	btst  #1, (vblankCode).w
+	beq.s @loc_962
 
 	jsr vblankUserRoutine
-	addq.b  #1,(byte_FFFFFE27).w
+	addq.b  #1, (byte_FFFFFE27).w
 
 @loc_962:
 	bsr.w   readJoypads
 	clr.b   (vblankCode).w
-	movem.l (sp)+,d0-a6
+	movem.l (sp)+, d0-a6
 	rte
 ; End of function altVblankHandler
 
