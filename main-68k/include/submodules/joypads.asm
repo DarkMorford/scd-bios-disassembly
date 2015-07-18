@@ -11,6 +11,9 @@ JOYBIT_LEFT     equ 2
 JOYBIT_DOWN     equ 1
 JOYBIT_UP       equ 0
 
+JOYTYPE_MEGAMOUSE   equ 3
+JOYTYPE_7           equ 7
+
 ; =============== S U B R O U T I N E =======================================
 
 
@@ -84,7 +87,7 @@ setupJoypads:
 ; Input parameters:
 ; a6 - JOYDATA1
 
-sub_1134:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
+detectControllerType:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 	movem.l d1-d3, -(sp)
 
 	m_saveStatusRegister
@@ -112,13 +115,13 @@ sub_1134:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 
 	movem.l (sp)+, d1-d3
 	rts
-; End of function sub_1134
+; End of function detectControllerType
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1174:               ; CODE XREF: sub_1134+26p sub_1134+2Ep
+sub_1174:               ; CODE XREF: detectControllerType+26p detectControllerType+2Ep
 	move.b (a6), d2
 	move.b d2, d3
 
@@ -146,17 +149,17 @@ sub_1174:               ; CODE XREF: sub_1134+26p sub_1134+2Ep
 sub_118C:               ; CODE XREF: ROM:0000069Cp
 	; Test controller 1
 	lea (JOYDATA1).l, a6
-	bsr.s sub_1134
+	bsr.s detectControllerType
 
 	; Skip controller 1 if unchanged
-	cmp.b (byte_FFFFFE18).w, d7
+	cmp.b (joy1Type).w, d7
 	beq.s @loc_11AE
 
-	move.b d7, (byte_FFFFFE18).w
-	cmpi.b #7, d7
+	move.b d7, (joy1Type).w
+	cmpi.b #JOYTYPE_7, d7
 	beq.s  @loc_11AA
 
-	cmpi.b #3, d7
+	cmpi.b #JOYTYPE_MEGAMOUSE, d7
 	bne.s  @loc_11AE
 
 @loc_11AA:
@@ -167,18 +170,18 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 @loc_11AE:
 	; Test controller 2
 	addq.w #2, a6
-	bsr.s  sub_1134
+	bsr.s  detectControllerType
 
 	; Skip controller 2 if unchanged
-	cmp.b (byte_FFFFFE19).w, d7
+	cmp.b (joy2Type).w, d7
 	beq.s @locret_11D6
 
-	move.b d7, (byte_FFFFFE19).w
+	move.b d7, (joy2Type).w
 	moveq  #1, d1
-	cmpi.b #7, d7
+	cmpi.b #JOYTYPE_7, d7
 	beq.s  @loc_11CC
 
-	cmpi.b #3, d7
+	cmpi.b #JOYTYPE_MEGAMOUSE, d7
 	beq.s  @loc_11CC
 
 	rts
@@ -200,7 +203,7 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 
 
 sub_11D8:               ; CODE XREF: vblankHandler+26p
-	cmpi.b #7, (byte_FFFFFE18).w
+	cmpi.b #JOYTYPE_7, (joy1Type).w
 	bne.s  loc_1218
 
 	lea     (joy1Down).w, a1
@@ -233,7 +236,7 @@ loc_11F8:
 ; ---------------------------------------------------------------------------
 
 loc_1218:               ; CODE XREF: sub_11D8+6j
-	cmpi.b #3, (byte_FFFFFE18).w
+	cmpi.b #JOYTYPE_MEGAMOUSE, (joy1Type).w
 	beq.s  loc_1250
 
 	lea (joy1Down).w, a5
@@ -263,10 +266,10 @@ loc_1250:               ; CODE XREF: sub_11D8+46j
 	bsr.s sub_12CC
 
 loc_1264:               ; CODE XREF: sub_11D8+2Ej sub_11D8+76j
-	cmpi.b #3, (byte_FFFFFE19).w
+	cmpi.b #JOYTYPE_MEGAMOUSE, (joy2Type).w
 	beq.s  loc_12A6
 
-	cmpi.b #7, (byte_FFFFFE19).w
+	cmpi.b #JOYTYPE_7, (joy2Type).w
 	bne.s  loc_1276
 	bra.s  loc_12BA
 ; ---------------------------------------------------------------------------
@@ -369,7 +372,7 @@ sub_12F4:               ; CODE XREF: loc_11CC+2p sub_11D8+80p ...
 ; ---------------------------------------------------------------------------
 word_1318:
 	dc.w 8      ; $1320
-	dc.w $4C    ; $1364
+	dc.w $4C    ; readMegaMouse
 	dc.w $166   ; $147E     ; bchg d0, -(a6)
 	dc.w $166   ; $147E     ; bchg d0, -(a6)
 
@@ -404,7 +407,7 @@ sub_1320:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1364:
+readMegaMouse:
 	move.w #$FF, d7
 	lea (a5), a4
 
@@ -422,7 +425,7 @@ sub_1364:
 	bsr.w  loc_1452
 	bcs.s  @loc_13E6
 
-	btst  #2, d0
+	btst  #JOYDATA_PD2, d0
 	bne.s @loc_13E6
 
 	bsr.w sub_1466
@@ -468,7 +471,7 @@ sub_1364:
 
 	ori #1, ccr
 	rts
-; End of function sub_1364
+; End of function readMegaMouse
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -532,7 +535,7 @@ loc_1452:               ; CODE XREF: sub_1324+18p sub_1324+22p ...
 
 	@loc_1456:
 		move.b (a6), d0
-		btst   #4, d0
+		btst   #JOYDATA_TL, d0
 		dbne   d7, @loc_1456
 
 	beq.s loc_147E
@@ -552,7 +555,7 @@ sub_1466:               ; CODE XREF: sub_136A+36p
 
 	@loc_146E:
 		move.b (a6), d0
-		btst   #4, d0
+		btst   #JOYDATA_TL, d0
 		dbeq   d7, @loc_146E
 
 	bne.s loc_147E

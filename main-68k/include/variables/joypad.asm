@@ -2,6 +2,9 @@
 ;       Joypad variables
 ;   ======================================================================
 
+joy1Type    equ $FFFFFE18
+joy2Type    equ $FFFFFE19
+
 joy1Down    equ $FFFFFE20
 joy2Down    equ $FFFFFE22
 
@@ -10,8 +13,6 @@ joy2Triggered   equ $FFFFFE23
 
 byte_FFFFFE0B equ $FFFFFE0B
 byte_FFFFFE17 equ $FFFFFE17
-byte_FFFFFE18 equ $FFFFFE18
-byte_FFFFFE19 equ $FFFFFE19
 byte_FFFFFE24 equ $FFFFFE24
 dword_FFFFFE12 equ $FFFFFE12
 unk_FFFFFE00 equ $FFFFFE00

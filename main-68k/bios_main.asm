@@ -119,7 +119,7 @@ errorReset:
 ; ---------------------------------------------------------------------------
 	bra.w   readJoypads
 ; ---------------------------------------------------------------------------
-	bra.w   sub_1134
+	bra.w   detectControllerType
 ; ---------------------------------------------------------------------------
 	bra.w   clearAllVram
 ; ---------------------------------------------------------------------------
@@ -3401,7 +3401,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 
 	movem.l d0-d1/a1, -(sp)
 	moveq   #0, d0
-	cmpi.b  #7, (byte_FFFFFE18).w
+	cmpi.b  #7, (joy1Type).w
 	bne.s   @loc_2224
 	lea (unk_FFFFFE1A).w, a1
 
@@ -3413,7 +3413,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	beq.s @loc_222C
 
 @loc_2224:
-	cmpi.b #3, (byte_FFFFFE19).w
+	cmpi.b #3, (joy2Type).w
 	bne.s  @loc_2236
 
 @loc_222C:
@@ -3422,7 +3422,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	add.w  d0, d0
 
 @loc_2236:
-	cmpi.b #3, (byte_FFFFFE18).w
+	cmpi.b #3, (joy1Type).w
 	bne.s  @loc_224A
 
 	move.b (joy1Triggered).w, d1
@@ -8162,7 +8162,7 @@ sub_4220:
 
 
 sub_42B8:               ; CODE XREF: sub_329A+46p
-	cmpi.b #7, (byte_FFFFFE18).w
+	cmpi.b #7, (joy1Type).w
 	bne.s  @loc_42D0
 
 	lea (unk_FFFFFE1A).w, a1
@@ -8175,10 +8175,10 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 	beq.s @loc_42E0
 
 @loc_42D0:
-	cmpi.b #3, (byte_FFFFFE19).w
+	cmpi.b #3, (joy2Type).w
 	bne.s  @loc_4306
 
-	cmpi.b #3, (byte_FFFFFE18).w
+	cmpi.b #3, (joy1Type).w
 	beq.s  @loc_4320
 
 @loc_42E0:
@@ -8199,7 +8199,7 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 ; ---------------------------------------------------------------------------
 
 @loc_4306:
-	cmpi.b #3, (byte_FFFFFE18).w
+	cmpi.b #3, (joy1Type).w
 	beq.s  @loc_4320
 
 @loc_430E:
@@ -14736,9 +14736,9 @@ loc_78F4:               ; CODE XREF: sub_78D8+16j
 
 sub_790A:               ; CODE XREF: sub_77A0p sub_7F66p
 		pea (a0)
-		cmpi.b  #7,(byte_FFFFFE18).w
+		cmpi.b  #7,(joy1Type).w
 		beq.s   loc_791E
-		cmpi.b  #3,(byte_FFFFFE18).w
+		cmpi.b  #3,(joy1Type).w
 		beq.s   loc_7940
 		bra.s   loc_794E
 ; ---------------------------------------------------------------------------
@@ -14774,7 +14774,7 @@ loc_794E:               ; CODE XREF: sub_790A+12j sub_790A+34j
 		add.w   d0,(word_FFFFFF0A).w
 
 loc_795E:               ; CODE XREF: sub_790A+42j
-		cmpi.b  #3,(byte_FFFFFE19).w
+		cmpi.b  #3,(joy2Type).w
 		bne.s   loc_7974
 
 loc_7966:               ; CODE XREF: sub_790A+32j
@@ -14807,9 +14807,9 @@ word_7988:  dc.w 0
 
 sub_7990:               ; CODE XREF: sub_7C0A+4p
 		pea (a0)
-		cmpi.b  #7,(byte_FFFFFE18).w
+		cmpi.b  #7,(joy1Type).w
 		beq.s   loc_79A4
-		cmpi.b  #3,(byte_FFFFFE18).w
+		cmpi.b  #3,(joy1Type).w
 		beq.s   loc_79C6
 		bra.s   loc_79D4
 ; ---------------------------------------------------------------------------
@@ -14845,7 +14845,7 @@ loc_79D4:               ; CODE XREF: sub_7990+12j sub_7990+34j
 		add.w   d0,(word_FFFFFF0A).w
 
 loc_79E4:               ; CODE XREF: sub_7990+42j
-		cmpi.b  #3,(byte_FFFFFE19).w
+		cmpi.b  #3,(joy2Type).w
 		bne.s   loc_79FA
 
 loc_79EC:               ; CODE XREF: sub_7990+32j
@@ -14894,7 +14894,7 @@ sub_7A16:               ; CODE XREF: sub_790A+3Ap sub_790A+60p ...
 sub_7A1E:               ; CODE XREF: sub_752C:loc_7540p
 					; sub_769C+10p ...
 		movem.l d0,-(sp)
-		cmpi.b  #3,(byte_FFFFFE18).w
+		cmpi.b  #3,(joy1Type).w
 		bne.s   loc_7A32
 		tst.b   (byte_FFFFFE0B).w
 		bne.s   loc_7A58
@@ -14907,7 +14907,7 @@ loc_7A32:               ; CODE XREF: sub_7A1E+Aj
 		bne.s   loc_7A58
 
 loc_7A3A:               ; CODE XREF: sub_7A1E+12j
-		cmpi.b  #3,(byte_FFFFFE19).w
+		cmpi.b  #3,(joy2Type).w
 		bne.s   loc_7A52
 		tst.b   (byte_FFFFFE17).w
 		beq.s   loc_7A58
