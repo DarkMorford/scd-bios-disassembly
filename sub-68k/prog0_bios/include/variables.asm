@@ -20,7 +20,7 @@ masterVolume    equ $5AB8
 systemVolume    equ $5ABA
 volumeSlope     equ $5AC6
 
-; CDBOOT variables
+;   CDBOOT variables
 bootBitfield            equ $5B24
 cbtInterruptHandler     equ $5B26
 cbtInterruptData        equ $5B2A
@@ -37,7 +37,7 @@ headerBuffer            equ $5B4E
 frameCheckValue         equ $5B52
 
 JumpTable equ $5EE0
-tempJumpTarget equ $5AD4
+cdbResumeAddress equ $5AD4
 vBlankFlag equ $5EA4
 
 cdcBitfield0 equ $5A06
@@ -48,17 +48,17 @@ cdcStat0 equ $5A40
 cdcStatus equ $5A38
 
 cddAbsFrameTime equ $59EC
-cddArg1Cache equ $5AE2
-cddArg2Cache equ $5AE6
-cddCommand equ $5AC8
+cdbArg1Cache equ $5AE2
+cdbArg2Cache equ $5AE6
+cdbCommand equ $5AC8
 cddCommandBuffer equ $583A
-cddCommandCache equ $5AE0
-cddControlStatus equ $5AD2
+cdbCommandCache equ $5AE0
+cdbControlStatus equ $5AD2
 cddFirstTrack equ $5850
 cddLastTrack equ $5851
 cddLeadOutTime equ $5854
 cddRelFrameTime equ $59F0
-cddSpindownDelay equ $5B0C
+cdbSpindownDelay equ $5B0C
 cddStatusCache equ $5844
 cddTocTable equ $5858
 cddVersion equ $5852
