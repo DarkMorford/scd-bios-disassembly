@@ -458,7 +458,7 @@ beginDiscBoot:
 		bsr.w _CDBOOT
 		bcs.s @loc_4CA
 
-	bclr  #7, (GA_COMM_SUBFLAGS).w
+	bclr #7, (GA_COMM_SUBFLAGS).w
 
 	lea   (GA_MEMORY_MODE).w, a0
 	moveq #GA_RET, d0
@@ -467,8 +467,9 @@ beginDiscBoot:
 	beq.s @loc_4F8                  ; Jump if WordRAM in 2M mode
 
 	btst  d0, (a0)
-	beq.s @loc_4F8
+	beq.s @loc_4F8                  ; Jump if main CPU has WordRAM0
 
+	; Swap WordRAM so main CPU has WordRAM0
 	@loc_4F0:
 		bclr  d0, (a0)
 		btst  d0, (a0)
@@ -477,6 +478,7 @@ beginDiscBoot:
 	bra.s @loc_4FE
 ; ---------------------------------------------------------------------------
 
+	; Give WordRAM2M/WordRAM1 to main CPU
 	@loc_4F8:
 		bset  d0, (a0)
 		btst  d0, (a0)

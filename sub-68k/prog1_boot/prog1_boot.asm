@@ -110,46 +110,47 @@ loc_609A:
 
 
 boot_user1:             ; CODE XREF: sub_610A+Cj
-	bsr.w   sub_61E0
-	beq.s   sub_610A
+	bsr.w sub_61E0
+	beq.s sub_610A
 
-	move.b  #$80, (GA_COMM_SUBFLAGS).l
+	move.b #$80, (GA_COMM_SUBFLAGS).l
 
 	; Set priority mode off
-	bclr    #GA_PM0, (GA_MEMORY_MODE).w
-	bclr    #GA_PM1, (GA_MEMORY_MODE).w
+	bclr #GA_PM0, (GA_MEMORY_MODE).w
+	bclr #GA_PM1, (GA_MEMORY_MODE).w
 
 	; Set WordRAM to 1M mode and give WordRAM1 to main CPU
-	bset    #GA_MODE, (GA_MEMORY_MODE).w
-	bset    #GA_RET, (GA_MEMORY_MODE).w
+	bset #GA_MODE, (GA_MEMORY_MODE).w
+	bset #GA_RET, (GA_MEMORY_MODE).w
 
 	; Wait until we have WordRAM0
 	@loc_60D4:
-		btst    #GA_RET, (GA_MEMORY_MODE).w
-		beq.s   @loc_60D4
+		btst  #GA_RET, (GA_MEMORY_MODE).w
+		beq.s @loc_60D4
 
-	bsr.s   clearWordRam1M
+	bsr.s clearWordRam1M
 
 	; Request swap and wait until we have WordRAM1
-	bclr    #GA_RET, (GA_MEMORY_MODE).w
+	bclr #GA_RET, (GA_MEMORY_MODE).w
 	@loc_60E4:
-		btst    #GA_RET, (GA_MEMORY_MODE).w
-		bne.s   @loc_60E4
+		btst  #GA_RET, (GA_MEMORY_MODE).w
+		bne.s @loc_60E4
 
-	bsr.s   clearWordRam1M
+	bsr.s clearWordRam1M
 
 	; Update CD player module
 	jsr sub_18004
 
 	; Clear communication data registers
-	moveq   #0, d0
+	moveq #0, d0
 	lea (GA_COMM_SUBDATA).w, a0
-	move.l  d0, (a0)+
-	move.l  d0, (a0)+
-	move.l  d0, (a0)+
-	move.l  d0, (a0)+
+	
+	move.l d0, (a0)+
+	move.l d0, (a0)+
+	move.l d0, (a0)+
+	move.l d0, (a0)+
 
-	moveq   #$FFFFFFFF, d0
+	moveq #$FFFFFFFF, d0
 	ori #1, ccr
 	rts
 ; End of function boot_user1
@@ -159,11 +160,11 @@ boot_user1:             ; CODE XREF: sub_610A+Cj
 
 
 sub_610A:               ; CODE XREF: boot_user1+4j
-		lea RAM_BASE(pc), a6
-		move.w  word_0(a6), d0
-		jsr loc_6118(pc, d0.w)
+	lea    RAM_BASE(pc), a6
+	move.w word_0(a6), d0
+	jsr    loc_6118(pc, d0.w)
 
-		bra.s   boot_user1
+	bra.s   boot_user1
 ; End of function sub_610A
 
 ; ---------------------------------------------------------------------------

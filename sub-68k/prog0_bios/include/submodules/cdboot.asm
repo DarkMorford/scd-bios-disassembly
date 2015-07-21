@@ -144,8 +144,9 @@ _cbtipdisc:
 	bsr.w  loc_3A84
 ; ---------------------------------------------------------------------------
 	move.b #$90, cbtFlags(a5)       ; Set flags 7/4, clear other flags
+
 	m_clearErrorFlag
-	bra.s  @returnSuccess
+	bra.s @returnSuccess
 ; ---------------------------------------------------------------------------
 
 @returnError:
@@ -171,10 +172,11 @@ _cbtspdisc:
 
 	; Disc is either Game System or Game Boot
 	move.l a1, spDstAddress(a5)
-	bset   #3, cbtFlags(a5)         ; Set xx flag
+	bset   #3, cbtFlags(a5)         ; Signal to load SP
 	bclr   #0, cbtFlags(a5)         ; Clear busy flag
+
 	m_clearErrorFlag
-	bra.s  @returnSuccess
+	bra.s @returnSuccess
 ; ---------------------------------------------------------------------------
 
 @returnError:
@@ -191,7 +193,7 @@ _cbtint:
 	bset  #0, cbtFlags(a5)
 	bne.s @loc_3A46
 
-	; Return if bit 7 clear
+	; Return if nothing to do
 	btst  #7, cbtFlags(a5)
 	beq.s @loc_3A40
 
@@ -248,9 +250,11 @@ _cbtinit:
 sub_3A6C:               ; CODE XREF: BIOS:0000396Ep
 					; BIOS:000039A0p
 	andi.b #%10000111, cbtFlags(a5)
+
 	move.w #CD_NOTREADY, (_BOOTSTAT).w
-	bclr   #1, cbtFlags(a5)
-	bset   #7, cbtFlags(a5)
+
+	bclr #1, cbtFlags(a5)
+	bset #7, cbtFlags(a5)
 
 loc_3A84:
 	bsr.s cbtSuspendExecution
@@ -311,6 +315,7 @@ loc_3AE0:               ; CODE XREF: sub_3A6C+20j sub_3A6C+28j ...
 	lea word_3AC0(pc), a0
 
 loc_3AE4:               ; CODE XREF: sub_3A6C+72j
+	; Initialize CD drive
 	move.w #DRVINIT, d0
 	bsr.w  waitForCdbComplete
 
@@ -334,6 +339,7 @@ loc_3AEC:               ; CODE XREF: sub_3A6C+AAj
 	; Check for "not ready" or "reading TOC" status
 	andi.w #$F0,d0
 	beq.s  loc_3B78
+
 	bra.s  loc_3AEC
 ; ---------------------------------------------------------------------------
 
@@ -368,13 +374,16 @@ loc_3B78:               ; CODE XREF: sub_3A6C+A8j
 	bcs.s   loc_3B24
 
 loc_3B8C:
-	move.w #1,d1
+	; Fetch TOC for track 1
+	move.w #1, d1
 	move.w #CDBTOCREAD, d0
 	jsr    _CDBIOS
 
+	; Check track type
 	tst.b   d1
 	beq.w   loc_3AD4
 
+	; Read sector 1 from disc
 	move.l  #0, readSectorStart(a5)
 
 loc_3BA6:               ; CODE XREF: sub_3A6C+198j
@@ -382,6 +391,7 @@ loc_3BA6:               ; CODE XREF: sub_3A6C+198j
 	lsl.l   #8, d0
 	lsl.l   #3, d0
 	movea.l d0, a1
+
 	move.l  #$800, d1
 	move.l  bootHeaderAddress(a5), dataBufferAddress(a5)
 	bsr.w   readSectorsFromDisc
@@ -393,22 +403,22 @@ loc_3BA6:               ; CODE XREF: sub_3A6C+198j
 	move.w  d0, dataStartSector(a5)
 
 	movea.l bootHeaderAddress(a5), a0
-	lea asc_3B38(pc), a1 ; "SEGADISC        "
+	lea asc_3B38(pc), a1
 
 	moveq #3, d0
-	loc_3BE0:
+	@loc_3BE0:
 		movem.l a0-a1, -(sp)
 
 		moveq #3, d1
-		loc_3BE6:
+		@loc_3BE6:
 			cmpm.l (a0)+, (a1)+
-			dbne   d1, loc_3BE6
+			dbne   d1, @loc_3BE6
 
 		movem.l (sp)+, a0-a1
 		beq.s   loc_3C0A
 
 		adda.w #16, a1
-		dbf d0, loc_3BE0
+		dbf d0, @loc_3BE0
 
 	lea readSectorStart(a5), a0
 	cmpi.l #$F, (a0)
@@ -440,13 +450,14 @@ loc_3C28:
 	addq.w  #4, d0
 	move.w  d0, (_BOOTSTAT).w
 	bset    #1, cbtFlags(a5)
+
 	bsr.w   sub_3DD6
 
 	; Load IP/SP if needed
 	btst    #4, cbtFlags(a5)
 	bne.s   loadInitialProgram
 
-	lea word_3AC2(pc), a0
+	lea     word_3AC2(pc), a0
 	move.w  #DRVINIT, d0
 	bsr.w   waitForCdbComplete
 
@@ -467,12 +478,13 @@ loadInitialProgram:
 
 	cmpi.l  #$600, SYSTEMHEADER.ipSize(a0)
 	bne.s   loc_3C80
+
 	bra.w   loc_3C88
 ; ---------------------------------------------------------------------------
 
 loc_3C80:
 	; Read IP from disc
-	; d1 is most likely $FFFF if we get here
+	; d1 is most likely $FFFF if we get here, so we read 32 sectors (64 KiB)
 	bsr.w readSectorsFromDisc
 
 	; Jump back if error
@@ -660,8 +672,8 @@ readSectorsFromDisc:               ; CODE XREF: sub_3A6C+150p
 copySector0:
 	movea.l bootHeaderAddress(a5), a1
 	adda.w  #$200, a1
-	move.w  #95, d1
 
+	move.w #95, d1
 	@loc_3DC8:
 		move.l (a1)+, (a0)+
 		move.l (a1)+, (a0)+
