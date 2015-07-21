@@ -4,6 +4,9 @@
 
 ;   Word RAM macros
 	include "macros\wordRam.asm"
+	
+;   VDP macros
+	include "macros\vdp.asm"
 
 ;   Dealing with the Z80
 m_z80RequestBus:    macro
