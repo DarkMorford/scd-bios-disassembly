@@ -445,7 +445,7 @@ beginDiscBoot:
 
 	; Load initial program (IP) from disc
 	lea   (bootModule).w, a0
-	moveq #CBTIPDISK, d0
+	moveq #CBTIPDISC, d0
 	bsr.w _CDBOOT
 	bcs.s beginDiscBoot
 
