@@ -1080,7 +1080,7 @@ clearSpriteTable:           ; CODE XREF: clearVdpPatternTablesp
 
 clearVsram:             ; CODE XREF: ROM:000002A8j
 					; clearAllVram+12p
-	move.l #$40000010, d0
+	m_loadVsramWriteAddress 0, d0
 	moveq  #39, d1
 
 clearVramSegment:           ; CODE XREF: ROM:000002B8j
