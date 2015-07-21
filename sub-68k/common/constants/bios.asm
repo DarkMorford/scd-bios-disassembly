@@ -7,7 +7,7 @@ _BOOTSTAT   equ $5EA0
 _USERMODE   equ $5EA6
 
 ;   CD types
-CD_NOTREADY     equ $FFFF
+CD_NOTREADY     equ $FFFFFFFF
 CD_NODISC       equ 0
 CD_MUSIC        equ 1
 CD_ROM          equ 2
@@ -26,7 +26,7 @@ LEDERROR    equ 4
 LEDMODE5    equ 5
 LEDMODE6    equ 6
 LEDMODE7    equ 7
-LEDSYSTEM   equ $FFFF
+LEDSYSTEM   equ $FFFFFFFF
 
 ;   CDBIOS commands
 MSCSTOP     equ 2
