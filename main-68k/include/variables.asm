@@ -28,3 +28,6 @@ decompScratch   equ $FFFFE000
 
 ; Code table for Nemesis decompression
 nemesisCodeTable    equ $FFFFF700
+
+; Start of main CPU work RAM
+workRamStart    equ $FFFF0000

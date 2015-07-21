@@ -498,7 +498,7 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 	btst  #JOYCTRL_PC6, (JOYCTRL3).l
 	beq.s loc_598
 
-	movea.l (InitialSSP).w,sp ; Warm boot
+	movea.l (InitialSSP).w, sp ; Warm boot
 
 	; Wait for DMA to finish
 	@loc_558:
@@ -508,27 +508,28 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 
 	bsr.w   checkRegion
 
-	movem.l d0-d1,-(sp)
+	movem.l d0-d1, -(sp)
 	bsr.w   testCartBootBlock
 	bne.w   sub_640     ; Boot block didn't match, bail out
 
-	move.l  (_EXCPT+2).w,d0
+	move.l  (_EXCPT+2).w, d0
 	bcs.w   loc_5AC
 
 bootCartridge:
-	st  (byte_FFFFFE54).w
-	bsr.w   setupGenHardware
-	move.w  #$4EF9,(_EXCPT).w
-	move.l  #$5AC,(_EXCPT+2).w
-	jmp cartBoot
+	st    (byte_FFFFFE54).w
+	bsr.w setupGenHardware
+
+	move.w #$4EF9, (_EXCPT).w
+	move.l #$5AC,  (_EXCPT+2).w
+	jmp    cartBoot
 ; ---------------------------------------------------------------------------
 
 loc_598:                ; CODE XREF: ROM:00000552j
-	jsr (loadDefaultVdpRegs).w
-	jsr (clearAllVram).w
-	bsr.w   checkRegion
-	bsr.w   clearSubCpuPrg
-	bsr.w   clearWordRam2M
+	jsr   (loadDefaultVdpRegs).w
+	jsr   (clearAllVram).w
+	bsr.w checkRegion
+	bsr.w clearSubCpuPrg
+	bsr.w clearWordRam2M
 
 loc_5AC:                ; CODE XREF: ROM:00000578j sub_640+38j
 	m_disableInterrupts
@@ -545,26 +546,29 @@ loc_5AC:                ; CODE XREF: ROM:00000578j sub_640+38j
 	bsr.w setNextState
 
 mainLoop:               ; CODE XREF: ROM:000005D4j
-	lea (nextState).w,a0
-	move.w  (a0),d0
-	andi.w  #$7FFC,d0
-	jsr mainJumpTable(pc,d0.w)
-	bra.s   mainLoop
+	lea (nextState).w, a0
+
+	move.w (a0), d0
+	andi.w #$7FFC, d0
+
+	jsr mainJumpTable(pc, d0.w)
+
+	bra.s mainLoop
 ; ---------------------------------------------------------------------------
 
 mainJumpTable:
 	nop
 	rts
 ; ---------------------------------------------------------------------------
-	bra.w   sub_21F4
+	bra.w sub_21F4
 ; ---------------------------------------------------------------------------
-	bra.w   sub_3040
+	bra.w sub_3040
 ; ---------------------------------------------------------------------------
-	bra.w   loadPrgFromWordRam
+	bra.w loadPrgFromWordRam
 ; ---------------------------------------------------------------------------
-	bra.w   sub_7374
+	bra.w sub_7374
 ; ---------------------------------------------------------------------------
-	jmp $FFFF0000
+	jmp   workRamStart
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -572,18 +576,18 @@ mainJumpTable:
 finishHardwareInit:                ; CODE XREF: ROM:000005B6p
 	bsr.s setupGenHardware
 
-	lea (_EXCPT).w,a0
-	move.w #$4EF9,(a0)+
-	move.l #$640,(a0)+
+	lea (_EXCPT).w, a0
+	move.w #$4EF9, (a0)+
+	move.l #$640,  (a0)+
 
 	jsr (waitForVblank).w
 
 	bsr.w clearCommRegisters
 
 	; Wait for sub-CPU to clear its comm flags
-	lea (GA_COMM_SUBFLAGS).l,a4
+	lea (GA_COMM_SUBFLAGS).l, a4
 	@loc_60E:
-		move.b (a4),d0
+		move.b (a4), d0
 		bne.s @loc_60E
 
 	rts
@@ -602,8 +606,8 @@ setupGenHardware:           ; CODE XREF: ROM:00000580p finishHardwareInitp
 
 	; Set Palette0:Color0 to black
 	clr.w  (paletteBuffer0).w
-	move.l #$C0000000,(VDP_CONTROL).l
-	move.w #0,(VDP_DATA).l
+	move.l #$C0000000, (VDP_CONTROL).l
+	move.w #0, (VDP_DATA).l
 	rts
 ; End of function setupGenHardware
 
@@ -614,19 +618,22 @@ setupGenHardware:           ; CODE XREF: ROM:00000580p finishHardwareInitp
 sub_640:                ; CODE XREF: ROM:00000280j
 					; ROM:00000570j
 	m_disableInterrupts
-	move.b  #$9F,(PSG_CTRL).l
+
+	move.b  #$9F, (PSG_CTRL).l
 	nop
 	nop
-	move.b  #$BF,(PSG_CTRL).l
+	move.b  #$BF, (PSG_CTRL).l
 	nop
 	nop
-	move.b  #$DF,(PSG_CTRL).l
+	move.b  #$DF, (PSG_CTRL).l
 	nop
 	nop
-	move.b  #$FF,(PSG_CTRL).l
-	jsr (loadDefaultVdpRegs).w
-	jsr (clearAllVram).w
-	bra.w   loc_5AC
+	move.b  #$FF, (PSG_CTRL).l
+
+	jsr   (loadDefaultVdpRegs).w
+	jsr   (clearAllVram).w
+
+	bra.w loc_5AC
 ; End of function sub_640
 
 ; ---------------------------------------------------------------------------
@@ -651,18 +658,18 @@ loc_684:                ; CODE XREF: ROM:00000288j
 	bsr.w clearCommRegisters
 
 	; Wait for sub-CPU to clear its comm flags
-	lea (GA_COMM_SUBFLAGS).l,a4
-	loc_6B2:
-		move.b (a4),d0
-		bne.s  loc_6B2
+	lea (GA_COMM_SUBFLAGS).l, a4
+	@loc_6B2:
+		move.b (a4), d0
+		bne.s  @loc_6B2
 
 	bsr.w sub_16C4
 
-	moveq #1,d0
-	moveq #8,d1
-	jsr sub_1800(pc)
+	moveq #1, d0
+	moveq #8, d1
+	jsr   sub_1800(pc)
 
-	moveq #STATE_3040,d0
+	moveq #STATE_3040, d0
 	bsr.s setNextState
 	bra.w mainLoop
 
@@ -680,33 +687,33 @@ setNextState:
 
 
 clearSubCpuPrg:             ; CODE XREF: ROM:000005A4p
-	lea (GA_RESET_HALT).l,a5
-	lea 1(a5),a6
+	lea (GA_RESET_HALT).l, a5
+	lea 1(a5), a6
 
 	@WaitForBus:
-		bset  #GA_SBRQ,(a5)     ; Request sub-CPU bus
+		bset  #GA_SBRQ, (a5)    ; Request sub-CPU bus
 		beq.s @WaitForBus
 
-	move.w  (a6),d5
-	moveq   #0,d7
+	move.w  (a6), d5
+	moveq   #0, d7
 
-	andi.w  #2,d5
-	ori.w   #$40,d5
-	move.w  d5,(a6)
+	andi.w  #2, d5
+	ori.w   #$40, d5
+	move.w  d5, (a6)
 	bsr.s   fillSubCpuBank
 
-	andi.w  #2,d5
-	ori.w   #$80,d5
-	move.w  d5,(a6)
+	andi.w  #2, d5
+	ori.w   #$80, d5
+	move.w  d5, (a6)
 	bsr.s   fillSubCpuBank
 
-	andi.w  #2,d5
-	ori.w   #$C0,d5
-	move.w  d5,(a6)
+	andi.w  #2, d5
+	ori.w   #$C0, d5
+	move.w  d5, (a6)
 	bsr.s   fillSubCpuBank
 
-	andi.w  #2,d5
-	move.w  d5,(a6)
+	andi.w  #2, d5
+	move.w  d5, (a6)
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -730,43 +737,43 @@ fillSubCpuBank:
 
 
 loadSubCpuPrg:              ; CODE XREF: setupGenHardware+Cp
-	lea (GA_RESET_HALT).l,a5
+	lea (GA_RESET_HALT).l, a5
 
 	; Place sub-CPU in RESET state
 	@loc_72A:
-		bclr  #0,(a5)
+		bclr  #0, (a5)
 		bne.s @loc_72A
 
 	; Switch to sub-CPU bank 0
-	lea 1(a5),a6
-	move.w (a6),d5
-	andi.w #2,d5
-	move.w d5,(a6)
+	lea 1(a5), a6
+	move.w (a6), d5
+	andi.w #2, d5
+	move.w d5, (a6)
 
 	; Decompress the sub-CPU program into RAM
-	lea (SubCPU_Prog0).l,a0
-	lea (SubCPU_Base0).l,a1
+	lea (SubCPU_Prog0).l, a0
+	lea (SubCPU_Base0).l, a1
 	bsr.w decompressKosinski
 
-	lea (SubCPU_Prog1).l,a0
-	lea (SubCPU_Base1).l,a1
+	lea (SubCPU_Prog1).l, a0
+	lea (SubCPU_Base1).l, a1
 	bsr.w decompressKosinski
 
-	lea (SubCPU_Prog2).l,a0
-	lea (SubCPU_Base2).l,a1
+	lea (SubCPU_Prog2).l, a0
+	lea (SubCPU_Base2).l, a1
 	bsr.w decompressKosinski
 
 	; Write-protect sub-CPU PRG_RAM $0-$5400
-	move.b #$2A,(a6)
+	move.b #$2A, (a6)
 
 	; Release sub-CPU from RESET state
 	@loc_770:
-		bset  #0,(a5)
+		bset  #0, (a5)
 		beq.s @loc_770
 
 	; Release sub-CPU bus
 	@loc_776:
-		bclr  #1,(a5)
+		bclr  #1, (a5)
 		bne.s @loc_776
 
 	rts
@@ -778,21 +785,21 @@ loadSubCpuPrg:              ; CODE XREF: setupGenHardware+Cp
 
 clearWordRam2M:             ; CODE XREF: ROM:000005A8p
 	; Return if WordRAM in 1M mode
-	btst  #GA_MODE,1(a6)
+	btst  #GA_MODE, 1(a6)
 	bne.s locret_79E
 
 	; Return if sub-CPU has WordRAM
-	btst  #GA_RET,1(a6)
+	btst  #GA_RET, 1(a6)
 	beq.s locret_79E
 
-	lea (WordRAM_Bank0).l,a0
-	moveq #$FFFFFFFF,d0
-	moveq #0,d7
+	lea (WordRAM_Bank0).l, a0
+	moveq #$FFFFFFFF, d0
+	moveq #0, d7
 
 	; Clear out all 256 KiB
 	@loc_798:
-		move.l d7,(a0)+
-		dbf d0,@loc_798
+		move.l d7, (a0)+
+		dbf d0, @loc_798
 
 locret_79E:
 	rts
@@ -803,22 +810,27 @@ locret_79E:
 
 
 checkRegion:
-	move.b (MD_VERSION).l,d0
-	andi.b #$C0,d0
-	cmpi.b #$80,d0
+	move.b (MD_VERSION).l, d0
+	andi.b #$C0, d0
+	cmpi.b #$80, d0
 	bne.s  RegionMismatch
 	rts
 ; ---------------------------------------------------------------------------
 
 RegionMismatch:
 	m_disableInterrupts
+
 	jsr loadDefaultVdpRegs(pc)
 	jsr loadDefaultFont(pc)
-	lea regionErrorText(pc),a1
-	move.l #$C0000000,(VDP_CONTROL).l
-	move.l (a1)+,(VDP_DATA).l
-	move.l #$46060003,d0
+
+	lea regionErrorText(pc), a1
+
+	move.l #$C0000000, (VDP_CONTROL).l
+	move.l (a1)+, (VDP_DATA).l
+
+	move.l #$46060003, d0                   ; VRAM $C606
 	jsr writeTextToScreen(pc)
+
 	jsr displayOn(pc)
 
 	; Infinite loop while displaying error
@@ -1044,8 +1056,8 @@ clearVdpPatternTables:          ; CODE XREF: ROM:000002A4j
 ; Clear VRAM dword at $BC00
 
 sub_A4E:
-	move.l #$7C000002,(VDP_CONTROL).l
-	move.l #0,(VDP_DATA).l
+	move.l #$7C000002, (VDP_CONTROL).l
+	move.l #0, (VDP_DATA).l
 	rts
 ; End of function sub_A4E
 
@@ -1056,6 +1068,7 @@ sub_A4E:
 
 clearSpriteTable:           ; CODE XREF: clearVdpPatternTablesp
 	clr.l  (spriteTable).w
+
 	move.l #$78000002, (VDP_CONTROL).l
 	move.l #0, (VDP_DATA).l
 	rts
@@ -1747,9 +1760,9 @@ loadZ80Prg:             ; CODE XREF: setupGenHardware+8p
 	move.w  #$100,     (a4)
 	move.w  #$100, $100(a4)
 
-@loc_FD6:
-	btst  #0, (a4)
-	bne.s @loc_FD6
+	@loc_FD6:
+		btst  #0, (a4)
+		bne.s @loc_FD6
 
 	lea    (Z80_RAM_Base0).l, a6
 	lea    (Z80_PRG_Base0).l, a5
@@ -15878,35 +15891,40 @@ loc_868A:               ; CODE XREF: sub_866A+1Cj
 
 
 sub_86A6:               ; DATA XREF: sub_873A+20o
-		btst    #GA_RET,(GA_MEM_MODE).l
-		beq.s   loc_86E2
-		move.l  #$74000003,(VDP_CONTROL).l
-		lea (dword_220E00).l,a0
-		lea (VDP_DATA).l,a1
-		moveq   #$27,d0 ; '''
+	btst  #GA_RET, (GA_MEM_MODE).l
+	beq.s @loc_86E2
 
-loc_86C8:               ; CODE XREF: sub_86A6+24j
-		move.l  (a0)+,(a1)
-		dbeq    d0,loc_86C8
-		move.l  #$40000003,d0
-		move.l  #WordRAM_Bank1,d1
-		move.w  #$700,d2
-		bsr.w   dmaTransferToVramWithRewrite
+	move.l #$74000003, (VDP_CONTROL).l      ; VRAM $F400
 
-loc_86E2:               ; CODE XREF: sub_86A6+8j
-		moveq   #0,d0
-		lea (word_FFFFFF08).w,a1
-		jsr sub_18CE
-		moveq   #1,d0
-		lea ($FFFFFF09).w,a1
-		jsr sub_18CE
-		lea (joy1MouseData).w,a0
-		bsr.s   sub_8704
-		lea (joy2MouseData).w,a0
+	lea (dword_220E00).l, a0
+	lea (VDP_DATA).l,     a1
 
-loc_8700:
-		bsr.s   sub_8704
-		rts
+	moveq #39, d0
+	@loc_86C8:
+		move.l (a0)+, (a1)
+		dbeq   d0, @loc_86C8
+
+	move.l #$40000003, d0                   ; VRAM $C000
+	move.l #WordRAM_Bank1, d1
+	move.w #$700, d2
+	bsr.w  dmaTransferToVramWithRewrite
+
+@loc_86E2:
+	moveq #0, d0
+	lea   (word_FFFFFF08).w, a1
+	jsr   sub_18CE
+
+	moveq #1, d0
+	lea   (byte_FFFFFF09).w, a1
+	jsr   sub_18CE
+
+	lea   (joy1MouseData).w, a0
+	bsr.s sub_8704
+
+	lea   (joy2MouseData).w, a0
+	bsr.s sub_8704
+
+	rts
 ; End of function sub_86A6
 
 
@@ -15915,26 +15933,31 @@ loc_8700:
 
 sub_8704:               ; CODE XREF: sub_86A6+54p
 					; sub_86A6:loc_8700p
-		moveq   #3,d0
-		and.b   1(a0),d0
-		beq.s   loc_871E
-		cmpi.b  #$C,$A(a0)
-		bcs.s   loc_8734
-		clr.b   $A(a0)
-		st  $B(a0)
-		rts
+	moveq  #3, d0
+
+	and.b  1(a0), d0
+	beq.s  @loc_871E
+
+	cmpi.b #$C, $A(a0)
+	bcs.s  @loc_8734
+
+	clr.b  $A(a0)
+	st     $B(a0)
+	rts
 ; ---------------------------------------------------------------------------
 
-loc_871E:               ; CODE XREF: sub_8704+6j
-		clr.b   $B(a0)
-		addq.b  #1,$A(a0)
-		cmpi.b  #$40,$A(a0) ; '@'
-		bcs.s   loc_8734
-		move.b  #$40,$A(a0) ; '@'
+@loc_871E:
+	clr.b      $B(a0)
+	addq.b #1, $A(a0)
 
-loc_8734:               ; CODE XREF: sub_8704+Ej sub_8704+28j
-		clr.b   $B(a0)
-		rts
+	cmpi.b #$40, $A(a0)
+	bcs.s  @loc_8734
+
+	move.b #$40, $A(a0)
+
+@loc_8734:
+	clr.b $B(a0)
+	rts
 ; End of function sub_8704
 
 
@@ -16099,18 +16122,18 @@ byte_8880:
 	dc.b   1
 
 unk_8888:
-	dc.b $57 ; W
-	dc.b $A6 ; ┬ª
-	dc.b $71 ; q
-	dc.b $4B ; K
-	dc.b $C6 ; ├å
+	dc.b $57
+	dc.b $A6
+	dc.b $71
+	dc.b $4B
+	dc.b $C6
 	dc.b $19
 
 unk_888E:
-	dc.b $A7 ; ┬º
-	dc.b $72 ; r
-	dc.b $4C ; L
-	dc.b $C7 ; ├ç
+	dc.b $A7
+	dc.b $72
+	dc.b $4C
+	dc.b $C7
 	dc.b $1A
 	dc.b   1
 
@@ -16124,15 +16147,15 @@ byte_8894:
 
 unk_889A:
 	dc.b $14
-	dc.b $3A ; :
-	dc.b $38 ; 8
+	dc.b $3A
+	dc.b $38
 	dc.b $12
 	dc.b $1A
 	dc.b   6
 
 unk_88A0:
-	dc.b $3B ; ;
-	dc.b $39 ; 9
+	dc.b $3B
+	dc.b $39
 	dc.b $13
 	dc.b $1B
 	dc.b   7
@@ -16159,15 +16182,15 @@ off_88D6:   dc.l unk_600000     ; DATA XREF: sub_98B2+38r sub_9922+Cr
 off_88DA:   dc.l unk_7FFFFF     ; DATA XREF: ROM:00008F10r sub_9922+4r
 
 sub_88DE:
-	move.l dword_88EC(pc), 2(a0)
+	move.l off_88EC(pc), 2(a0)
 	move.w word_88EA(pc), (a0)
 	rts
 
 word_88EA:
 	dc.w $4EF9
 
-dword_88EC:
-	dc.l $88F0
+off_88EC:
+	dc.l sub_88F0
 
 ; =============== S U B R O U T I N E =======================================
 
