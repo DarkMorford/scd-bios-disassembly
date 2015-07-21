@@ -340,7 +340,7 @@ _start:
 @loc_456:
 	move.w (a4), d0
 	moveq  #0, d0
-	move.l #$C0000000, (VDP_CONTROL).l
+	m_loadCramWriteAddress 0
 
 	move.w #31, d1
 	@loc_468:
@@ -606,7 +606,7 @@ setupGenHardware:           ; CODE XREF: ROM:00000580p finishHardwareInitp
 
 	; Set Palette0:Color0 to black
 	clr.w  (paletteBuffer0).w
-	move.l #$C0000000, (VDP_CONTROL).l
+	m_loadCramWriteAddress 0
 	move.w #0, (VDP_DATA).l
 	rts
 ; End of function setupGenHardware
@@ -825,10 +825,10 @@ RegionMismatch:
 
 	lea regionErrorText(pc), a1
 
-	move.l #$C0000000, (VDP_CONTROL).l
+	m_loadCramWriteAddress 0
 	move.l (a1)+, (VDP_DATA).l
 
-	move.l #$46060003, d0                   ; VRAM $C606
+	m_loadVramWriteAddress $C606, d0
 	jsr writeTextToScreen(pc)
 
 	jsr displayOn(pc)
@@ -1028,13 +1028,13 @@ defaultVdpRegs:
 
 clearAllVram:               ; CODE XREF: ROM:000002A0j
 	; Set Palette0:Color0 to black
-	move.l #$C0000000, (VDP_CONTROL).l
+	m_loadCramWriteAddress 0
 	move.w #0, (VDP_DATA).l
 
 	bsr.w clearVsram
 
 	; DMA fill VRAM with 0
-	move.l #$40000000, d0
+	m_loadVramWriteAddress 0, d0
 	move.w #$FFFF, d1
 	bra.w  dmaClearVramSegment
 ; End of function clearAllVram
@@ -1056,7 +1056,7 @@ clearVdpPatternTables:          ; CODE XREF: ROM:000002A4j
 ; Clear VRAM dword at $BC00
 
 sub_A4E:
-	move.l #$7C000002, (VDP_CONTROL).l
+	m_loadVramWriteAddress $BC00
 	move.l #0, (VDP_DATA).l
 	rts
 ; End of function sub_A4E
@@ -1069,7 +1069,7 @@ sub_A4E:
 clearSpriteTable:           ; CODE XREF: clearVdpPatternTablesp
 	clr.l  (spriteTable).w
 
-	move.l #$78000002, (VDP_CONTROL).l
+	m_loadVramWriteAddress $B800
 	move.l #0, (VDP_DATA).l
 	rts
 ; End of function clearSpriteTable
@@ -1102,7 +1102,7 @@ fillVramSegment:            ; CODE XREF: ROM:000002B4j
 ; Clear VRAM from $A000-$ADFF
 
 dmaClearWindowTable:            ; CODE XREF: clearVdpPatternTables+Aj
-	move.l #$60000002, d0
+	m_loadVramWriteAddress $A000, d0
 	move.w #$DFF, d1
 	bra.s  dmaClearVramSegment
 ; End of function dmaClearWindowTable
@@ -1113,7 +1113,7 @@ dmaClearWindowTable:            ; CODE XREF: clearVdpPatternTables+Aj
 ; Clear VRAM from $C000-$DFFF
 
 dmaClearScrollTableA:           ; CODE XREF: clearVdpPatternTables+2p
-	move.l #$40000003, d0
+	m_loadVramWriteAddress $C000, d0
 	bra.s  loc_AB4
 ; End of function dmaClearScrollTableA
 
@@ -1123,7 +1123,7 @@ dmaClearScrollTableA:           ; CODE XREF: clearVdpPatternTables+2p
 ; Clear VRAM from $E000-$FFFF
 
 dmaClearScrollTableB:           ; CODE XREF: clearVdpPatternTables+6p
-		move.l #$60000003, d0
+		m_loadVramWriteAddress $E000, d0
 
 loc_AB4:                ; CODE XREF: dmaClearScrollTableA+6j
 		move.w #$1FFF, d1
@@ -1522,7 +1522,7 @@ displayOn:                      ; CODE XREF: ROM:000002D8j
 ; ---------------------------------------------------------------------------
 
 displayBlack:                   ; CODE XREF: ROM:00000384j
-	move.l #$C0000000, (VDP_CONTROL).l  ; CRAM $0000
+	m_loadCramWriteAddress 0
 	move.w #0, (VDP_DATA).l
 
 displayOff:                     ; CODE XREF: ROM:000002DCj
@@ -1594,7 +1594,7 @@ dmaTransferPalettes:            ; CODE XREF: ROM:000002E8j
 	; Disable DMA
 	move.w (vdpRegCache+2).w, (a4)
 
-	move.l #$C0000000, (a4)             ; CRAM $0000
+	m_loadCramWriteAddress 0, (a4)
 	move.w (paletteBuffer0).w, -4(a4)
 
 	m_restoreStatusRegister
@@ -1887,7 +1887,7 @@ dmaSendSpriteTable:         ; CODE XREF: ROM:0000030Cj
 	btst  #0, (vblankCode).w
 	beq.s @locret_18CC
 
-	lea    (VDP_CONTROL).l, a4
+	lea (VDP_CONTROL).l, a4
 
 	; Enable DMA
 	move.w (vdpRegCache+2).w, d4
@@ -1915,7 +1915,7 @@ dmaSendSpriteTable:         ; CODE XREF: ROM:0000030Cj
 	; Disable DMA
 	move.w (vdpRegCache+2).w, (a4)
 
-	move.l #$78000002, (a4)             ; VRAM $B800
+	m_loadVramWriteAddress $B800, (a4)
 	move.w (spriteTable).w, -4(a4)
 
 	m_restoreStatusRegister
@@ -2024,7 +2024,7 @@ writeTextToScreen:          ; CODE XREF: ROM:0000031Cj
 
 
 loadDefaultFont:            ; CODE XREF: ROM:00000328j
-	move.l #$44000000, d0               ; VRAM $0400
+	m_loadVramWriteAddress $400, d0
 	move.w #0, (fontTileOffset).w
 	move.l #$00011011, d1
 
