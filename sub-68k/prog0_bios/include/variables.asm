@@ -21,10 +21,10 @@ systemVolume    equ $5ABA
 volumeSlope     equ $5AC6
 
 ;   CDBOOT variables
-bootBitfield            equ $5B24
-cbtInterruptHandler     equ $5B26
-cbtInterruptData        equ $5B2A
-cbtReturnAddress        equ $5B2E
+cbtFlags            equ $5B24
+cbtResumeAddress        equ $5B26
+cbtResumeData           equ $5B2A
+cbtDeferredAddress        equ $5B2E
 dataStartSector         equ $5B32
 readSectorStart         equ $5B34
 readSectorCount         equ $5B38

@@ -20,6 +20,10 @@ byte_59F6 equ $59F6
 byte_59F7 equ $59F7
 byte_5A04 equ $5A04
 byte_5A05 equ $5A05
+byte_5A39 equ $5A39
+byte_5A41 equ $5A41
+byte_5A43 equ $5A43
+byte_5A87 equ $5A87
 byte_5A8C equ $5A8C
 byte_5A8D equ $5A8D
 byte_5A8E equ $5A8E
@@ -42,15 +46,16 @@ dword_5A30 equ $5A30
 dword_5A34 equ $5A34
 cdcBuffer equ $5A44
 scdFlags0 equ $5A84
+dword_5A86 equ $5A86
 dword_5A88 equ $5A88
-dword_5A90 equ $5A90
-dword_5A94 equ $5A94
-dword_5A98 equ $5A98
+scdPcktAddress equ $5A90
+scdPackAddress equ $5A94
+scdQcodAddress equ $5A98
 dword_5A9C equ $5A9C
 dword_5AA0 equ $5AA0
 dword_5AA4 equ $5AA4
 dword_5AA8 equ $5AA8
-dword_5AD8 equ $5AD8
+cdbDelayedRoutine equ $5AD8
 dword_5B02 equ $5B02
 dword_5B54 equ $5B54
 dword_5B58 equ $5B58
@@ -79,7 +84,9 @@ cddCommandWorkArea equ $582A
 cddStatusCode equ $584E
 word_5A00 equ $5A00
 cddWatchdogCounter equ $5A02
+word_5A3E equ $5A3E
 cddFaderCache equ $5ABC
+word_5A8A equ $5A8A
 word_5ABE equ $5ABE
 word_5AC0 equ $5AC0
 word_5AC2 equ $5AC2
@@ -101,4 +108,3 @@ word_5B7C equ $5B7C
 word_5B7E equ $5B7E
 word_5B80 equ $5B80
 word_5B82 equ $5B82
-_usermode equ $5EA2

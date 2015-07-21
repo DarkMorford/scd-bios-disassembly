@@ -4,7 +4,7 @@
 
 _CDSTAT     equ $5E80
 _BOOTSTAT   equ $5EA0
-_USERMODE   equ $5EA6
+_USERMODE   equ $5EA2
 
 ;   CD types
 CD_NOTREADY     equ $FFFFFFFF
