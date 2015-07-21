@@ -1514,85 +1514,114 @@ getLastTrack:
 
 
 writeCddStatus:             ; CODE XREF: executeCdbCommand+98p
-	movem.l a2,-(sp)
-	movea.l a0,a2
-	move.w  cddStatusCode(a5),d0
-	move.w  d0,(a2)+
-	lsr.w   #8,d0
-	cmpi.b  #4,d0
-	beq.s   loc_DC8
-	cmpi.b  #$C,d0
-	bne.s   loc_DEA
+	movem.l a2, -(sp)
+	movea.l a0, a2
 
-loc_DC8:                ; CODE XREF: writeCddStatus+12j
-	move.b  word_5A00+1(a5),(a2)+
-	move.b  word_5A00(a5),d0
-	cmpi.b  #$FF,d0
-	beq.s   loc_DDE
+	move.w  cddStatusCode(a5), d0
+	move.w  d0, (a2)+
+
+	lsr.w   #8, d0
+
+	cmpi.b  #4, d0
+	beq.s   @loc_DC8
+
+	cmpi.b  #$C, d0
+	bne.s   @loc_DEA
+
+@loc_DC8:
+	move.b  word_5A00+1(a5), (a2)+
+
+	move.b  word_5A00(a5), d0
+
+	cmpi.b  #$FF, d0
+	beq.s   @loc_DDE
+
 	bsr.w   validateTrackNumber
 	bsr.w   convertFromBcd
 
-loc_DDE:                ; CODE XREF: writeCddStatus+26j
-	move.b  d0,(a2)+
-	move.l  dword_59F8(a5),(a2)+
-	move.l  dword_59FC(a5),(a2)+
-	bra.s   loc_E26
+@loc_DDE:
+	move.b  d0, (a2)+
+
+	move.l  dword_59F8(a5), (a2)+
+
+	move.l  dword_59FC(a5), (a2)+
+
+	bra.s   @loc_E26
 ; ---------------------------------------------------------------------------
 
-loc_DEA:                ; CODE XREF: writeCddStatus+18j
-	moveq   #$FFFFFFFF,d0
-	btst    #2,cddFlags5(a5)
-	beq.s   loc_E04
-	bsr.w   getDiscControlCode
-	move.w  d0,-(sp)
-	bsr.w   getCurrentTrackNumber
-	ror.l   #8,d0
-	move.w  (sp)+,d0
-	rol.l   #8,d0
+@loc_DEA:
+	moveq   #$FFFFFFFF, d0
 
-loc_E04:                ; CODE XREF: writeCddStatus+44j
-	move.w  d0,(a2)+
-	moveq   #$FFFFFFFF,d0
-	btst    #0,cddFlags5(a5)
-	beq.s   loc_E14
+	btst    #2, cddFlags5(a5)
+	beq.s   @loc_E04
+
+	bsr.w   getDiscControlCode
+
+	move.w  d0, -(sp)
+
+	bsr.w   getCurrentTrackNumber
+
+	ror.l   #8, d0
+	move.w  (sp)+, d0
+	rol.l   #8, d0
+
+@loc_E04:
+	move.w  d0, (a2)+
+
+	moveq   #$FFFFFFFF, d0
+
+	btst    #0, cddFlags5(a5)
+	beq.s   @loc_E14
+
 	bsr.w   getAbsFrameTime
 
-loc_E14:                ; CODE XREF: writeCddStatus+60j
-	move.l  d0,(a2)+
-	moveq   #$FFFFFFFF,d0
-	btst    #1,cddFlags5(a5)
-	beq.s   loc_E24
+@loc_E14:
+	move.l  d0, (a2)+
+
+	moveq   #$FFFFFFFF, d0
+
+	btst    #1, cddFlags5(a5)
+	beq.s   @loc_E24
+
 	bsr.w   getRelFrameTime
 
-loc_E24:                ; CODE XREF: writeCddStatus+70j
-	move.l  d0,(a2)+
+@loc_E24:
+	move.l  d0, (a2)+
 
-loc_E26:                ; CODE XREF: writeCddStatus+3Aj
-	btst    #6,cddFlags4(a5)
-	beq.s   loc_E48
-	move.b  cddFirstTrack(a5),d0
+@loc_E26:
+	btst    #6, cddFlags4(a5)
+	beq.s   @loc_E48
+
+	move.b  cddFirstTrack(a5), d0
 	bsr.w   convertFromBcd
-	move.b  d0,(a2)+
-	move.b  cddLastTrack(a5),d0
+	move.b  d0, (a2)+
+
+	move.b  cddLastTrack(a5), d0
 	bsr.w   convertFromBcd
-	move.b  d0,(a2)+
-	move.w  cddVersion(a5),(a2)+
-	bra.s   loc_E4E
+	move.b  d0, (a2)+
+
+	move.w  cddVersion(a5), (a2)+
+
+	bra.s   @loc_E4E
 ; ---------------------------------------------------------------------------
 
-loc_E48:                ; CODE XREF: writeCddStatus+7Ej
-	move.l  #$FFFFFFFF,(a2)+
+@loc_E48:
+	move.l  #$FFFFFFFF, (a2)+
 
-loc_E4E:                ; CODE XREF: writeCddStatus+98j
-	moveq   #$FFFFFFFF,d0
-	btst    #5,cddFlags4(a5)
-	beq.s   loc_E5C
-	move.l  cddLeadOutTime(a5),d0
+@loc_E4E:
+	moveq   #$FFFFFFFF, d0
 
-loc_E5C:                ; CODE XREF: writeCddStatus+A8j
-	move.l  d0,(a2)+
-	movea.l a2,a0
-	movem.l (sp)+,a2
+	btst    #5, cddFlags4(a5)
+	beq.s   @loc_E5C
+
+	move.l  cddLeadOutTime(a5), d0
+
+@loc_E5C:
+	move.l  d0, (a2)+
+
+	movea.l a2, a0
+
+	movem.l (sp)+, a2
 	m_clearErrorFlag
 	rts
 ; End of function writeCddStatus
@@ -3024,10 +3053,10 @@ _cdcstat:               ; CODE XREF: executeCdbCommand+36j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1840:               ; CODE XREF: executeCdbCommand+A8p
+getCdcFrameHeader:               ; CODE XREF: executeCdbCommand+A8p
 	move.l cdcFrameHeader(a5), d0
 	rts
-; End of function sub_1840
+; End of function getCdcFrameHeader
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -5532,28 +5561,34 @@ _cdbchk:
 ; ---------------------------------------------------------------------------
 
 _cdbstat:               ; CODE XREF: executeCdbCommand+12j
-		lea (_CDSTAT).w,a0
-		movem.l a0,-(sp)
-		move.w  cdbControlStatus(a5),(a0)+
-		move.b  ledStatus(a5),d0
-		lsl.w   #8,d0
-		move.b  ledMode+1(a5),d0
-		move.w  d0,(a0)+
-		bsr.w   writeCddStatus
-		bcc.s   loc_29E8
-		adda.w  #20,a0
+	lea (_CDSTAT).w, a0
+	movem.l a0, -(sp)
 
-loc_29E8:               ; CODE XREF: executeCdbCommand+9Cj
-		move.l  masterVolume(a5),d0
-		move.l  d0,(a0)+
-		bsr.w   sub_1840
-		move.l  d0,(a0)
-		movem.l (sp)+,a0
-		rts
+	move.w cdbControlStatus(a5), (a0)+
+
+	move.b ledStatus(a5), d0
+	lsl.w  #8, d0
+	move.b ledMode+1(a5), d0
+	move.w d0, (a0)+
+
+	bsr.w  writeCddStatus
+	bcc.s  @loc_29E8
+
+	adda.w #20, a0
+
+@loc_29E8:
+	move.l masterVolume(a5), d0
+	move.l d0, (a0)+
+
+	bsr.w  getCdcFrameHeader
+	move.l d0, (a0)
+
+	movem.l (sp)+, a0
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_29FA:               ; CODE XREF: _cdbtocwrite+6j
-		bsr.w   writeTocForTrack
+	bsr.w writeTocForTrack
 ; End of function executeCdbCommand
 
 
