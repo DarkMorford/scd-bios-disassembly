@@ -12,7 +12,7 @@ JOYBIT_DOWN     equ 1
 JOYBIT_UP       equ 0
 
 JOYTYPE_MEGAMOUSE   equ 3
-JOYTYPE_7           equ 7
+JOYTYPE_TYPE7       equ 7
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -98,14 +98,14 @@ detectControllerType:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 	; Set the I/O port to normal joypad mode
 	moveq  #$40, d3
 	move.b d3, 6(a6)
-	
+
 	moveq  #0, d7
 
-	; Set TH bit high to read X1CBRLDU
+	; Set TH bit high
 	move.b  d3, (a6)
 	bsr.s   sub_1174
 
-	; Set TH bit low to read X0SA00DU
+	; Set TH bit low
 	move.b  #0, (a6)
 	add.w   d7, d7
 	bsr.s   sub_1174
@@ -156,14 +156,14 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 	beq.s @loc_11AE
 
 	move.b d7, (joy1Type).w
-	cmpi.b #JOYTYPE_7, d7
+	cmpi.b #JOYTYPE_TYPE7, d7
 	beq.s  @loc_11AA
 
 	cmpi.b #JOYTYPE_MEGAMOUSE, d7
 	bne.s  @loc_11AE
 
 @loc_11AA:
-	; If d7 is either 3 or 7
+	; Non-standard controller
 	moveq #0, d1
 	bsr.s @loc_11CC
 
@@ -178,7 +178,7 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 
 	move.b d7, (joy2Type).w
 	moveq  #1, d1
-	cmpi.b #JOYTYPE_7, d7
+	cmpi.b #JOYTYPE_TYPE7, d7
 	beq.s  @loc_11CC
 
 	cmpi.b #JOYTYPE_MEGAMOUSE, d7
@@ -188,7 +188,7 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 ; ---------------------------------------------------------------------------
 
 @loc_11CC:
-	; If d7 is either 3 or 7
+	; Non-standard controller
 	moveq #0, d0
 	bsr.w sub_12F4
 	bcc.s @locret_11D6
@@ -203,13 +203,13 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 
 
 sub_11D8:               ; CODE XREF: vblankHandler+26p
-	cmpi.b #JOYTYPE_7, (joy1Type).w
+	cmpi.b #JOYTYPE_TYPE7, (joy1Type).w
 	bne.s  loc_1218
 
 	lea     (joy1Down).w, a1
 	move.l  a1, -(sp)
 
-	lea     (unk_FFFFFE0C).w, a2
+	lea     (joy2MouseData).w, a2
 	moveq   #0, d1
 	bsr.w   sub_1484
 
@@ -229,9 +229,9 @@ loc_11F8:
 
 	bne.s loc_1264
 
-	lea     (unk_FFFFFE0C).w, a5
+	lea     (joy2MouseData).w, a5
 	lea     (joy2Down).w, a0
-	bsr.w   sub_12CC
+	bsr.w   readMouseButtons
 	bra.w   loc_12BA
 ; ---------------------------------------------------------------------------
 
@@ -239,6 +239,7 @@ loc_1218:               ; CODE XREF: sub_11D8+6j
 	cmpi.b #JOYTYPE_MEGAMOUSE, (joy1Type).w
 	beq.s  loc_1250
 
+	; Port 1 has standard controller
 	lea (joy1Down).w, a5
 	lea (JOYDATA1).l, a6
 
@@ -254,7 +255,8 @@ loc_1218:               ; CODE XREF: sub_11D8+6j
 ; ---------------------------------------------------------------------------
 
 loc_1250:               ; CODE XREF: sub_11D8+46j
-	lea (unk_FFFFFE00).w, a5
+	; Port 1 has Mega Mouse
+	lea (joy1MouseData).w, a5
 
 	moveq #0,d1
 	moveq #1,d0
@@ -263,18 +265,20 @@ loc_1250:               ; CODE XREF: sub_11D8+46j
 	bcs.s loc_12C4
 
 	lea   (joy1Down).w,a0
-	bsr.s sub_12CC
+	bsr.s readMouseButtons
 
 loc_1264:               ; CODE XREF: sub_11D8+2Ej sub_11D8+76j
 	cmpi.b #JOYTYPE_MEGAMOUSE, (joy2Type).w
 	beq.s  loc_12A6
 
-	cmpi.b #JOYTYPE_7, (joy2Type).w
+	cmpi.b #JOYTYPE_TYPE7, (joy2Type).w
 	bne.s  loc_1276
+
 	bra.s  loc_12BA
 ; ---------------------------------------------------------------------------
 
 loc_1276:               ; CODE XREF: sub_11D8+9Aj
+	; Port 2 has standard controller
 	lea (joy2Down).w, a5
 	lea (JOYDATA2).l, a6
 
@@ -290,7 +294,8 @@ loc_1276:               ; CODE XREF: sub_11D8+9Aj
 ; ---------------------------------------------------------------------------
 
 loc_12A6:               ; CODE XREF: sub_11D8+92j
-	lea (unk_FFFFFE0C).w, a5
+	; Port 2 has Mega Mouse
+	lea (joy2MouseData).w, a5
 
 	moveq #1, d1
 	moveq #1, d0
@@ -299,7 +304,7 @@ loc_12A6:               ; CODE XREF: sub_11D8+92j
 	bcs.s loc_12C8
 
 	lea   (joy2Down).w, a0
-	bsr.s sub_12CC
+	bsr.s readMouseButtons
 
 loc_12BA:               ; CODE XREF: sub_11D8+3Cj sub_11D8+9Cj ...
 	m_z80ReleaseBus
@@ -322,7 +327,7 @@ locret_12CA:                ; CODE XREF: sub_11D8+EEj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_12CC:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
+readMouseButtons:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
 	move.b 1(a5), d0
 	andi.w #3, d0
 
@@ -346,7 +351,7 @@ sub_12CC:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
 	and.b  d0, d1
 	move.b d1, (a0)+
 	rts
-; End of function sub_12CC
+; End of function readMouseButtons
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -355,6 +360,7 @@ sub_12CC:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
 sub_12F4:               ; CODE XREF: loc_11CC+2p sub_11D8+80p ...
 	movem.l d1-a6, -(sp)
 	add.w   d1, d1
+
 	lea     (JOYDATA1).l, a6
 	adda.w  d1, a6
 

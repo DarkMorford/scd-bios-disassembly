@@ -7721,7 +7721,7 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 ; ---------------------------------------------------------------------------
 
 @loc_4320:
-	lea    (unk_FFFFFE00).w, a3
+	lea    (joy1MouseData).w, a3
 	move.b #1, (byte_FFFFD060).w
 
 @loc_432A:
@@ -15900,9 +15900,9 @@ loc_86E2:               ; CODE XREF: sub_86A6+8j
 		moveq   #1,d0
 		lea ($FFFFFF09).w,a1
 		jsr sub_18CE
-		lea (unk_FFFFFE00).w,a0
+		lea (joy1MouseData).w,a0
 		bsr.s   sub_8704
-		lea (unk_FFFFFE0C).w,a0
+		lea (joy2MouseData).w,a0
 
 loc_8700:
 		bsr.s   sub_8704
