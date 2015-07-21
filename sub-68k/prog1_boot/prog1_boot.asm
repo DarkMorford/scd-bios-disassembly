@@ -56,10 +56,11 @@ boot_user0:
 
 	move.l a6, -(sp)
 
-	; Jump to a function in the CD player module
+	; Update CD player module
 	jsr sub_18004
 
 	movea.l (sp)+, a6
+
 	jmp sub_625A(pc)
 ; End of function boot_user0
 
@@ -68,23 +69,25 @@ boot_user0:
 
 
 boot_user2:
-	lea RAM_BASE(pc),a6
-	bsr.w   checkDiscType
+	lea RAM_BASE(pc), a6
 
-	tst.b   byte_6(a6)
-	beq.w   sub_6178
+	bsr.w checkDiscType
 
-	move.w  word_0(a6),d0
-	jsr loc_609A(pc,d0.w)
+	tst.b byte_6(a6)
+	beq.w sub_6178
 
-	lea RAM_BASE(pc),a6
-	addq.w  #1,word_4(a6)
-	move.l  a6,-(sp)
+	move.w word_0(a6), d0
+	jsr    loc_609A(pc, d0.w)
 
-	; Jump to a function in the CD player module
+	lea RAM_BASE(pc), a6
+
+	addq.w #1, word_4(a6)
+	move.l a6, -(sp)
+
+	; Run CD player V-blank handler
 	jsr sub_18000
 
-	movea.l (sp)+,a6
+	movea.l (sp)+, a6
 	clr.b   byte_3(a6)
 	rts
 ; End of function boot_user2
@@ -92,16 +95,16 @@ boot_user2:
 ; ---------------------------------------------------------------------------
 
 loc_609A:
-		bra.w   sub_6178
+	bra.w sub_6178
 ; ---------------------------------------------------------------------------
-		bra.w   loc_7CA2
+	bra.w loc_7CA2
 ; ---------------------------------------------------------------------------
-		bra.w   loc_7208
+	bra.w loc_7208
 ; ---------------------------------------------------------------------------
-		nop
-		rts
+	nop
+	rts
 ; ---------------------------------------------------------------------------
-		bra.w   loc_8322
+	bra.w loc_8322
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -135,7 +138,7 @@ boot_user1:             ; CODE XREF: sub_610A+Cj
 
 	bsr.s   clearWordRam1M
 
-	; Jump to a function in the CD player module
+	; Update CD player module
 	jsr sub_18004
 
 	; Clear communication data registers
@@ -166,29 +169,29 @@ sub_610A:               ; CODE XREF: boot_user1+4j
 ; ---------------------------------------------------------------------------
 
 loc_6118:
-		nop
-		rts
+	nop
+	rts
 ; ---------------------------------------------------------------------------
-		bra.w   sub_7B5E
+	bra.w sub_7B5E
 ; ---------------------------------------------------------------------------
-		bra.w   sub_7302
+	bra.w sub_7302
 ; ---------------------------------------------------------------------------
-		nop
-		rts
+	nop
+	rts
 ; ---------------------------------------------------------------------------
-		bra.w   sub_810A
+	bra.w sub_810A
 
 ; =============== S U B R O U T I N E =======================================
 
 ; Clear all 128 KiB in WordRAM 1M space
 clearWordRam1M:             ; CODE XREF: boot_user1+2Ep
-	lea (WORD_RAM_1M).l,a0
-	move.w  #$7FFF,d0
-	moveq   #0,d1
+	lea    (WORD_RAM_1M).l, a0
+	move.w #$7FFF, d0
+	moveq  #0, d1
 
-	loc_6138:
-		move.l  d1,(a0)+
-		dbf d0,loc_6138
+	@loc_6138:
+		move.l d1, (a0)+
+		dbf    d0, @loc_6138
 	rts
 ; End of function clearWordRam1M
 
@@ -231,7 +234,7 @@ locret_615E:                ; CODE XREF: sub_6150+4j
 
 
 sub_6160:
-	tst.b  byte_2(a6)
+	tst.b byte_2(a6)
 	rts
 ; End of function sub_6160
 
@@ -266,7 +269,8 @@ sub_6172:
 
 sub_6178:               ; CODE XREF: boot_user2+Cj
 					; BOOT:loc_609Aj
-	lea RAM_BASE(pc),a6
+	lea RAM_BASE(pc), a6
+
 	bsr.w sub_619A
 	bsr.w sub_6296
 	bsr.w sub_6414
@@ -278,7 +282,8 @@ sub_6178:               ; CODE XREF: boot_user2+Cj
 
 
 clearSubCommBuffer:             ; CODE XREF: boot_user0+Cp
-	lea subCommBuffer(a6),a0
+	lea subCommBuffer(a6), a0
+
 	clr.l (a0)+
 	clr.l (a0)+
 	clr.l (a0)+
@@ -292,28 +297,28 @@ clearSubCommBuffer:             ; CODE XREF: boot_user0+Cp
 
 sub_619A:               ; CODE XREF: sub_6178+4p
 					; BOOT:0000720Cp ...
-	lea  (GA_COMM_SUBFLAGS).w,a0
-	bset #GA_SUBFLAG0,(a0)
+	lea  (GA_COMM_SUBFLAGS).w, a0
+	bset #GA_SUBFLAG0, (a0)
 
 	; Copy data from registers to cache
-	lea mainCommCache(a6),a2
-	lea (GA_COMM_MAINDATA).w,a1
-	move.l  (a1)+,(a2)+
-	move.l  (a1)+,(a2)+
-	move.l  (a1)+,(a2)+
-	move.l  (a1)+,(a2)+
+	lea mainCommCache(a6), a2
+	lea (GA_COMM_MAINDATA).w, a1
+	move.l (a1)+, (a2)+
+	move.l (a1)+, (a2)+
+	move.l (a1)+, (a2)+
+	move.l (a1)+, (a2)+
 
-	bsr.w   sub_62FA
+	bsr.w sub_62FA
 
 	; Copy data from buffer to registers
-	moveq   #3,d0
-	loc_61B8:
-		move.l  (a2),(a1)+
-		clr.l   (a2)+
-		dbf d0,loc_61B8
+	moveq #3, d0
+	@loc_61B8:
+		move.l (a2), (a1)+
+		clr.l  (a2)+
+		dbf d0, @loc_61B8
 
-	bchg    #GA_SUBFLAG1,(a0)
-	bsr.w   sub_6384
+	bchg  #GA_SUBFLAG1, (a0)
+	bsr.w sub_6384
 	rts
 ; End of function sub_619A
 
@@ -358,24 +363,24 @@ initCdBoot:               ; CODE XREF: boot_user0+10p
 	; Load addresses into $AA-$C1
 	lea dword_6218(pc), a1
 	movea.l a1, a3
-	loc_61FA:
-		move.l  (a1)+,d0
-		beq.s   loc_6204
+	@loc_61FA:
+		move.l (a1)+, d0
+		beq.s  @loc_6204
 
-		add.l   a3,d0
-		move.l  d0,(a0)+
-		bra.s   loc_61FA
+		add.l  a3, d0
+		move.l d0, (a0)+
+		bra.s  @loc_61FA
 ; ---------------------------------------------------------------------------
 
-loc_6204:
-	bset #0,flags_3E(a6)
+@loc_6204:
+	bset #0, flags_3E(a6)
 
 	; Set disc type to "not ready"
-	move.b #CD_NOTREADY,discType(a6)
+	move.b #CD_NOTREADY, discType(a6)
 
 	; Initialize CD boot system
-	moveq #CBTINIT,d0
-	jsr _CDBOOT
+	moveq #CBTINIT, d0
+	jsr   _CDBOOT
 	rts
 ; End of function initCdBoot
 
@@ -394,32 +399,32 @@ dword_6218:
 
 checkDiscType:              ; CODE XREF: boot_user2+4p
 	; Return if discType is already determined
-	tst.b   discType(a6)
-	bpl.s   locret_6258
+	tst.b discType(a6)
+	bpl.s @locret_6258
 
 	; Run CBT interrupt routine
-	moveq   #CBTINT,d0
-	jsr _CDBOOT
+	moveq #CBTINT,d0
+	jsr   _CDBOOT
 
 	; Return if flag is clear
-	btst    #0,flags_3E(a6)
-	beq.s   locret_6258
+	btst  #0, flags_3E(a6)
+	beq.s @locret_6258
 
 	; Check disc type
-	moveq   #CBTCHKSTAT,d0
-	jsr _CDBOOT
+	moveq #CBTCHKSTAT,d0
+	jsr   _CDBOOT
 
 	; Return if system is busy
-	bcs.s   locret_6258
+	bcs.s @locret_6258
 
 	; Return if "not ready" signaled
-	tst.b   d0
-	bmi.s   locret_6258
+	tst.b d0
+	bmi.s @locret_6258
 
 	; Copy disc type to RAM
-	move.b  d0,discType(a6)
+	move.b d0, discType(a6)
 
-locret_6258:
+@locret_6258:
 	rts
 ; End of function checkDiscType
 
@@ -429,8 +434,9 @@ locret_6258:
 
 sub_625A:               ; CODE XREF: boot_user0+3Cj
 	bsr.w cdbGetBiosStatus
+	
 	cmpi.b #5, biosStatus.cddStatusCode(a6)
-	bne.s sub_626E
+	bne.s  sub_626E
 
 	; Set disc type to "not ready"
 	move.b #CD_NOTREADY,discType(a6)
@@ -454,8 +460,8 @@ sub_626E:               ; CODE XREF: BOOT:00006264j
 
 	; Check if disc boot is possible
 	move.w #CBTCHKDISC, d0
-	lea chkdiskScratch(a6), a0
-	jmp _CDBOOT
+	lea    chkdiskScratch(a6), a0
+	jmp    _CDBOOT
 ; End of function sub_626E
 
 
@@ -498,24 +504,25 @@ loc_62BC:               ; CODE XREF: sub_6296+1Ej sub_6296+22j
 cdbGetBiosStatus:               ; CODE XREF: BOOT:sub_625Ap
 					; sub_62FA+6p ...
 	; Get CD-BIOS status data
-	move.w  #CDBSTAT,d0
-	jsr _CDBIOS
+	move.w #CDBSTAT, d0
+	jsr    _CDBIOS
 
-	lea biosStatus(a6),a3
-	move.l  a3,-(sp)
+	lea biosStatus(a6), a3
+	move.l a3, -(sp)
 
-	move.w  (a3),d1
-	move.w  (a0),(a3)+  ; bios status word
-	move.w  d1,(a3)+    ; previous bios status word
-	move.l  CDBSTAT.absTimeCode(a0),(a3)+
-	move.l  CDBSTAT.relTimeCode(a0),(a3)+
-	move.b  CDBSTAT.currentTrack(a0),(a3)+
-	move.b  CDBSTAT.flags(a0),(a3)+
-	move.w  CDBSTAT.firstTrack(a0),(a3)+
-	move.l  CDBSTAT.leadOut(a0),(a3)+
-	move.b  CDBSTAT.statusCode(a0),(a3)+
+	move.w (a3), d1
+	move.w (a0), (a3)+  ; bios status word
+	move.w d1,   (a3)+  ; previous bios status word
 
-	movea.l (sp)+,a3
+	move.l CDBSTAT.absTimeCode(a0),  (a3)+
+	move.l CDBSTAT.relTimeCode(a0),  (a3)+
+	move.b CDBSTAT.currentTrack(a0), (a3)+
+	move.b CDBSTAT.flags(a0),        (a3)+
+	move.w CDBSTAT.firstTrack(a0),   (a3)+
+	move.l CDBSTAT.leadOut(a0),      (a3)+
+	move.b CDBSTAT.statusCode(a0),   (a3)+
+
+	movea.l (sp)+, a3
 	rts
 ; End of function cdbGetBiosStatus
 
@@ -524,66 +531,68 @@ cdbGetBiosStatus:               ; CODE XREF: BOOT:sub_625Ap
 
 
 sub_62FA:               ; CODE XREF: sub_619A+18p
-	movem.l a1-a2,-(sp)
-	move.l  a0,-(sp)
-	bsr.s   cdbGetBiosStatus
-	movea.l (sp)+,a0
+	movem.l a1-a2, -(sp)
 
-	bclr    #GA_SUBFLAG2,(a0)
-	moveq   #0,d0
+	move.l  a0, -(sp)
+	bsr.s   cdbGetBiosStatus
+	movea.l (sp)+, a0
+
+	bclr #GA_SUBFLAG2, (a0)
+
+	moveq #0, d0
 
 	; Return if this combination is not 0
-	move.w  GA_SUBDATA1(a2),d0
-	or.w    GA_SUBDATA3(a2),d0
-	bne.s   loc_637E
+	move.w GA_SUBDATA1(a2), d0
+	or.w   GA_SUBDATA3(a2), d0
+	bne.s  @loc_637E
 
 	; Skip if flag bit is clear
-	btst    #0,flags_3E(a6)
-	beq.s   loc_6330
+	btst  #0, flags_3E(a6)
+	beq.s @loc_6330
 
 	; Skip if disc type is "not ready"
-	move.b  discType(a6),d1
-	bmi.s   loc_6330
+	move.b discType(a6), d1
+	bmi.s  @loc_6330
 
-	bclr    #0,flags_3E(a6)
-	moveq   #4,d0
-	bsr.w   sub_66EA
-	bra.s   loc_637E
+	bclr  #0, flags_3E(a6)
+	moveq #4, d0
+	bsr.w sub_66EA
+	bra.s @loc_637E
 ; ---------------------------------------------------------------------------
 
-loc_6330:               ; CODE XREF: sub_62FA+20j sub_62FA+26j
-	bset    #GA_SUBFLAG2,(a0)
-	bset    #GA_SUBFLAG3,(a0)
-	move.w  (a3)+,d0 ; current status
-	move.w  d0,GA_SUBDATA1(a2)
-	move.w  (a3)+,d1 ; previous status
-	andi.w  #$E000,d0
-	bne.s   loc_6368 ; Drive is busy
+@loc_6330:
+	bset   #GA_SUBFLAG2, (a0)
+	bset   #GA_SUBFLAG3, (a0)
+	move.w (a3)+, d0 ; current status
+	move.w d0, GA_SUBDATA1(a2)
+	move.w (a3)+, d1 ; previous status
+	andi.w #$E000, d0
+	bne.s  @loc_6368 ; Drive is busy
 
-	tst.b   biosStatus.lastTrack(a6)
-	beq.s   loc_6368
-	bmi.s   loc_6368
+	tst.b  biosStatus.lastTrack(a6)
+	beq.s  @loc_6368
+	bmi.s  @loc_6368
 
-	bclr    #1,flags_3E(a6)
-	beq.s   loc_6368
+	bclr   #1, flags_3E(a6)
+	beq.s  @loc_6368
 
-	adda.w  #$A,a3
-	move.w  (a3)+,GA_SUBDATA1+2(a2) ; first/last tracks
-	move.l  (a3)+,GA_SUBDATA3(a2) ; lead-out start time
-	bclr    #GA_SUBFLAG3,(a0)
-	bra.s   loc_637E
+	adda.w #$A, a3
+	move.w (a3)+, GA_SUBDATA1+2(a2) ; first/last tracks
+	move.l (a3)+, GA_SUBDATA3(a2) ; lead-out start time
+	bclr   #GA_SUBFLAG3, (a0)
+	bra.s  @loc_637E
 ; ---------------------------------------------------------------------------
 
-loc_6368:               ; CODE XREF: sub_62FA+4Aj sub_62FA+50j ...
-	move.w  (a3)+,GA_SUBDATA1+2(a2) ; absolute time (minute/second)
-	addq.w  #2,a3
-	move.w  (a3)+,GA_SUBDATA3(a2) ; relative time (minute/second)
-	addq.w  #2,a3
-	move.b  (a3)+,GA_SUBDATA3+2(a2) ; track number
-	move.b  biosStatus.cddStatusCode(a6),GA_SUBDATA3+3(a2)
+@loc_6368:
+	move.w (a3)+, GA_SUBDATA1+2(a2) ; absolute time (minute/second)
+	addq.w #2, a3
+	move.w (a3)+, GA_SUBDATA3(a2) ; relative time (minute/second)
+	addq.w #2, a3
+	move.b (a3)+, GA_SUBDATA3+2(a2) ; track number
+	move.b biosStatus.cddStatusCode(a6), GA_SUBDATA3+3(a2)
 
-loc_637E:               ; CODE XREF: sub_62FA+18j sub_62FA+34j ...
-	movem.l (sp)+,a1-a2
+@loc_637E:
+	movem.l (sp)+, a1-a2
 	rts
 ; End of function sub_62FA
 
@@ -654,10 +663,10 @@ locret_63F2:                ; CODE XREF: sub_6384+20j sub_6384+26j ...
 
 sub_63F4:               ; CODE XREF: sub_6384+48p
 	; Set disc type to "not ready"
-	move.b  #CD_NOTREADY,discType(a6)
+	move.b  #CD_NOTREADY, discType(a6)
 
-	moveq   #$FFFFFFFF,d1
-	moveq   #4,d0
+	moveq   #$FFFFFFFF, d1
+	moveq   #4, d0
 	bsr.w   sub_66EA
 	rts
 ; End of function sub_63F4
@@ -667,8 +676,8 @@ sub_63F4:               ; CODE XREF: sub_6384+48p
 
 
 sub_6404:               ; CODE XREF: sub_6384+1Cp
-		bset    #2,flags_3E(a6)
-		rts
+	bset #2, flags_3E(a6)
+	rts
 ; End of function sub_6404
 
 
@@ -676,8 +685,8 @@ sub_6404:               ; CODE XREF: sub_6384+1Cp
 
 
 sub_640C:               ; CODE XREF: sub_67CE+74p
-		btst    #2,flags_3E(a6)
-		rts
+	btst #2, flags_3E(a6)
+	rts
 ; End of function sub_640C
 
 
@@ -2813,23 +2822,23 @@ loc_730A:               ; CODE XREF: sub_7302+20j sub_7302+48j
 		bsr.w   sub_6166
 		bsr.w   sub_61E0
 		bne.s   loc_7350
-		
+
 		bsr.w   sub_6150
 		bne.s   loc_7350
-		
+
 		bsr.w   sub_79AA
 
 loc_731E:               ; CODE XREF: sub_7302+4Cj
 		bsr.w   sub_77D8
 		beq.s   loc_730A
-		
+
 		bclr    #0,$BFC(a6)
 		beq.s   loc_733C
-		
+
 		moveq   #0,d7
 		moveq   #0,d5
 		bsr.w   sub_744A
-		
+
 		moveq   #0,d7
 		moveq   #8,d5
 		bsr.w   sub_7480
@@ -2839,9 +2848,9 @@ loc_733C:               ; CODE XREF: sub_7302+28j
 		lea $BC0(a6),a0
 		move.w  #SCDREAD,d0
 		jsr (a3)
-		
+
 		bcs.s   loc_730A
-		
+
 		bsr.s   sub_7360
 		bra.s   loc_731E
 ; ---------------------------------------------------------------------------
@@ -2849,7 +2858,7 @@ loc_733C:               ; CODE XREF: sub_7302+28j
 loc_7350:               ; CODE XREF: sub_7302+10j sub_7302+16j
 		move.w  #SCDSTOP,d0
 		jsr _CDBIOS
-		
+
 		bsr.w   sub_7ACA
 		bra.w   loc_7138
 ; End of function sub_7302
