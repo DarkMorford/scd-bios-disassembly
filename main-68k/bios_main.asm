@@ -1830,7 +1830,7 @@ loadZ80Prg0:                ; CODE XREF: sub_68C4+A6p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1078:               ; CODE XREF: sub_68C4+A2p
+copyToZ80Ram:               ; CODE XREF: sub_68C4+A2p
 	m_saveStatusRegister
 	m_disableInterrupts
 	m_z80RequestBus
@@ -1842,7 +1842,7 @@ sub_1078:               ; CODE XREF: sub_68C4+A2p
 	m_z80ReleaseBus
 	m_restoreStatusRegister
 	rts
-; End of function sub_1078
+; End of function copyToZ80Ram
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -13058,14 +13058,14 @@ sub_68C4:               ; CODE XREF: ROM:00000364j
 	lea palette_6A38(pc), a1
 	jsr loadPalettesNoUpdate
 
-	move.l #$40200000, (VDP_CONTROL).l  ; VRAM $0020
+	m_loadVramWriteAddress $20
 	jsr NemDec
 
 	movea.l (sp)+, a1
 
 	jsr loadPalettesToBuffer(pc)
 
-	move.l #$60000000, (VDP_CONTROL).l  ; VRAM $2000
+	m_loadVramWriteAddress $2000
 	jsr NemDec
 
 	adda.w #$1D0, a1
@@ -13080,19 +13080,19 @@ sub_68C4:               ; CODE XREF: ROM:00000364j
 	jsr EniDec
 
 	subq.w #1, a1
-	move.l #$4B0C0003, d0   ; VRAM $CB0C
+	m_loadVramWriteAddress $CB0C, d0
 	jsr writeTextToScreen(pc)
 
 	lea (Z80_RAM_Base2).l, a0
-	move.w #$DF, d0
-	jsr sub_1078(pc)
+	move.w #223, d0
+	jsr copyToZ80Ram(pc)
 
 	jsr loadZ80Prg0(pc)
 
 	lea (decompScratch).w, a1
-	move.l #$451A0003, d0   ; VRAM $C51A
-	moveq  #$11,       d1
-	moveq  #5,         d2
+	m_loadVramWriteAddress $C51A, d0
+	moveq  #$11, d1
+	moveq  #5,   d2
 	jsr writeTilemapToVram(pc)
 
 	bsr.w sub_6A20
