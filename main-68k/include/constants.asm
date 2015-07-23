@@ -21,3 +21,6 @@ STATE_3040   equ 8
 STATE_LOAD   equ $C
 STATE_7374   equ $10
 STATE_LAUNCH equ $14
+
+;   Common instructions
+INST_JMP    equ $4EF9

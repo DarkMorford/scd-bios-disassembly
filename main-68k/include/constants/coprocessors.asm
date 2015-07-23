@@ -53,8 +53,9 @@ byte_A01C0A     equ $A01C0A
 unk_A00150      equ $A00150
 
 ;   Cartridge memory space ($400000-$800000)
-cartBoot    equ $400200
 byte_400001 equ $400001
+byte_400020 equ $400020
+cartBoot    equ $400200
 unk_4C0078  equ $4C0078
 unk_600000  equ $600000
 unk_7FFFFF  equ $7FFFFF

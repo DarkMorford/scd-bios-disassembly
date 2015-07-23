@@ -24,6 +24,10 @@ m_z80ReleaseBus:    macro
 	endm
 
 ;   Interrupt masking
+m_maskInterrupts:   macro level
+	move #($2000 | (level << 8)), sr
+	endm
+
 m_disableInterrupts:    macro
 	ori	#$700, sr
 	endm
