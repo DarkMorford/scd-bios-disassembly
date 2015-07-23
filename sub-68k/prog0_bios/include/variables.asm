@@ -40,8 +40,8 @@ JumpTable equ $5EE0
 cdbResumeAddress equ $5AD4
 vBlankFlag equ $5EA4
 
-cdcBitfield0 equ $5A06
-cdcBitfield1 equ $5A07
+cdcFlags0 equ $5A06
+cdcFlags1 equ $5A07
 cdcFrameHeader equ $5A3A
 cdcRegisterCache equ $5A08
 cdcStat0 equ $5A40

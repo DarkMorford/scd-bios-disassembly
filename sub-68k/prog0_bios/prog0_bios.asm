@@ -186,29 +186,34 @@ loc_292:
 	; Mute CD audio
 	move.w #0, (GA_CDD_FADER).w
 
-	; Test header and verify checksum
+	; Test header
 	lea ProgramHeader(pc), a1
 	cmpi.l  #'SEGA', (a1)
 	bne.w   _reset
-	move.l  $A4(a1), d1
-	addq.l  #1, d1
-	lea _start(pc), a0
-	sub.l   a0, d1
-	lsr.l   #1, d1
-	move.w  d1, d2
-	subq.w  #1, d2
-	swap    d1
-	moveq   #0, d0
+
+	; Verify BIOS checksum
+	move.l GENHEADER.romEnd(a1), d1
+	addq.l #1, d1
+	lea    _start(pc), a0
+
+	sub.l  a0, d1
+	lsr.l  #1, d1
+	move.w d1, d2
+	subq.w #1, d2
+	swap   d1
+
+	moveq  #0, d0
 
 	@loc_2E0:
 		add.w   (a0)+, d0
 		dbf d2, @loc_2E0
 		dbf d1, @loc_2E0
 
-	move.w  $8E(a1), d1
-	beq.s   loc_2F6
-	cmp.w   d1, d0
-	bne.w   _reset
+	move.w GENHEADER.checksum(a1), d1
+	beq.s  loc_2F6
+
+	cmp.w d1, d0
+	bne.w _reset
 
 loc_2F6:
 	; Clear RAM from $5800 - $5FFF (2 KiB)
@@ -226,7 +231,7 @@ loc_2F6:
 		dbf    d1, @loc_30C
 
 	; Set up the jump tables with dummy values
-	move.w #$4EF9, d0
+	move.w #INST_JMP, d0
 	lea _nullrts(pc), a0
 	lea (JumpTable).w, a1
 
@@ -247,7 +252,7 @@ loc_2F6:
 
 	; Interrupt/trap vectors
 	lea _nullrte(pc), a0
-	moveq #22,d1
+	moveq #22, d1
 	@loc_342:
 		move.w d0, (a1)+
 		move.l a0, (a1)+
@@ -288,7 +293,7 @@ loc_388:
 	lea (_SETJMPTBL).w, a0
 	lea word_398(pc), a1
 	lea loc_39E(pc), a6
-	bra.w   sub_556
+	bra.w sub_556
 ; ---------------------------------------------------------------------------
 word_398:
 	dc.w $238   ; $5D0
@@ -301,7 +306,7 @@ loc_39E:
 	lea (_BURAM).w, a0
 	lea (word_4436).l, a1
 	lea loc_3B0(pc), a6
-	bra.w   sub_56A
+	bra.w sub_56A
 ; ---------------------------------------------------------------------------
 
 loc_3B0:
@@ -309,7 +314,7 @@ loc_3B0:
 	lea (_CDBOOT).w, a0
 	lea (word_3900).l, a1
 	lea loc_3C2(pc), a6
-	bra.w   sub_56A
+	bra.w sub_56A
 ; ---------------------------------------------------------------------------
 
 loc_3C2:
@@ -317,7 +322,7 @@ loc_3C2:
 	lea (_CDBIOS).w, a0
 	lea (word_2924).l, a1
 	lea loc_3D4(pc), a6
-	bra.w   sub_56A
+	bra.w sub_56A
 ; ---------------------------------------------------------------------------
 
 	; Wait for peripheral reset to complete
@@ -527,27 +532,28 @@ loc_51E:
 	bsr.w   _CDBOOT
 
 loc_552:
-	bcs.s   loc_52E
-	bra.s   loc_51A
+	bcs.s loc_52E
+	bra.s loc_51A
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_556:
-	move.l  a1, d1
-	bra.s   @loc_564
+	move.l a1, d1
+	bra.s  @loc_564
 ; ---------------------------------------------------------------------------
 
 @loc_55A:
-	ext.l   d0
-	add.l   d1, d0
-	move.w  #$4EF9, (a0)+
-	move.l  d0, (a0)+
+	ext.l  d0
+	add.l  d1, d0
+	move.w #INST_JMP, (a0)+
+	move.l d0, (a0)+
 
 @loc_564:
-	move.w  (a1)+, d0
-	bne.s   @loc_55A
+	move.w (a1)+, d0
+	bne.s  @loc_55A
+
 	jmp (a6)
 ; End of function sub_556
 
@@ -560,8 +566,8 @@ sub_56A:
 	ext.l  d0
 	add.l  a1, d0
 
-	move.w #$4EF9, (a0)+
-	move.l d0,     (a0)+
+	move.w #INST_JMP, (a0)+
+	move.l d0, (a0)+
 
 	jmp (a6)
 ; End of function sub_56A
@@ -575,46 +581,45 @@ sub_578:                ; CODE XREF: _setJmpTbl+Ap
 	bra.s   @loc_59E
 ; ---------------------------------------------------------------------------
 
-@loc_57E:                ; CODE XREF: sub_578+32j
+@loc_57E:
 	movea.l a1, a2
-	adda.l  $18(a2), a1
+	adda.l  USERHEADER.startAddress(a2), a1
 
-	tst.b   $B(a2)
-	beq.s   @loc_58E
+	tst.b USERHEADER.bootFlag(a2)
+	beq.s @loc_58E
 
-	jsr (a1)
+	jsr   (a1)
+	bcc.s @loc_594
 
-	bcc.s   @loc_594
-
-@loc_58E:                ; CODE XREF: sub_578+10j
+@loc_58E:
 	lea @loc_594(pc), a6
-	bra.s   sub_556
+	bra.s sub_556
 ; ---------------------------------------------------------------------------
 
-@loc_594:                ; CODE XREF: sub_578+14j
+@loc_594:
 	movea.l a2, a1
 
-	move.l  $10(a1), d0
-	beq.s   @loc_5B0
+	move.l USERHEADER.nextModule(a1), d0
+	beq.s  @loc_5B0
 
-	adda.l  d0, a1
+	adda.l d0, a1
 
-@loc_59E:                ; CODE XREF: sub_578+4j
+@loc_59E:
 	lea word_5B6(pc), a2
-	bra.s   @loc_5AC
+	bra.s @loc_5AC
 ; ---------------------------------------------------------------------------
 
-@loc_5A4:                ; CODE XREF: sub_578+36j
-	move.l  (a2)+, d0
+@loc_5A4:
+	move.l (a2)+, d0
 
-	cmp.l   (a1, d1.w), d0
-	beq.s   @loc_57E
+	cmp.l (a1, d1.w), d0
+	beq.s @loc_57E
 
-@loc_5AC:                ; CODE XREF: sub_578+2Aj
-	move.w  (a2)+, d1
-	bpl.s   @loc_5A4
+@loc_5AC:
+	move.w (a2)+, d1
+	bpl.s  @loc_5A4
 
-@loc_5B0:                ; CODE XREF: sub_578+22j
+@loc_5B0:
 	movem.l (sp)+, a2/a6
 	rts
 ; End of function sub_578
@@ -641,7 +646,9 @@ word_5B6:
 _setJmpTbl:
 	movem.l a5, -(sp)
 	movea.l #0, a5
+
 	bsr.s   sub_578
+
 	movem.l (sp)+, a5
 	rts
 ; End of function _setJmpTbl
@@ -667,7 +674,7 @@ mdInterrupt:
 	movea.l #0, a5
 
 	; CD-SYSTEM processing
-	bsr.w sub_17EE
+	bsr.w checkCddWatchdog
 
 	; Call user V-blank routine
 	jsr _USERCALL2
@@ -717,129 +724,28 @@ scdInterrupt:
 ; =============== S U B M O D U L E =========================================
 	include "submodules\led.asm"
 
-; =============== S U B R O U T I N E =======================================
-
-
-sub_73C:                ; CODE XREF: initCdc+42p sub_1F1E+6p
-	clr.l   4(a4)
-	move.l  d0, 0(a4)
-	move.l  d1, 8(a4)
-	move.l  a0, $C(a4)
-	rts
-; End of function sub_73C
-
-
-; =============== S U B R O U T I N E =======================================
-
-
-sub_74E:                ; CODE XREF: sub_1E6Ap sub_203E+82p ...
-	movem.l d2-d4, -(sp)
-
-	move.w 4(a4), d2
-	move.w 6(a4), d3
-	move.w $A(a4), d4
-
-	lea    $10(a4, d3.w), a1
-
-	add.w  2(a4), d3
-
-	cmp.w  d4, d3
-	bcs.s  @loc_76C
-
-	sub.w  d4, d3
-
-@loc_76C:
-	move.w d3, 6(a4)
-	moveq  #0, d1
-	move.w d2, d0
-
-	sub.w  d3, d0
-	bcc.s  @loc_77A
-
-	add.w  d4, d0
-
-@loc_77A:
-	cmp.w 8(a4), d0
-	bcc.s @loc_790
-
-	moveq #1, d1
-	add.w 2(a4), d2
-
-	cmp.w d4, d2
-	bcs.s @loc_78C
-
-	sub.w d4, d2
-
-@loc_78C:
-	move.w d2, 4(a4)
-
-@loc_790:
-	movem.l (sp)+, d2-d4
-	rts
-; End of function sub_74E
-
-
-; =============== S U B R O U T I N E =======================================
-
-
-sub_796:                ; CODE XREF: updateSubcode+7Ap
-		move.w  6(a4),d0
-		sub.w   2(a4),d0
-		bcc.s   loc_7A4
-		add.w   $A(a4),d0
-
-loc_7A4:                ; CODE XREF: sub_796+8j
-		move.w  d0,6(a4)
-		rts
-; End of function sub_796
-
-
-; =============== S U B R O U T I N E =======================================
-
-
-sub_7AA:                ; CODE XREF: _cdcread+24p
-	movem.l d2/d4, -(sp)
-
-	move.w  4(a4), d2
-
-	move.w  $A(a4), d4
-
-	lea     $10(a4, d2.w), a0
-
-	add.w   0(a4), d2
-	cmp.w   d4, d2
-	bcs.s   @loc_7C4
-
-	sub.w   d4, d2
-
-@loc_7C4:
-	move.w  d2, 4(a4)
-	cmp.w   6(a4), d2
-
-	movem.l (sp)+, d2/d4
-	rts
-; End of function sub_7AA
-
+; =============== S U B M O D U L E =========================================
+	include "submodules\ringBuffer.asm"
 
 ; =============== S U B R O U T I N E =======================================
 
 
 convertFromBcd:
-	move.w  d1, -(sp)
+	move.w d1, -(sp)
 
-	andi.w  #$FF, d0
-	ror.w   #4, d0
-	lsl.b   #1, d0
-	move.b  d0, d1
+	andi.w #$FF, d0
+	ror.w  #4, d0
+	lsl.b  #1, d0
+	move.b d0, d1
 
-	lsl.b   #2, d0
-	add.b   d0, d1
+	lsl.b  #2, d0
+	add.b  d0, d1
 
-	rol.w   #4, d0
-	andi.w  #$F, d0
-	add.b   d1, d0
+	rol.w  #4, d0
+	andi.w #$F, d0
+	add.b  d1, d0
 
-	move.w  (sp)+, d1
+	move.w (sp)+, d1
 	rts
 ; End of function convertFromBcd
 
@@ -848,26 +754,26 @@ convertFromBcd:
 
 
 timecodeToFrames:
-	move.l  d1, -(sp)
-	move.l  d0, -(sp)
+	move.l d1, -(sp)
+	move.l d0, -(sp)
 
-	move.b  TIMECODE.frames(sp), d0
-	bsr.s   convertFromBcd
-	moveq   #0, d1
-	move.w  d0, d1
+	move.b TIMECODE.frames(sp), d0
+	bsr.s  convertFromBcd
+	moveq  #0, d1
+	move.w d0, d1
 
-	move.b  TIMECODE.seconds(sp), d0
-	bsr.s   convertFromBcd
-	mulu.w  #75, d0
-	add.l   d0, d1
+	move.b TIMECODE.seconds(sp), d0
+	bsr.s  convertFromBcd
+	mulu.w #75, d0
+	add.l  d0, d1
 
-	move.b  TIMECODE.minutes(sp), d0
-	bsr.s   convertFromBcd
-	mulu.w  #4500, d0
-	add.l   d1, d0
+	move.b TIMECODE.minutes(sp), d0
+	bsr.s  convertFromBcd
+	mulu.w #4500, d0
+	add.l  d1, d0
 
-	move.l  (sp)+,d1
-	move.l  (sp)+,d1
+	move.l (sp)+, d1
+	move.l (sp)+, d1
 	rts
 ; End of function timecodeToFrames
 
@@ -876,13 +782,13 @@ timecodeToFrames:
 
 
 convertToBcd:
-	andi.l  #$FF, d0
-	divu.w  #10, d0
-	swap    d0
+	andi.l #$FF, d0
+	divu.w #10, d0
+	swap   d0
 
-	ror.w   #4, d0
-	lsl.l   #4, d0
-	swap    d0
+	ror.w  #4, d0
+	lsl.l  #4, d0
+	swap   d0
 
 	rts
 ; End of function convertToBcd
@@ -892,29 +798,29 @@ convertToBcd:
 
 
 framesToTimecode:
-	move.l  d1, -(sp)
-	moveq   #0 ,d1
-	move.l  d1, -(sp)
+	move.l d1, -(sp)
+	moveq  #0 ,d1
+	move.l d1, -(sp)
 
-	divu.w  #75, d0
-	move.w  d0, d1
-	swap    d0
-	bsr.s   convertToBcd
-	move.b  d0, TIMECODE.frames(sp)
+	divu.w #75, d0
+	move.w d0, d1
+	swap   d0
+	bsr.s  convertToBcd
+	move.b d0, TIMECODE.frames(sp)
 
-	move.l  d1, d0
-	divu.w  #60, d0
-	move.w  d0, d1
-	swap    d0
-	bsr.s   convertToBcd
-	move.b  d0, TIMECODE.seconds(sp)
+	move.l d1, d0
+	divu.w #60, d0
+	move.w d0, d1
+	swap   d0
+	bsr.s  convertToBcd
+	move.b d0, TIMECODE.seconds(sp)
 
-	move.l  d1, d0
-	bsr.s   convertToBcd
-	move.b  d0, TIMECODE.minutes(sp)
+	move.l d1, d0
+	bsr.s  convertToBcd
+	move.b d0, TIMECODE.minutes(sp)
 
-	move.l  (sp)+, d0
-	move.l  (sp)+, d1
+	move.l (sp)+, d0
+	move.l (sp)+, d1
 	rts
 ; End of function framesToTimecode
 
@@ -923,15 +829,21 @@ framesToTimecode:
 
 
 sub_860:                ; CODE XREF: sub_210E+4p
-		movem.l d2/a1/a6,-(sp)
-		lea word_8EC(pc),a0
-		clr.w   d1
-		bsr.s   sub_878
-		bsr.s   sub_8A8
-		not.w   d1
-		sub.w   d1,(a1)+
-		movem.l (sp)+,d2/a1/a6
-		rts
+	movem.l d2/a1/a6, -(sp)
+
+	lea word_8EC(pc), a0
+
+	clr.w d1
+
+	bsr.s sub_878
+
+	bsr.s sub_8A8
+
+	not.w d1
+	sub.w d1, (a1)+
+
+	movem.l (sp)+, d2/a1/a6
+	rts
 ; End of function sub_860
 
 
@@ -939,9 +851,10 @@ sub_860:                ; CODE XREF: sub_210E+4p
 
 
 sub_878:                ; CODE XREF: sub_860+Ap sub_8CE+Cp ...
-	move.b  (a1)+,d0
-	lea sub_880(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea sub_880(pc), a6
+
+	bra.s loc_8BA
 ; End of function sub_878
 
 
@@ -949,9 +862,10 @@ sub_878:                ; CODE XREF: sub_860+Ap sub_8CE+Cp ...
 
 
 sub_880:                ; DATA XREF: sub_878+2o
-	move.b  (a1)+,d0
-	lea sub_888(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea sub_888(pc), a6
+
+	bra.s loc_8BA
 ; End of function sub_880
 
 
@@ -959,9 +873,10 @@ sub_880:                ; DATA XREF: sub_878+2o
 
 
 sub_888:                ; DATA XREF: sub_880+2o
-	move.b  (a1)+,d0
-	lea sub_890(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea sub_890(pc), a6
+
+	bra.s loc_8BA
 ; End of function sub_888
 
 
@@ -969,9 +884,10 @@ sub_888:                ; DATA XREF: sub_880+2o
 
 
 sub_890:                ; DATA XREF: sub_888+2o
-	move.b  (a1)+,d0
-	lea sub_898(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea sub_898(pc), a6
+
+	bra.s loc_8BA
 ; End of function sub_890
 
 
@@ -979,9 +895,10 @@ sub_890:                ; DATA XREF: sub_888+2o
 
 
 sub_898:                ; DATA XREF: sub_890+2o
-	move.b  (a1)+,d0
-	lea sub_8A0(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea sub_8A0(pc), a6
+
+	bra.s loc_8BA
 ; End of function sub_898
 
 
@@ -989,9 +906,10 @@ sub_898:                ; DATA XREF: sub_890+2o
 
 
 sub_8A0:                ; DATA XREF: sub_898+2o
-	move.b  (a1)+,d0
-	lea sub_8A8(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea sub_8A8(pc), a6
+
+	bra.s loc_8BA
 ; End of function sub_8A0
 
 
@@ -1000,15 +918,17 @@ sub_8A0:                ; DATA XREF: sub_898+2o
 
 sub_8A8:                ; CODE XREF: sub_860+Cp
 					; DATA XREF: sub_8A0+2o
-	move.b  (a1)+,d0
-	lea loc_8B0(pc),a6
-	bra.s   loc_8BA
+	move.b (a1)+, d0
+	lea loc_8B0(pc), a6
+
+	bra.s loc_8BA
 ; ---------------------------------------------------------------------------
 
 loc_8B0:                ; DATA XREF: sub_8A8+2o
-	move.b  (a1)+,d0
+	move.b (a1)+,d0
 	lea locret_8B8(pc),a6
-	bra.s   loc_8BA
+	bra.s loc_8BA
+
 ; ---------------------------------------------------------------------------
 
 locret_8B8:             ; DATA XREF: sub_8A8+Ao
@@ -1016,14 +936,19 @@ locret_8B8:             ; DATA XREF: sub_8A8+Ao
 ; ---------------------------------------------------------------------------
 
 loc_8BA:                ; CODE XREF: sub_878+6j sub_880+6j ...
-	rol.w   #8, d1
-	clr.w   d2
-	move.b  d0, d2
-	eor.b   d1, d2
-	clr.b   d1
-	add.w   d2, d2
-	move.w  (a0, d2.w), d2
-	eor.w   d2, d1
+	rol.w  #8, d1
+
+	clr.w  d2
+	move.b d0, d2
+	eor.b  d1, d2
+
+	clr.b  d1
+
+	add.w  d2, d2
+	move.w (a0, d2.w), d2
+
+	eor.w  d2, d1
+
 	jmp (a6)
 ; End of function sub_8A8
 
@@ -1036,15 +961,15 @@ sub_8CE:                ; CODE XREF: sub_4E74+C6p sub_4FE2+9Cp
 	movea.l a0, a1
 
 	lea word_8EC(pc), a0
-	clr.w   d1
+	clr.w d1
 
-	bsr.s   sub_878
-	bsr.s   sub_878
-	bsr.s   sub_878
-	bsr.s   sub_878
+	bsr.s sub_878
+	bsr.s sub_878
+	bsr.s sub_878
+	bsr.s sub_878
 
-	move.w  d1, d2
-	not.w   d2
+	move.w d1, d2
+	not.w  d2
 
 	movem.l (sp)+, d7/a2/a6
 	rts
@@ -1097,11 +1022,11 @@ sub_B0C:                ; CODE XREF: initCdd+4p sub_2BBC+1Ep ...
 	rts
 ; ---------------------------------------------------------------------------
 
-@loc_B20:                ; CODE XREF: sub_B0C+4j
+@loc_B20:
 	bclr #0, cddFlags2(a5)
 	bset #3, cddFlags2(a5)
 
-@loc_B2C:                ; CODE XREF: sub_B0C+Cj
+@loc_B2C:
 	movea.l d1, a0
 
 	move.b  cddFlags2(a5), d1
@@ -1112,8 +1037,8 @@ sub_B0C:                ; CODE XREF: initCdd+4p sub_2BBC+1Ep ...
 	or.b    d1, byte_5812(a5)
 	clr.b   cddFlags7(a5)
 
-@loc_B44:                ; CODE XREF: sub_B0C+2Aj
-	lea    cddCommandWorkArea(a5), a1
+@loc_B44:
+	lea cddCommandWorkArea(a5), a1
 
 	andi.w #$FF, d0
 	lsl.w  #4, d0
@@ -1125,15 +1050,15 @@ sub_B0C:                ; CODE XREF: initCdd+4p sub_2BBC+1Ep ...
 
 	moveq  #0, d0
 
-@loc_B58:                ; CODE XREF: sub_B0C+48j
+@loc_B58:
 	lsr.w #6, d0
-	jsr   @loc_B60(pc, d0.w)
+	jsr   loc_B60(pc, d0.w)
 	rts
 ; End of function sub_B0C
 
 ; ---------------------------------------------------------------------------
 
-@loc_B60:
+loc_B60:
 	bra.w   sub_BC8
 ; ---------------------------------------------------------------------------
 	bra.w   sub_BC8
@@ -1144,7 +1069,7 @@ sub_B0C:                ; CODE XREF: initCdd+4p sub_2BBC+1Ep ...
 ; ---------------------------------------------------------------------------
 	bra.w   sub_C28
 ; ---------------------------------------------------------------------------
-	bra.w   sub_BA0
+	bra.w   msfToCmdBytes
 ; ---------------------------------------------------------------------------
 	bra.w   sub_BC8
 ; ---------------------------------------------------------------------------
@@ -1162,29 +1087,32 @@ sub_B0C:                ; CODE XREF: initCdd+4p sub_2BBC+1Ep ...
 ; ---------------------------------------------------------------------------
 	bra.w   sub_BC8
 ; ---------------------------------------------------------------------------
-	bra.w   sub_BA0
+	bra.w   msfToCmdBytes
 ; ---------------------------------------------------------------------------
 	bra.w   sub_BC8
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_BA0:                ; CODE XREF: BIOS:00000B74j
-					; BIOS:00000B98j
-	move.l  a0,d0
-	swap    d0
-	andi.w  #$FF,d0
-	bsr.w   splitBcdByte
-	move.w  a0,d0
-	lsr.w   #8,d0
-	bsr.w   splitBcdByte
-	move.w  a0,d0
-	andi.w  #$FF,d0
-	bsr.w   splitBcdByte
-	bset    #0,cddFlags2(a5)
+msfToCmdBytes:                ; CODE XREF: BIOS:00000B74j
+	move.l a0, d0
+	swap   d0
+	andi.w #$FF, d0
+	bsr.w  splitBcdByte
+
+	move.w a0, d0
+	lsr.w  #8, d0
+	bsr.w  splitBcdByte
+
+	move.w a0, d0
+	andi.w #$FF, d0
+	bsr.w  splitBcdByte
+
+	bset #0, cddFlags2(a5)
+
 	m_clearErrorFlag
 	rts
-; End of function sub_BA0
+; End of function msfToCmdBytes
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1195,7 +1123,7 @@ sub_BC8:                ; CODE XREF: BIOS:loc_B60j
 	clr.l (a1)+
 	clr.w (a1)
 
-	bset  #0, cddFlags2(a5)
+	bset #0, cddFlags2(a5)
 
 	m_clearErrorFlag
 	rts
@@ -1306,7 +1234,7 @@ timecodeToCddCommand:                ; CODE XREF: sub_C28p sub_12CE+4D8p
 ; =============== S U B R O U T I N E =======================================
 
 
-splitBcdByte:                ; CODE XREF: sub_BA0+8p sub_BA0+10p ...
+splitBcdByte:                ; CODE XREF: msfToCmdBytes+8p msfToCmdBytes+10p ...
 	lsl.w  #4, d0
 	lsr.b  #4, d0
 	move.w d0, (a1)+
@@ -2396,12 +2324,14 @@ sub_12B6:               ; CODE XREF: sub_12CE+96p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_17EE:               ; CODE XREF: BIOS:000005FCp
+checkCddWatchdog:               ; CODE XREF: BIOS:000005FCp
 	subq.w #1, cddWatchdogCounter(a5)
 	bcc.s @locret_1806
 
 	; Watchdog counter hit -1, set the error flag
 	bset #2, cddFlags0(a5)
+
+	; Reset counter
 	move.w #$1E, cddWatchdogCounter(a5)
 
 	; HOCK on, abort CDD transfers
@@ -2409,37 +2339,39 @@ sub_17EE:               ; CODE XREF: BIOS:000005FCp
 
 @locret_1806:
 	rts
-; End of function sub_17EE
+; End of function checkCddWatchdog
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1808:               ; CODE XREF: BIOS:00003720p
+clearCdcRingBuffer:               ; CODE XREF: BIOS:00003720p
 	movem.l a4, -(sp)
 
-	lea cdcBuffer(a5), a4
-	move.w  6(a4), 4(a4)
+	lea cdcRingBuffer(a5), a4
+	move.w RINGBUFFER.writePtr(a4), RINGBUFFER.readPtr(a4)
 
 	movem.l (sp)+, a4
 	rts
-; End of function sub_1808
+; End of function clearCdcRingBuffer
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
 _cdcstat:               ; CODE XREF: executeCdbCommand+36j
-	move.w  cdcBitfield0(a5), d0
+	move.w  cdcFlags0(a5), d0
 	movem.l d0/a4, -(sp)
 
-	lea     cdcBuffer(a5), a4
-	move.w  6(a4), d0
-	cmp.w   4(a4), d0
-	beq.s   @loc_1836
+	lea cdcRingBuffer(a5), a4
+
+	; Return cs if buffer empty
+	move.w RINGBUFFER.writePtr(a4), d0
+	cmp.w  RINGBUFFER.readPtr(a4), d0
+	beq.s  @loc_1836
 
 	m_clearErrorFlag
-	bra.s   @loc_183A
+	bra.s @loc_183A
 ; ---------------------------------------------------------------------------
 
 @loc_1836:
@@ -2470,77 +2402,78 @@ _cdcread:               ; CODE XREF: executeCdbCommand+3Aj
 	m_saveStatusRegister
 	move #$2500, sr
 
-	; Return if words at 4/6 are equal
-	lea    cdcBuffer(a5), a4
-	move.w 6(a4), d0
-	cmp.w  4(a4), d0
+	; Return error if buffer is empty
+	lea    cdcRingBuffer(a5), a4
+	move.w RINGBUFFER.writePtr(a4), d0
+	cmp.w  RINGBUFFER.readPtr(a4), d0
 	beq.s  @loc_18CE
 
-	btst   #5, cdcBitfield0(a5)
+	btst   #5, cdcFlags0(a5)
 	bne.s  @loc_1870
 
-	bsr.w  sub_7AA
+	bsr.w  readRingBuffer
 	bra.s  @loc_1876
 ; ---------------------------------------------------------------------------
 
 	@loc_1870:
-		bsr.w sub_7AA
+		bsr.w readRingBuffer
 		bne.s @loc_1870
 
 @loc_1876:
-	move.w  4(a0), d1
-	ror.w   #8, d1
-	move.w  #$92F, d0
+	move.w 4(a0), d1
+	ror.w  #8, d1
+
+	move.w #2351, d0
 
 	; Check CD data mode
-	btst    #3, cdcBitfield0(a5)
-	bne.s   @loc_18A4
+	btst  #3, cdcFlags0(a5)
+	bne.s @loc_18A4
 
 ; CD Mode 1
 @loc_1888:
-	move.w  #$803, d0
+	move.w #2051, d0
 
 	; Check CDC device destination
-	btst    #2, (GA_CDC_TRANSFER).w
-	beq.s   @loc_1898
+	btst  #2, (GA_CDC_TRANSFER).w
+	beq.s @loc_1898
 
 	; Only if a DMA mode is selected
-	subq.w  #4, d0
-	addq.w  #4, d1
+	subq.w #4, d0
+	addq.w #4, d1
 
 @loc_1898:
 	; Check for error detection/correction data
-	btst    #2, cdcBitfield0(a5)
-	beq.s   @loc_18A4
+	btst  #2, cdcFlags0(a5)
+	beq.s @loc_18A4
 
 	; Add 288 bytes for EDC data
-	addi.w  #288, d0
+	addi.w #288, d0
 
 ; CD Mode 2
 @loc_18A4:
 	; Send transfer information to the CDC
 	lea (GA_CDC_REGISTER).w, a3
-	move.b  #CDC_WRITE_DBCL, (GA_CDC_ADDRESS).w
+	move.b #CDC_WRITE_DBCL, (GA_CDC_ADDRESS).w
 
 	; Number of bytes to transfer
-	move.b  d0, (a3) ; DBCL
-	lsr.w   #8, d0
-	move.b  d0, (a3) ; DBCH
+	move.b d0, (a3) ; DBCL
+	lsr.w  #8, d0
+	move.b d0, (a3) ; DBCH
 
 	; Transfer start address
-	move.b  d1, (a3) ; DACL
-	lsr.w   #8, d1
-	move.b  d1, (a3) ; DACH
+	move.b d1, (a3) ; DACL
+	lsr.w  #8, d1
+	move.b d1, (a3) ; DACH
 
 	; Begin data transfer
-	move.b  #0, (a3) ; DTTRG
+	move.b #0, (a3) ; DTTRG
 
 	; Set transfer flag
-	bset    #1, cdcBitfield0(a5)
+	bset #1, cdcFlags0(a5)
 
-	andi.w  #$FF00, (sp)
-	move.l  (a0), d0
-	move.w  6(a0), d1
+	andi.w #$FF00, (sp)
+	move.l (a0), d0
+	move.w 6(a0), d1
 
 @loc_18CE:
 	m_restoreStatusRegister
@@ -2593,7 +2526,7 @@ _cdctrn:                ; CODE XREF: executeCdbCommand+3Ej
 	beq.s  @loc_197A
 
 	; Check CD data mode
-	btst   #3, cdcBitfield0(a5)
+	btst   #3, cdcFlags0(a5)
 	bne.s  @loc_193E
 
 ; Read Mode 1 frame
@@ -2608,7 +2541,7 @@ _cdctrn:                ; CODE XREF: executeCdbCommand+3Ej
 	bsr.s   sub_18D6
 
 	; Check for error detection data
-	btst    #2, cdcBitfield0(a5)
+	btst    #2, cdcFlags0(a5)
 	beq.s   @loc_1938
 
 	; Read 288 error correction/detection bytes
@@ -2696,7 +2629,7 @@ _cdcack:                ; CODE XREF: executeCdbCommand+42j
 	move.b #CDC_WRITE_DTACK, (GA_CDC_ADDRESS).w
 	move.b #0, (GA_CDC_REGISTER).w
 
-	bclr #1, cdcBitfield0(a5)
+	bclr #1, cdcFlags0(a5)
 
 	m_restoreStatusRegister
 	rts
@@ -2708,10 +2641,10 @@ _cdcack:                ; CODE XREF: executeCdbCommand+42j
 
 sub_19C4:               ; CODE XREF: BIOS:loc_3832p
 	; Return if bit 7 was already clear
-	bclr    #7, cdcBitfield0(a5)
+	bclr    #7, cdcFlags0(a5)
 	beq.s   @locret_19D2
 
-	bset    #6, cdcBitfield0(a5)
+	bset    #6, cdcFlags0(a5)
 
 @locret_19D2:
 	rts
@@ -2723,10 +2656,10 @@ sub_19C4:               ; CODE XREF: BIOS:loc_3832p
 
 sub_19D4:               ; CODE XREF: BIOS:loc_3890p
 	; Return if bit 6 was already clear
-	bclr    #6, cdcBitfield0(a5)
+	bclr    #6, cdcFlags0(a5)
 	beq.s   @locret_19E2
 
-	bset    #7, cdcBitfield0(a5)
+	bset    #7, cdcFlags0(a5)
 
 @locret_19E2:
 	rts
@@ -2743,8 +2676,8 @@ _cdcsetmode:                ; CODE XREF: executeCdbCommand+66j
 	andi.w  #$F, d1
 	lsl.w   #2,  d1
 
-	andi.b  #$C3, cdcBitfield0(a5)
-	or.b    d1,   cdcBitfield0(a5)
+	andi.b  #$C3, cdcFlags0(a5)
+	or.b    d1,   cdcFlags0(a5)
 
 	m_restoreStatusRegister
 	rts
@@ -2756,12 +2689,12 @@ _cdcsetmode:                ; CODE XREF: executeCdbCommand+66j
 
 updateCdc:              ; CODE XREF: BIOS:0000063Ep
 	; Return if updater flag is already set
-	bset    #0, cdcBitfield0(a5)
-	bne.s   locret_1A5C
+	bset  #0, cdcFlags0(a5)
+	bne.s locret_1A5C
 
 	; Return if bit 7 is cleared
-	btst    #7, cdcBitfield0(a5)
-	beq.s   loc_1A56
+	btst  #7, cdcFlags0(a5)
+	beq.s loc_1A56
 
 	movem.l d5-d7/a2-a4, -(sp)
 
@@ -2803,7 +2736,7 @@ cdcSuspendExecution:               ; CODE XREF: initCdc:loc_1AA4p
 
 loc_1A56:
 	; Done with update, clear busy flag
-	bclr #0, cdcBitfield0(a5)
+	bclr #0, cdcFlags0(a5)
 
 locret_1A5C:
 	rts
@@ -2820,7 +2753,7 @@ initCdc:                ; CODE XREF: BIOS:00000352p
 	lea (GA_CDC_REGISTER).w, a3
 	bsr.w resetCdc
 
-	lea cdcBitfield0(a5), a0
+	lea cdcFlags0(a5), a0
 	moveq #0, d0
 
 	moveq #6, d1
@@ -2840,8 +2773,8 @@ initCdc:                ; CODE XREF: BIOS:00000352p
 	move.l  #$80030, d1
 	movea.l #'CDCD', a0
 
-	lea cdcBuffer(a5), a4
-	bsr.w sub_73C
+	lea cdcRingBuffer(a5), a4
+	bsr.w initRingBuffer
 
 loc_1AA4:               ; CODE XREF: initCdc+48j
 				; _cdcstart+188j
@@ -2855,11 +2788,11 @@ loc_1AA4:               ; CODE XREF: initCdc+48j
 
 _cdcstop:               ; CODE XREF: executeCdbCommand+32j
 					; BIOS:00002BF6p ...
-	bclr    #7, cdcBitfield0(a5)
+	bclr    #7, cdcFlags0(a5)
 	beq.s   locret_1AE6
 
 abortCdcTransfer:           ; CODE XREF: _cdcstart+1Ap
-	bclr    #1, cdcBitfield0(a5)
+	bclr    #1, cdcFlags0(a5)
 
 	; Disable CDC interrupt
 	bclr    #GA_IEN5, (GA_INT_MASK).w
@@ -2917,19 +2850,21 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 	andi.b  #$F, d1
 	lsl.b   #2, d1
 	ori.b   #$81, d1
-	move.b  d1, cdcBitfield0(a5)
+	move.b  d1, cdcFlags0(a5)
 
-	clr.b   cdcBitfield1(a5)
+	clr.b   cdcFlags1(a5)
 
 	lea     (GA_CDC_ADDRESS).w,  a2
 	lea     (GA_CDC_REGISTER).w, a3
 	bsr.w   resetCdc
 
-	lea cdcBuffer(a5), a4
-	move.w  6(a4), 4(a4)
+	lea cdcRingBuffer(a5), a4
+	move.w RINGBUFFER.writePtr(a4), RINGBUFFER.readPtr(a4)
 
 	; Enable CDC interrupt
 	bset    #GA_IEN5, (GA_INT_MASK).w
+
+	; Prepare CDC for data read
 	bsr.w   sub_1CE6
 
 	move.w  #$1E, d7
@@ -2939,7 +2874,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 @loc_1B54:               ; CODE XREF: _cdcstart+9Cj
 	bsr.w   cdcSuspendExecution
 
-	btst    #3, cdcBitfield0(a5)
+	btst    #3, cdcFlags0(a5)
 	beq.s   @loc_1B6E
 
 	move.b  byte_5A41(a5), d0
@@ -2957,7 +2892,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 	bcc.s   @loc_1B86
 
 @loc_1B7A:               ; CODE XREF: _cdcstart+8Aj
-	btst    #7, cdcBitfield1(a5)
+	btst    #7, cdcFlags1(a5)
 	bne.w   @loc_1C66
 	bra.s   @loc_1B54
 ; ---------------------------------------------------------------------------
@@ -2972,7 +2907,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 	@loc_1B96:
 		bsr.w  cdcSuspendExecution
 
-		btst   #3, cdcBitfield0(a5)
+		btst   #3, cdcFlags0(a5)
 		bne.s  @loc_1BBA
 
 		move.b cdcStat0(a5), d0
@@ -2981,7 +2916,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 
 	beq.s   @loc_1BBA
 
-	bset    #7, cdcBitfield1(a5)
+	bset    #7, cdcFlags1(a5)
 	bra.w   @loc_1C66
 ; ---------------------------------------------------------------------------
 
@@ -2991,11 +2926,11 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 	move.w  #5,   d6
 	move.w  #5,   d5
 
-	move.b  cdcBitfield0(a5), d0
+	move.b  cdcFlags0(a5), d0
 	andi.b  #$C, d0
 	beq.s   @loc_1C26
 
-	btst    #3, cdcBitfield0(a5)
+	btst    #3, cdcFlags0(a5)
 	beq.s   @loc_1C00
 
 @loc_1BD8:               ; CODE XREF: _cdcstart+112j
@@ -3013,7 +2948,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 
 @loc_1BF4:               ; CODE XREF: _cdcstart+FCj
 				; _cdcstart+102j
-	btst    #7, cdcBitfield1(a5)
+	btst    #7, cdcFlags1(a5)
 	beq.s   @loc_1BD8
 	bra.w   @loc_1C66
 ; ---------------------------------------------------------------------------
@@ -3036,7 +2971,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 
 @loc_1C1C:               ; CODE XREF: _cdcstart+120j
 				; _cdcstart+126j ...
-	btst    #7, cdcBitfield1(a5)
+	btst    #7, cdcFlags1(a5)
 	beq.s   @loc_1C00
 	bra.s   @loc_1C66
 ; ---------------------------------------------------------------------------
@@ -3056,7 +2991,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 	bsr.w   sub_1DB0
 	bcs.s   @loc_1C5E
 
-	bclr    #1, cdcBitfield1(a5)
+	bclr    #1, cdcFlags1(a5)
 
 	bsr.w   sub_1DF6
 	bcs.s   @loc_1C56
@@ -3068,19 +3003,19 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 ; ---------------------------------------------------------------------------
 
 @loc_1C56:               ; CODE XREF: _cdcstart+164j
-	btst    #1, cdcBitfield1(a5)
+	btst    #1, cdcFlags1(a5)
 	bne.s   @loc_1C74
 
 @loc_1C5E:               ; CODE XREF: _cdcstart+152j
 				; _cdcstart+158j ...
-	btst    #7, cdcBitfield1(a5)
+	btst    #7, cdcFlags1(a5)
 	beq.s   @loc_1C32
 
 @loc_1C66:               ; CODE XREF: _cdcstart+98j
 				; _cdcstart+CEj ...
 	bsr.w   sub_1CE6
 
-	bset    #0, cdcBitfield1(a5)
+	bset    #0, cdcFlags1(a5)
 	bra.w   loc_1AA4
 ; ---------------------------------------------------------------------------
 
@@ -3103,7 +3038,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 		bsr.w   sub_1DF6
 		bcs.s   @loc_1CB0
 
-		btst    #1, cdcBitfield1(a5)
+		btst    #1, cdcFlags1(a5)
 		dbeq    d6, @loc_1C8C
 
 @loc_1CAA:
@@ -3112,7 +3047,7 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 
 @loc_1CB0:               ; CODE XREF: _cdcstart+1ACj
 				; _cdcstart+1B6j
-	btst    #7, cdcBitfield1(a5)
+	btst    #7, cdcFlags1(a5)
 	beq.w   @loc_1C32
 	bra.s   @loc_1C66
 ; End of function _cdcstart
@@ -3165,7 +3100,7 @@ sub_1CF4:               ; CODE XREF: _cdcstart:loc_1B6Ep
 	subq.w  #1, d5
 	bcc.s   @loc_1D14
 
-	bset    #3, cdcBitfield1(a5)
+	bset    #3, cdcFlags1(a5)
 	bra.s   @loc_1D28
 ; ---------------------------------------------------------------------------
 
@@ -3181,10 +3116,10 @@ sub_1CF4:               ; CODE XREF: _cdcstart:loc_1B6Ep
 	subq.w  #1, d7
 	bcc.s   @loc_1D2E
 
-	bset    #2, cdcBitfield1(a5)
+	bset    #2, cdcFlags1(a5)
 
 @loc_1D28:
-	bset    #7, cdcBitfield1(a5)
+	bset    #7, cdcFlags1(a5)
 
 @loc_1D2E:
 	m_setErrorFlag
@@ -3204,8 +3139,8 @@ sub_1D34:               ; CODE XREF: _cdcstart+F8p
 	subq.w #1, d7
 	bcc.s  @loc_1D4C
 
-	bset #2, cdcBitfield1(a5)
-	bset #7, cdcBitfield1(a5)
+	bset #2, cdcFlags1(a5)
+	bset #7, cdcFlags1(a5)
 
 @loc_1D4C:
 	m_setErrorFlag
@@ -3253,7 +3188,7 @@ sub_1D52:               ; CODE XREF: _cdcstart+8Cp
 	subq.w  #1, d6
 	bcc.s   @returnError
 
-	bset    #5, cdcBitfield1(a5)
+	bset    #5, cdcFlags1(a5)
 	bra.s   @loc_1DA4
 ; ---------------------------------------------------------------------------
 
@@ -3261,10 +3196,10 @@ sub_1D52:               ; CODE XREF: _cdcstart+8Cp
 	subq.w  #1, d6
 	bcc.s   @returnError
 
-	bset    #4, cdcBitfield1(a5)
+	bset    #4, cdcFlags1(a5)
 
 @loc_1DA4:               ; CODE XREF: sub_1D52+46j
-	bset    #7, cdcBitfield1(a5)
+	bset    #7, cdcFlags1(a5)
 
 @returnError:               ; CODE XREF: sub_1D52+30j sub_1D52+3Ej ...
 	m_setErrorFlag
@@ -3298,7 +3233,7 @@ sub_1DB0:               ; CODE XREF: _cdcstart+122p
 	subq.w  #1,d6
 	bcc.s   @returnError
 
-	bset    #5,cdcBitfield1(a5)
+	bset    #5,cdcFlags1(a5)
 	bra.s   @loc_1DEA
 ; ---------------------------------------------------------------------------
 
@@ -3306,10 +3241,10 @@ sub_1DB0:               ; CODE XREF: _cdcstart+122p
 	subq.w  #1,d6
 	bcc.s   @returnError
 
-	bset    #4,cdcBitfield1(a5)
+	bset    #4,cdcFlags1(a5)
 
 @loc_1DEA:
-	bset    #7,cdcBitfield1(a5)
+	bset    #7,cdcFlags1(a5)
 
 @returnError:
 	m_setErrorFlag
@@ -3343,9 +3278,9 @@ sub_1DF6:               ; CODE XREF: _cdcstart+160p
 ; ---------------------------------------------------------------------------
 
 @loc_1E1A:
-	bset    #1, cdcBitfield1(a5)
+	bset    #1, cdcFlags1(a5)
 
-	btst    #4, cdcBitfield0(a5)
+	btst    #4, cdcFlags0(a5)
 	bne.s   @loc_1E16
 
 	subq.w  #1, d7
@@ -3357,10 +3292,10 @@ sub_1DF6:               ; CODE XREF: _cdcstart+160p
 	subq.w  #1, d7
 	bcc.s   @loc_1E3E
 
-	bset    #2, cdcBitfield1(a5)
+	bset    #2, cdcFlags1(a5)
 
 @loc_1E38:
-	bset    #7, cdcBitfield1(a5)
+	bset    #7, cdcFlags1(a5)
 
 @loc_1E3E:
 	m_setErrorFlag
@@ -3386,8 +3321,8 @@ sub_1E44:               ; CODE XREF: _cdcstart+FEp
 	subq.w #1, d7
 	bcc.s  @loc_1E64
 
-	bset #2, cdcBitfield1(a5)
-	bset #7, cdcBitfield1(a5)
+	bset #2, cdcFlags1(a5)
+	bset #7, cdcFlags1(a5)
 
 @loc_1E64:
 	m_setErrorFlag
@@ -3400,19 +3335,19 @@ sub_1E44:               ; CODE XREF: _cdcstart+FEp
 
 sub_1E6A:               ; CODE XREF: _cdcstart+104p
 					; _cdcstart+12Ep ...
-	bsr.w   sub_74E
+	bsr.w   writeRingBuffer
 
-	move.l  cdcFrameHeader(a5),(a1)+
-	move.w  word_5A3E(a5),(a1)+
-	move.b  byte_5A39(a5),(a1)+
+	move.l  cdcFrameHeader(a5), (a1)+
+	move.w  word_5A3E(a5), (a1)+
+	move.b  byte_5A39(a5), (a1)+
 
 	tst.w   d1
 	bne.s   @loc_1E92
 
-	move.b  cdcBitfield1(a5),(a1)
-	move.l  dword_5A30(a5),d0
+	move.b  cdcFlags1(a5), (a1)
+	move.l  dword_5A30(a5), d0
 
-	cmp.l   dword_5A34(a5),d0
+	cmp.l   dword_5A34(a5), d0
 	bcc.s   @locret_1EB4
 
 	addq.l  #1,dword_5A30(a5)
@@ -3420,17 +3355,17 @@ sub_1E6A:               ; CODE XREF: _cdcstart+104p
 ; ---------------------------------------------------------------------------
 
 @loc_1E92:
-	bset    #6,cdcBitfield1(a5)
-	move.b  cdcBitfield0(a5),d0
-	ori.b   #$E7,d0
+	bset    #6, cdcFlags1(a5)
+	move.b  cdcFlags0(a5), d0
+	ori.b   #$E7, d0
 
-	cmpi.b  #$FF,d0
+	cmpi.b  #$FF, d0
 	beq.s   @loc_1EAC
 
-	bset    #7,cdcBitfield1(a5)
+	bset    #7, cdcFlags1(a5)
 
 @loc_1EAC:
-	move.b  cdcBitfield1(a5),(a1)
+	move.b  cdcFlags1(a5), (a1)
 
 @loc_1EB0:
 	m_setErrorFlag
@@ -3441,16 +3376,16 @@ sub_1E6A:               ; CODE XREF: _cdcstart+104p
 
 ; ---------------------------------------------------------------------------
 dword_1EB6:        ; DATA XREF: _scdinit+22o
-	dc.l $180060
-	dc.l $A803C0
+	dc.w $0018, $0060
+	dc.w $00A8, $03C0
 	dc.l $3D0
 
-	dc.l $180018
-	dc.l $180300
+	dc.w $0018, $0018
+	dc.w $0018, $0300
 	dc.l $310
 
-	dc.l $C000C
-	dc.l $C0060
+	dc.w $000C, $000C
+	dc.w $000C, $0060
 	dc.l $70
 
 ; =============== S U B R O U T I N E =======================================
@@ -3473,7 +3408,7 @@ _scdinit:               ; CODE XREF: executeCdbCommand+46j
 
 	bsr.w sub_23A6
 
-	lea scdPcktAddress(a5), a2
+	lea scdPcktBuffer(a5), a2
 	lea dword_1EB6(pc), a6
 
 	movea.l #'PCKT', a0
@@ -3499,7 +3434,7 @@ sub_1F1E:               ; CODE XREF: _scdinit+2Cp _scdinit+34p ...
 	move.l (a6)+, d0
 	move.l (a6)+, d1
 
-	bsr.w  sub_73C
+	bsr.w  initRingBuffer
 
 	adda.l (a6)+, a4
 	rts
@@ -3543,13 +3478,13 @@ _scdstart:              ; CODE XREF: executeCdbCommand+4Aj
 	clr.b   byte_5A8E(a5)
 	move.b  #$FF, byte_5A8F(a5)
 
-	movea.l scdPcktAddress(a5), a4
+	movea.l scdPcktBuffer(a5), a4
 	move.w  6(a4), 4(a4)
 
-	movea.l scdPackAddress(a5), a4
+	movea.l scdPackBuffer(a5), a4
 	move.w  6(a4), 4(a4)
 
-	movea.l scdQcodAddress(a5), a4
+	movea.l scdQcodBuffer(a5), a4
 	move.w  6(a4), 4(a4)
 
 	; Enable SCD interrupt
@@ -3586,7 +3521,7 @@ _scdpq:                 ; CODE XREF: executeCdbCommand+5Aj
 	m_saveStatusRegister
 	move #$2600, sr
 
-	movea.l scdQcodAddress(a5), a4
+	movea.l scdQcodBuffer(a5), a4
 
 	move.w  6(a4), d0
 
@@ -3596,7 +3531,7 @@ _scdpq:                 ; CODE XREF: executeCdbCommand+5Aj
 	movea.l a0, a1
 
 @loc_1FCE:
-	bsr.w   sub_7AA
+	bsr.w   readRingBuffer
 	beq.s   @loc_1FDC
 
 	btst    #2, scdFlags0(a5)
@@ -3633,7 +3568,7 @@ _scdread:               ; CODE XREF: executeCdbCommand+56j
 	m_saveStatusRegister
 	move #$2400,sr
 
-	movea.l scdPackAddress(a5), a4
+	movea.l scdPackBuffer(a5), a4
 
 	move.w 6(a4), d0
 
@@ -3642,7 +3577,7 @@ _scdread:               ; CODE XREF: executeCdbCommand+56j
 
 	movea.l a0, a1
 
-	bsr.w sub_7AA
+	bsr.w readRingBuffer
 
 	move.l (a0)+, (a1)+
 	move.l (a0)+, (a1)+
@@ -3723,8 +3658,8 @@ sub_203E:               ; CODE XREF: BIOS:00000658p
 @loc_20B4:
 	lea (GA_SUBCODE_BUFFER).w, a0
 	lea (a0, d0.w), a0
-	movea.l scdPcktAddress(a5), a4
-	bsr.w   sub_74E
+	movea.l scdPcktBuffer(a5), a4
+	bsr.w   writeRingBuffer
 	add.b   d1, byte_5A87(a5)
 
 	move.w #2, d1
@@ -3744,8 +3679,8 @@ sub_203E:               ; CODE XREF: BIOS:00000658p
 	btst    #6, scdFlags0(a5)
 	beq.s   @loc_2102
 
-	movea.l scdQcodAddress(a5), a4
-	bsr.w   sub_74E
+	movea.l scdQcodBuffer(a5), a4
+	bsr.w   writeRingBuffer
 
 	add.b   d1, dword_5A88(a5)
 	bsr.w   sub_210E
@@ -3940,11 +3875,11 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	beq.s @loc_2282
 
 	movem.l a3-a4, -(sp)
-	movea.l scdPackAddress(a5), a3
-	movea.l scdPcktAddress(a5), a4
+	movea.l scdPackBuffer(a5), a3
+	movea.l scdPcktBuffer(a5), a4
 
-	move.w 6(a4), d0
-	cmp.w  4(a4), d0
+	move.w RINGBUFFER.writePtr(a4), d0
+	cmp.w  RINGBUFFER.readPtr(a4), d0
 	beq.s  @loc_227E
 
 	m_saveStatusRegister
@@ -3959,7 +3894,7 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	m_saveStatusRegister
 	move #$2600, sr
 
-	bsr.w sub_7AA
+	bsr.w readRingBuffer
 	seq 1(sp)
 
 	m_restoreStatusRegister
@@ -3968,7 +3903,7 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 
 @loc_2242:
 	exg   a3, a4
-	bsr.w sub_74E
+	bsr.w writeRingBuffer
 	add.b d1, dword_5A88+1(a5)
 	exg   a3, a4
 
@@ -3976,7 +3911,7 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	move #$2600, sr
 
 	bsr.w sub_22BC
-	bsr.w sub_7AA
+	bsr.w readRingBuffer
 	seq 1(sp)
 
 	m_restoreStatusRegister
@@ -3988,7 +3923,7 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	addq.b #1, dword_5A88+3(a5)
 
 	exg   a3, a4
-	bsr.w sub_796
+	bsr.w rewindRingBuffer
 	exg   a3, a4
 
 @loc_2278:
@@ -6579,7 +6514,7 @@ loc_3610:               ; CODE XREF: BIOS:00002B84j
 
 loc_3632:               ; CODE XREF: BIOS:00003624j
 					; BIOS:0000362Aj ...
-		btst    #1,cdcBitfield0(a5)
+		btst    #1,cdcFlags0(a5)
 		bne.s   loc_363E
 		bsr.w   _cdcstop
 
@@ -6650,7 +6585,7 @@ loc_36DE:               ; CODE XREF: BIOS:00002B68j
 		bclr    #0,byte_5B18(a5)
 		bset    #1,byte_5B18(a5)
 		move.w  #$30,word_5AFE(a5)
-		bsr.w   sub_1808
+		bsr.w   clearCdcRingBuffer
 		bra.w   loc_2FEE
 
 ; =============== S U B R O U T I N E =======================================

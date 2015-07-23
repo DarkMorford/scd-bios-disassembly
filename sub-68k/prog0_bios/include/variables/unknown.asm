@@ -44,13 +44,13 @@ dword_5A28 equ $5A28
 dword_5A2C equ $5A2C
 dword_5A30 equ $5A30
 dword_5A34 equ $5A34
-cdcBuffer equ $5A44
+cdcRingBuffer equ $5A44
 scdFlags0 equ $5A84
 dword_5A86 equ $5A86
 dword_5A88 equ $5A88
-scdPcktAddress equ $5A90
-scdPackAddress equ $5A94
-scdQcodAddress equ $5A98
+scdPcktBuffer equ $5A90
+scdPackBuffer equ $5A94
+scdQcodBuffer equ $5A98
 dword_5A9C equ $5A9C
 dword_5AA0 equ $5AA0
 dword_5AA4 equ $5AA4
