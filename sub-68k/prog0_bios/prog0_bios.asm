@@ -517,17 +517,17 @@ loc_51E:
 	rts
 ; ---------------------------------------------------------------------------
 
-	loc_52E:
-		bsr.w  _waitForVBlank
+loc_52E:
+	bsr.w  _waitForVBlank
 
-		move.w #CDBSTAT, d0
-		jsr    _CDBIOS
+	move.w #CDBSTAT, d0
+	jsr    _CDBIOS
 
-		move.w #CBTINT, d0
-		bsr.w  _CDBOOT
+	move.w #CBTINT, d0
+	bsr.w  _CDBOOT
 
-		btst  #7, (_CDSTAT).w
-		bne.s loc_52E
+	btst  #7, (_CDSTAT).w
+	bne.s loc_52E
 
 	move.w  #CBTSPSTAT, d0
 	bsr.w   _CDBOOT
@@ -5355,23 +5355,23 @@ loc_2BF0:               ; CODE XREF: BIOS:00002B94j
 	move.w  #LEDREADY, ledMode(a5)
 	bsr.w   _cdcstop
 
-	move.w  #1,word_5B00(a5)
-	move.l  #$20000,dword_5B02(a5)
+	move.w  #1, word_5B00(a5)
+	move.l  #$20000, dword_5B02(a5)
 	bsr.w   cdbSuspendExecution
 
 	bsr.w   cddGetStatusCodeByte
 
-	cmpi.b  #$E,d0
+	cmpi.b  #$E,d 0
 	beq.w   loc_2C24
 
-	cmpi.b  #5,d0
+	cmpi.b  #5, d0
 	beq.w   loc_2C24
 	bra.w   loc_2C98
 ; ---------------------------------------------------------------------------
 
 loc_2C24:               ; CODE XREF: BIOS:00002C14j
 					; BIOS:00002C1Cj
-	move.w  #1,cdbCommandCache(a5)
+	move.w  #1, cdbCommandCache(a5)
 	bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
@@ -5379,12 +5379,12 @@ loc_2C2E:               ; CODE XREF: BIOS:00002C44j
 					; BIOS:00002C6Aj
 	bsr.w   cdbSuspendExecution
 
-	btst    #7,cdbCommand(a5)
+	btst    #7, cdbCommand(a5)
 	bne.w   cdbPrepareCommand
 
 	bsr.w   cddGetStatusCodeByte
 
-	cmpi.b  #$E,d0
+	cmpi.b  #$E, d0
 	beq.s   loc_2C2E
 	bra.s   loc_2C90
 ; ---------------------------------------------------------------------------
@@ -5427,30 +5427,30 @@ loc_2C90:               ; CODE XREF: BIOS:00002C46j
 		bsr.w   cddGetStatusCodeByte
 
 loc_2C98:               ; CODE XREF: BIOS:00002C20j
-		cmpi.b  #0,d0
+		cmpi.b  #0, d0
 		beq.s   loc_2CDE
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.s   loc_2CDE
 
-		cmpi.b  #4,d0
+		cmpi.b  #4, d0
 		beq.s   loc_2CDE
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_2CDE
 
-		cmpi.b  #5,d0
+		cmpi.b  #5, d0
 
 loc_2CB4:               ; CODE XREF: BIOS:00002CC2j
 		beq.s   loc_2C48
 
-		cmpi.b  #$B,d0
+		cmpi.b  #$B, d0
 		beq.w   loc_2D5A
 
-		cmpi.b  #$E,d0
+		cmpi.b  #$E, d0
 		beq.s   loc_2CB4
 
-		move.w  #$8010,d0
+		move.w  #$8010, d0
 		bsr.w   sub_B0C
 
 loc_2CCC:               ; CODE XREF: BIOS:00002CD4j
@@ -5527,13 +5527,13 @@ loc_2D6A:               ; CODE XREF: BIOS:00002D00j
 
 loc_2D6E:               ; CODE XREF: BIOS:00002B6Cj
 	bsr.w   cddGetStatusCodeByte
-	cmpi.b  #4,d0
+	cmpi.b  #4, d0
 	beq.s   loc_2D7C
 	bra.w   loc_2DCC
 ; ---------------------------------------------------------------------------
 
 loc_2D7C:               ; CODE XREF: BIOS:00002D76j
-	bset   #7,byte_5B18(a5)
+	bset   #7, byte_5B18(a5)
 	clr.w  word_5B0E(a5)
 	move.w #$28, cdbCommandCache(a5)
 	move.w #$0500, cdbControlStatus(a5)     ; Paused
@@ -5674,23 +5674,23 @@ loc_2E90:               ; CODE XREF: BIOS:00002EA2j
 loc_2EAA:               ; CODE XREF: BIOS:00002E34j
 					; BIOS:00002E5Ej ...
 	move.w  #$4000,cdbControlStatus(a5)
-	bsr.w   cdbSuspendExecution
+	bsr.w   cdbSusp endExecution
 
-	cmpi.w  #$8010,cdbCommand(a5)
+	cmpi.w  #$8010, cdbCommand(a5)
 	beq.w   cdbPrepareCommand
 
 	bsr.w   cddGetStatusCodeByte
 
-	cmpi.b  #5,d0
+	cmpi.b  #5, d0
 	beq.s   loc_2EAA
 
-	cmpi.b  #6,d0
+	cmpi.b  #6, d0
 	beq.s   loc_2EAA
 
-	cmpi.b  #8,d0
+	cmpi.b  #8, d0
 	beq.s   loc_2EAA
 
-	cmpi.b  #7,d0
+	cmpi.b  #7, d0
 	beq.s   loc_2EAA
 
 	move.w  #$10, cdbCommandCache(a5)
@@ -5721,19 +5721,19 @@ loc_2F12:               ; CODE XREF: BIOS:00002F04j
 loc_2F18:               ; CODE XREF: BIOS:00002F48j
 	bsr.w   cddGetStatusCodeByte
 
-	cmpi.b  #0,d0
+	cmpi.b  #0, d0
 	beq.s   loc_2F4A
 
-	cmpi.b  #5,d0
+	cmpi.b  #5, d0
 	beq.s   loc_2F4A
 
-	cmpi.b  #$B,d0
+	cmpi.b  #$B, d0
 	beq.s   loc_2F4A
 
-	cmpi.b  #$E,d0
+	cmpi.b  #$E, d0
 	beq.s   loc_2F4A
 
-	move.w  #$8010,d0
+	move.w  #$8010, d0
 	bsr.w   sub_B0C
 
 loc_2F3C:               ; CODE XREF: BIOS:00002F44j
@@ -5792,93 +5792,93 @@ loc_2FA6:               ; CODE XREF: BIOS:00003598j
 ; ---------------------------------------------------------------------------
 
 loc_2FBC:               ; CODE XREF: BIOS:00002B3Cj
-		move.w  #$28,word_5ADC(a5)
-		bset    #0,byte_5B18(a5)
-		bclr    #1,byte_5B18(a5)
-		move.w  #$40,word_5AFE(a5)
+		move.w  #$28, word_5ADC(a5)
+		bset    #0, byte_5B18(a5)
+		bclr    #1, byte_5B18(a5)
+		move.w  #$40, word_5AFE(a5)
 		bra.s   loc_2FEE
 ; ---------------------------------------------------------------------------
 
 loc_2FD6:               ; CODE XREF: BIOS:00002B34j
-		move.w  #LEDDISCIN,ledMode(a5)
-		move.w  #$25,word_5ADC(a5)
-		andi.b  #$FC,byte_5B18(a5)
-		move.w  #$30,word_5AFE(a5)
+		move.w  #LEDDISCIN, ledMode(a5)
+		move.w  #$25, word_5ADC(a5)
+		andi.b  #$FC, byte_5B18(a5)
+		move.w  #$30, word_5AFE(a5)
 
 loc_2FEE:               ; CODE XREF: BIOS:00002FD4j
 					; BIOS:00003682j ...
-		andi.b  #$5F,byte_5B18(a5)
-		move.l  cdbArg1Cache(a5),d0
-		move.l  d0,dword_5B02(a5)
+		andi.b  #$5F, byte_5B18(a5)
+		move.l  cdbArg1Cache(a5), d0
+		move.l  d0, dword_5B02(a5)
 		clr.w   word_5B00(a5)
 		bra.s   loc_306C
 ; ---------------------------------------------------------------------------
 
 loc_3002:               ; CODE XREF: BIOS:00002B48j
-		bset    #3,byte_5B18(a5)
+		bset    #3, byte_5B18(a5)
 
 loc_3008:               ; CODE XREF: BIOS:00002B38j
-		move.w  #$28,word_5ADC(a5)
-		bset    #0,byte_5B18(a5)
-		bclr    #1,byte_5B18(a5)
-		move.w  #$40,word_5AFE(a5)
+		move.w  #$28, word_5ADC(a5)
+		bset    #0, byte_5B18(a5)
+		bclr    #1, byte_5B18(a5)
+		move.w  #$40, word_5AFE(a5)
 		bra.s   loc_3056
 ; ---------------------------------------------------------------------------
 
 loc_3022:               ; CODE XREF: BIOS:00002B2Cj
-		move.w  #LEDDISCIN,ledMode(a5)
-		move.w  #$26,word_5ADC(a5)
+		move.w  #LEDDISCIN, ledMode(a5)
+		move.w  #$26, word_5ADC(a5)
 		bra.s   loc_304A
 ; ---------------------------------------------------------------------------
 
 loc_3030:               ; CODE XREF: BIOS:00002B30j
-		move.w  #LEDDISCIN,ledMode(a5)
-		move.w  #$27,word_5ADC(a5)
+		move.w  #LEDDISCIN, ledMode(a5)
+		move.w  #$27, word_5ADC(a5)
 		bra.s   loc_304A
 ; ---------------------------------------------------------------------------
 
 loc_303E:               ; CODE XREF: BIOS:00002B28j
-		move.w  #LEDDISCIN,ledMode(a5)
-		move.w  #$25,word_5ADC(a5)
+		move.w  #LEDDISCIN, ledMode(a5)
+		move.w  #$25, word_5ADC(a5)
 
 loc_304A:               ; CODE XREF: BIOS:0000302Ej
 					; BIOS:0000303Cj
-		andi.b  #$FC,byte_5B18(a5)
-		move.w  #$30,word_5AFE(a5)
+		andi.b  #$FC, byte_5B18(a5)
+		move.w  #$30, word_5AFE(a5)
 
 loc_3056:               ; CODE XREF: BIOS:00003020j
-		andi.b  #$5F,byte_5B18(a5)
-		move.w  cdbArg1Cache(a5),d0
-		move.w  d0,word_5B00(a5)
+		andi.b  #$5F, byte_5B18(a5)
+		move.w  cdbArg1Cache(a5), d0
+		move.w  d0, word_5B00(a5)
 		bsr.w   getTocForTrack
-		move.l  d0,dword_5B02(a5)
+		move.l  d0, dword_5B02(a5)
 
 loc_306C:               ; CODE XREF: BIOS:00002FA2j
 					; BIOS:00002FB8j ...
-		cmpi.w  #$8010,cdbCommand(a5)
+		cmpi.w  #$8010, cdbCommand(a5)
 		beq.w   cdbPrepareCommand
 
-		cmpi.w  #$800A,cdbCommand(a5)
+		cmpi.w  #$800A, cdbCommand(a5)
 		beq.w   cdbPrepareCommand
 
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.s   loc_30CC
 
-		cmpi.b  #4,d0
+		cmpi.b  #4, d0
 		beq.s   loc_30CC
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_30CC
 
-		cmpi.b  #5,d0
+		cmpi.b  #5, d0
 		beq.w   loc_31E0
 
-		cmpi.b  #$B,d0
+		cmpi.b  #$B, d0
 		beq.w   loc_31E0
 
-		cmpi.b  #$E,d0
+		cmpi.b  #$E, d0
 		beq.w   loc_31E0
 		bra.s   loc_30B4
 ; ---------------------------------------------------------------------------
@@ -5888,7 +5888,7 @@ loc_30B0:               ; CODE XREF: BIOS:000030BCj
 
 loc_30B4:               ; CODE XREF: BIOS:000030AEj
 					; BIOS:00003104j
-		move.w  #$60,d0
+		move.w  #$60, d0
 		bsr.w   sub_B0C
 		bcs.s   loc_30B0
 
@@ -5903,14 +5903,14 @@ loc_30BE:               ; CODE XREF: BIOS:000030C6j
 
 loc_30CC:               ; CODE XREF: BIOS:00003088j
 					; BIOS:0000308Ej ...
-		move.w  #0,word_5B0A(a5)
+		move.w  #0, word_5B0A(a5)
 		bsr.w   sub_2BBC
 
-		move.w  #$800,cdbControlStatus(a5)
-		btst    #1,byte_5B18(a5)
+		move.w  #$800, cdbControlStatus(a5)
+		btst    #1, byte_5B18(a5)
 		beq.s   loc_30EA
 
-		move.w  #$808,cdbControlStatus(a5)
+		move.w  #$808, cdbControlStatus(a5)
 
 loc_30EA:               ; CODE XREF: BIOS:000030E2j
 		bra.s   loc_3106
@@ -5921,19 +5921,19 @@ loc_30EC:               ; CODE XREF: BIOS:00003112j
 
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.s   loc_3106
 
-		cmpi.b  #4,d0
+		cmpi.b  #4, d0
 		beq.s   loc_3106
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		bne.s   loc_30B4
 
 loc_3106:               ; CODE XREF: BIOS:loc_30EAj
 					; BIOS:000030F8j ...
-		move.l  dword_5B02(a5),d1
-		move.w  #$A0,d0
+		move.l  dword_5B02(a5), d1
+		move.w  #$A0, d0
 		bsr.w   sub_B0C
 		bcs.s   loc_30EC
 
@@ -5944,8 +5944,8 @@ loc_3116:               ; CODE XREF: BIOS:00003126j
 		bsr.w   cdbSuspendExecution
 
 loc_311A:               ; CODE XREF: BIOS:00003114j
-		move.l  dword_5B02(a5),d1
-		move.w  word_5AFE(a5),d0
+		move.l  dword_5B02(a5), d1
+		move.w  word_5AFE(a5), d0
 		bsr.w   sub_B0C
 		bcs.s   loc_3116
 
@@ -5954,12 +5954,12 @@ loc_3128:               ; CODE XREF: BIOS:00003146j
 
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #8,d0
+		cmpi.b  #8, d0
 		bne.s   loc_3142
 
 		bsr.w   sub_D7C
 
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		bcc.w   loc_306C
 
 loc_3142:               ; CODE XREF: BIOS:00003134j
@@ -5967,49 +5967,49 @@ loc_3142:               ; CODE XREF: BIOS:00003134j
 		bcs.s   loc_3128
 		tst.b   d0
 		bne.w   loc_306C
-		move.w  #$FFFF,word_5B0A(a5)
+		move.w  #$FFFF, word_5B0A(a5)
 		bsr.w   sub_2BBC
-		move.w  word_5ADC(a5),cdbCommandCache(a5)
-		btst    #1,byte_5B18(a5)
+		move.w  word_5ADC(a5), cdbCommandCache(a5)
+		btst    #1, byte_5B18(a5)
 		beq.s   loc_3192
-		cmpi.w  #$2B,word_5ADC(a5)
+		cmpi.w  #$2B, word_5ADC(a5)
 		bne.s   loc_3178
-		bset    #6,byte_5B18(a5)
+		bset    #6, byte_5B18(a5)
 		clr.w   word_5B0E(a5)
 
 loc_3178:               ; CODE XREF: BIOS:0000316Cj
 		bsr.w   sub_3728
 ; ---------------------------------------------------------------------------
-		btst    #0,byte_5B18(a5)
+		btst    #0, byte_5B18(a5)
 		bne.s   loc_31BE
-		move.w  #$101,cdbControlStatus(a5)
-		move.w  #LEDACCESS,ledMode(a5)
+		move.w  #$101, cdbControlStatus(a5)
+		move.w  #LEDACCESS, ledMode(a5)
 		bra.s   loc_31BE
 ; ---------------------------------------------------------------------------
 
 loc_3192:               ; CODE XREF: BIOS:00003164j
-		btst    #0,byte_5B18(a5)
+		btst    #0, byte_5B18(a5)
 		bne.s   loc_31B4
-		lea cdbCommandCache(a5),a0
-		lea word_5AEA(a5),a1
+		lea cdbCommandCache(a5), a0
+		lea word_5AEA(a5), a1
 		bsr.w   copyCdbCommand
-		move.w  #$100,cdbControlStatus(a5)
-		move.w  #LEDACCESS,ledMode(a5)
+		move.w  #$100, cdbControlStatus(a5)
+		move.w  #LEDACCESS, ledMode(a5)
 		bra.s   loc_31DC
 ; ---------------------------------------------------------------------------
 
 loc_31B4:               ; CODE XREF: BIOS:00003198j
-		bset    #7,byte_5B18(a5)
+		bset    #7, byte_5B18(a5)
 		clr.w   word_5B0E(a5)
 
 loc_31BE:               ; CODE XREF: BIOS:00003182j
 					; BIOS:00003190j
-		bclr    #6,byte_5B19(a5)
+		bclr    #6, byte_5B19(a5)
 		bne.w   loc_2AD0
-		move.w  #$25,d0
-		bclr    #3,byte_5B18(a5)
+		move.w  #$25, d0
+		bclr    #3, byte_5B18(a5)
 		beq.s   loc_31D8
-		move.w  #$26,d0
+		move.w  #$26, d0
 
 loc_31D8:               ; CODE XREF: BIOS:000031D2j
 		move.w  d0,word_5AEA(a5)
@@ -6020,7 +6020,7 @@ loc_31DC:               ; CODE XREF: BIOS:000031B2j
 
 loc_31E0:               ; CODE XREF: BIOS:0000309Aj
 					; BIOS:000030A2j ...
-		move.w  #$FFFF,word_5B0A(a5)
+		move.w  #$FFFF, word_5B0A(a5)
 		bsr.w   sub_2BBC
 
 loc_31EA:               ; CODE XREF: BIOS:000031F2j
@@ -6029,20 +6029,20 @@ loc_31EA:               ; CODE XREF: BIOS:000031F2j
 		bsr.w   sub_AF6
 		bcs.s   loc_31EA
 		tst.b   d0
-		move.w  #1,cdbCommandCache(a5)
+		move.w  #1, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3200:               ; CODE XREF: BIOS:00002B78j
-		move.w  #$100,cdbControlStatus(a5)
+		move.w  #$100, cdbControlStatus(a5)
 		bsr.w   cddGetStatusCodeByte
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_323A
-		cmpi.b  #8,d0
+		cmpi.b  #8, d0
 		beq.s   loc_3244
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		beq.s   loc_3222
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		bne.s   loc_31E0
 
 loc_3222:               ; CODE XREF: BIOS:0000321Aj
@@ -6050,39 +6050,39 @@ loc_3222:               ; CODE XREF: BIOS:0000321Aj
 		bsr.w   getCurrentTrackNumber
 		bcs.w   cdbPrepareCommand
 
-		cmp.w   word_5B00(a5),d0
+		cmp.w   word_5B00(a5), d0
 		beq.w   cdbPrepareCommand
 
-		move.w  d0,word_5B00(a5)
+		move.w  d0, word_5B00(a5)
 		bra.w   cdbPrepareCommand
 ; ---------------------------------------------------------------------------
 
 loc_323A:               ; CODE XREF: BIOS:0000320Ej
-		move.w  #3,cdbCommandCache(a5)
+		move.w  #3, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3244:               ; CODE XREF: BIOS:00003214j
 		bsr.w   sub_D7C
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		bcc.s   loc_31E0
 		bra.s   loc_3222
 ; ---------------------------------------------------------------------------
 
 loc_3250:               ; CODE XREF: BIOS:00002B80j
-		move.w  #$100,cdbControlStatus(a5)
+		move.w  #$100, cdbControlStatus(a5)
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_3284
 
-		cmpi.b  #8,d0
+		cmpi.b  #8, d0
 		beq.s   loc_3298
 
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		beq.s   loc_3274
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		bne.w   loc_31E0
 
 loc_3274:               ; CODE XREF: BIOS:0000326Aj
@@ -6090,39 +6090,39 @@ loc_3274:               ; CODE XREF: BIOS:0000326Aj
 		bsr.w   getCurrentTrackNumber
 		bcs.w   cdbPrepareCommand
 
-		cmp.w   word_5B00(a5),d0
+		cmp.w   word_5B00(a5), d0
 		bls.w   cdbPrepareCommand
 
 loc_3284:               ; CODE XREF: BIOS:0000325Ej
-		moveq   #0,d0
-		move.w  word_5B00(a5),d0
-		move.w  d0,cdbArg1Cache(a5)
-		move.w  #$13,cdbCommandCache(a5)
+		moveq   #0, d0
+		move.w  word_5B00(a5), d0
+		move.w  d0, cdbArg1Cache(a5)
+		move.w  #$13, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3298:               ; CODE XREF: BIOS:00003264j
 		bsr.w   sub_D7C
 
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		bcc.w   loc_31E0
 		bra.s   loc_3274
 ; ---------------------------------------------------------------------------
 
 loc_32A6:               ; CODE XREF: BIOS:00002B7Cj
-		move.w  #$100,cdbControlStatus(a5)
+		move.w  #$100, cdbControlStatus(a5)
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_32DA
 
-		cmpi.b  #8,d0
+		cmpi.b  #8, d0
 		beq.s   loc_32E4
 
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		beq.s   loc_32CA
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		bne.w   loc_31E0
 
 loc_32CA:               ; CODE XREF: BIOS:000032C0j
@@ -6130,83 +6130,83 @@ loc_32CA:               ; CODE XREF: BIOS:000032C0j
 		bsr.w   getCurrentTrackNumber
 		bcs.w   cdbPrepareCommand
 
-		cmp.w   word_5B00(a5),d0
+		cmp.w   word_5B00(a5), d0
 		bls.w   cdbPrepareCommand
 
 loc_32DA:               ; CODE XREF: BIOS:000032B4j
-		move.w  #3,cdbCommandCache(a5)
+		move.w  #3, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_32E4:               ; CODE XREF: BIOS:000032BAj
 		bsr.w   sub_D7C
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		bcc.w   loc_31E0
 		bra.s   loc_32CA
 ; ---------------------------------------------------------------------------
 
 loc_32F2:               ; CODE XREF: BIOS:00002B00j
-		move.w  #LEDACCESS,ledMode(a5)
-		bset    #5,byte_5B18(a5)
+		move.w  #LEDACCESS, ledMode(a5)
+		bset    #5, byte_5B18(a5)
 		bra.s   loc_332C
 ; ---------------------------------------------------------------------------
 
 loc_3300:               ; CODE XREF: BIOS:00002AFCj
-		move.w  #LEDACCESS,ledMode(a5)
-		bclr    #5,byte_5B18(a5)
-		bset    #4,byte_5B18(a5)
+		move.w  #LEDACCESS, ledMode(a5)
+		bclr    #5, byte_5B18(a5)
+		bset    #4, byte_5B18(a5)
 		bra.s   loc_332C
 ; ---------------------------------------------------------------------------
 
 loc_3314:               ; CODE XREF: BIOS:00002AF8j
-		move.w  #LEDACCESS,ledMode(a5)
-		andi.b  #$CF,byte_5B18(a5)
+		move.w  #LEDACCESS, ledMode(a5)
+		andi.b  #$CF, byte_5B18(a5)
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.w   loc_3440
 
 loc_332C:               ; CODE XREF: BIOS:000032FEj
 					; BIOS:00003312j ...
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.w   loc_33CA
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.w   loc_33CA
 
-		cmpi.b  #4,d0
+		cmpi.b  #4, d0
 		beq.w   loc_33CA
 
-		cmpi.b  #5,d0
+		cmpi.b  #5, d0
 		beq.w   loc_344A
 
-		cmpi.b  #$B,d0
+		cmpi.b  #$B, d0
 		beq.w   loc_344A
 
-		cmpi.b  #$E,d0
+		cmpi.b  #$E, d0
 		beq.w   loc_344A
 
-		cmpi.b  #0,d0
+		cmpi.b  #0, d0
 		bne.s   loc_3370
 
-		bclr    #2,byte_5B18(a5)
+		bclr    #2, byte_5B18(a5)
 		bne.w   loc_2F84
 
 loc_3370:               ; CODE XREF: BIOS:00003364j
-		btst    #7,byte_5B18(a5)
+		btst    #7, byte_5B18(a5)
 		bne.s   loc_3382
 
-		move.w  #$8070,d0
+		move.w  #$8070, d0
 		bsr.w   sub_B0C
 		bra.s   loc_33BA
 ; ---------------------------------------------------------------------------
 
 loc_3382:               ; CODE XREF: BIOS:00003376j
-		move.w  #0,word_5B0A(a5)
+		move.w  #0, word_5B0A(a5)
 		bsr.w   sub_2BBC
-		move.w  #$8060,d0
+		move.w  #$8060, d0
 		bsr.w   sub_B0C
 
 loc_3394:               ; CODE XREF: BIOS:0000339Cj
@@ -6216,16 +6216,16 @@ loc_3394:               ; CODE XREF: BIOS:0000339Cj
 		bcs.s   loc_3394
 
 		tst.b   d0
-		move.w  #$FFFF,word_5B0A(a5)
+		move.w  #$FFFF, word_5B0A(a5)
 		bsr.w   sub_2BBC
 
-		move.l  dword_59F8(a5),d0
+		move.l  dword_59F8(a5), d0
 		bpl.s   loc_33B6
 
-		move.l  #$20000,d0
+		move.l  #$20000, d0
 
 loc_33B6:               ; CODE XREF: BIOS:000033AEj
-		move.l  d0,dword_5B02(a5)
+		move.l  d0, dword_5B02(a5)
 
 loc_33BA:               ; CODE XREF: BIOS:00003380j
 					; BIOS:000033C2j
@@ -6240,17 +6240,17 @@ loc_33BA:               ; CODE XREF: BIOS:00003380j
 
 loc_33CA:               ; CODE XREF: BIOS:00003334j
 					; BIOS:0000333Cj ...
-		btst    #5,byte_5B18(a5)
+		btst    #5, byte_5B18(a5)
 		bne.s   loc_3412
 
-		move.w  #$80,d0
-		bchg    #4,byte_5B18(a5)
+		move.w  #$80, d0
+		bchg    #4, byte_5B18(a5)
 		beq.s   loc_33E2
 
-		move.w  #$90,d0
+		move.w  #$90, d0
 
 loc_33E2:               ; CODE XREF: BIOS:000033DCj
-		move.w  d0,word_5B10(a5)
+		move.w  d0, word_5B10(a5)
 		bra.s   loc_33EC
 ; ---------------------------------------------------------------------------
 
@@ -6258,7 +6258,7 @@ loc_33E8:               ; CODE XREF: BIOS:000033F4j
 		bsr.w   cdbSuspendExecution
 
 loc_33EC:               ; CODE XREF: BIOS:000033E6j
-		move.w  word_5B10(a5),d0
+		move.w  word_5B10(a5), d0
 		bsr.w   sub_B0C
 		bcs.s   loc_33E8
 
@@ -6271,99 +6271,99 @@ loc_33F6:               ; CODE XREF: BIOS:000033FEj
 		tst.b   d0
 		bne.s   loc_344A
 
-		move.w  #$300,cdbControlStatus(a5)
-		bset    #5,byte_5B18(a5)
+		move.w  #$300, cdbControlStatus(a5)
+		bset    #5, byte_5B18(a5)
 		bra.s   loc_3440
 ; ---------------------------------------------------------------------------
 
 loc_3412:               ; CODE XREF: BIOS:000033D0j
-		bclr    #5,byte_5B18(a5)
-		btst    #7,byte_5B18(a5)
+		bclr    #5, byte_5B18(a5)
+		btst    #7, byte_5B18(a5)
 		bne.s   loc_3436
 
-		move.w  #$100,cdbControlStatus(a5)
-		lea word_5AEA(a5),a0
-		lea cdbCommandCache(a5),a1
+		move.w  #$100, cdbControlStatus(a5)
+		lea word_5AEA(a5), a0
+		lea cdbCommandCache(a5), a1
 		bsr.w   copyCdbCommand
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3436:               ; CODE XREF: BIOS:0000341Ej
-		move.w  #3,cdbCommandCache(a5)
+		move.w  #3, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3440:               ; CODE XREF: BIOS:00003328j
 					; BIOS:00003410j
-		move.w  #$29,cdbCommandCache(a5)
+		move.w  #$29, cdbCommandCache(a5)
 		bra.w   loc_2AD0
 ; ---------------------------------------------------------------------------
 
 loc_344A:               ; CODE XREF: BIOS:0000334Cj
 					; BIOS:00003354j ...
-		move.w  #1,cdbCommandCache(a5)
+		move.w  #1, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3454:               ; CODE XREF: BIOS:00002B88j
-		move.w  #$0300,cdbControlStatus(a5)     ; Scanning music
+		move.w  #$0300, cdbControlStatus(a5)     ; Scanning music
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #2,d0
+		cmpi.b  #2, d0
 		beq.s   loc_3490
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.s   loc_3490
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_3490
 
-		cmpi.b  #3,d0
+		cmpi.b  #3, d0
 		beq.w   cdbPrepareCommand
 
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		beq.w   cdbPrepareCommand
 
-		cmpi.b  #8,d0
+		cmpi.b  #8, d0
 		beq.s   loc_349A
 
 loc_3486:               ; CODE XREF: BIOS:000034A2j
-		move.w  #1,cdbCommandCache(a5)
+		move.w  #1, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3490:               ; CODE XREF: BIOS:00003462j
 					; BIOS:00003468j ...
-		move.w  #3,cdbCommandCache(a5)
+		move.w  #3, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_349A:               ; CODE XREF: BIOS:00003484j
 		bsr.w   sub_D7C
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		bcc.s   loc_3486
 		bra.w   cdbPrepareCommand
 ; ---------------------------------------------------------------------------
 
 loc_34A8:               ; CODE XREF: BIOS:00002AF0j
-		bclr    #2,byte_5B18(a5)
+		bclr    #2, byte_5B18(a5)
 
 loc_34AE:               ; CODE XREF: BIOS:00002B14j
-		andi.b  #$5F,byte_5B18(a5)
-		move.w  #LEDDISCIN,ledMode(a5)
+		andi.b  #$5F, byte_5B18(a5)
+		move.w  #LEDDISCIN, ledMode(a5)
 		bra.s   loc_34E4
 ; ---------------------------------------------------------------------------
 
 loc_34BC:               ; CODE XREF: BIOS:00002AF4j
-		move.w  #LEDACCESS,ledMode(a5)
-		bset    #7,byte_5B18(a5)
-		bclr    #5,byte_5B18(a5)
+		move.w  #LEDACCESS, ledMode(a5)
+		bset    #7, byte_5B18(a5)
+		bclr    #5, byte_5B18(a5)
 		bra.s   loc_34E4
 ; ---------------------------------------------------------------------------
 
 loc_34D0:               ; CODE XREF: BIOS:000034ECj
 					; BIOS:00003522j
-		move.w  #$8060,d0
+		move.w  #$8060, d0
 		bsr.w   sub_B0C
 
 loc_34D8:               ; CODE XREF: BIOS:000034E0j
@@ -6376,34 +6376,34 @@ loc_34E4:               ; CODE XREF: BIOS:000034BAj
 					; BIOS:000034CEj
 		bsr.w   cddGetStatusCodeByte
 
-		cmpi.b  #$A,d0
+		cmpi.b  #$A, d0
 		beq.s   loc_34D0
 
-		cmpi.b  #5,d0
+		cmpi.b  #5, d0
 		beq.w   loc_3606
 
-		cmpi.b  #$B,d0
+		cmpi.b  #$B, d0
 		beq.w   loc_3606
 
-		cmpi.b  #$E,d0
+		cmpi.b  #$E, d0
 		beq.w   loc_3606
 
-		btst    #7,byte_5B18(a5)
+		btst    #7, byte_5B18(a5)
 		bne.w   loc_3590
 
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.w   loc_3576
 
-		cmpi.b  #4,d0
+		cmpi.b  #4, d0
 		beq.s   loc_3576
 
-		cmpi.b  #0,d0
+		cmpi.b  #0, d0
 		beq.s   loc_34D0
 
-		move.w  #0,word_5B0A(a5)
+		move.w  #0, word_5B0A(a5)
 		bsr.w   sub_2BBC
 
-		move.w  #3,word_5B20(a5)
+		move.w  #3, word_5B20(a5)
 		bra.s   loc_353A
 ; ---------------------------------------------------------------------------
 
@@ -6412,7 +6412,7 @@ loc_3536:               ; CODE XREF: BIOS:00003542j
 
 loc_353A:               ; CODE XREF: BIOS:00003534j
 					; BIOS:00003556j
-		move.w  #$60,d0
+		move.w  #$60, d0
 		bsr.w   sub_B0C
 		bcs.s   loc_3536
 
@@ -6425,44 +6425,44 @@ loc_3544:               ; CODE XREF: BIOS:0000354Cj
 		tst.b   d0
 		beq.s   loc_355C
 
-		subq.w  #1,word_5B20(a5)
+		subq.w  #1, word_5B20(a5)
 		bcc.s   loc_353A
 		bra.w   loc_35FC
 ; ---------------------------------------------------------------------------
 
 loc_355C:               ; CODE XREF: BIOS:00003550j
-		move.w  #$FFFF,word_5B0A(a5)
+		move.w  #$FFFF, word_5B0A(a5)
 		bsr.w   sub_2BBC
-		move.l  dword_59F8(a5),d0
+		move.l  dword_59F8(a5), d0
 		bpl.s   loc_3572
-		move.l  #$20000,d0
+		move.l  #$20000, d0
 
 loc_3572:               ; CODE XREF: BIOS:0000356Aj
-		move.l  d0,dword_5B02(a5)
+		move.l  d0, dword_5B02(a5)
 
 loc_3576:               ; CODE XREF: BIOS:00003514j
 					; BIOS:0000351Cj
-		move.w  #$500,cdbControlStatus(a5)
-		bset    #7,byte_5B18(a5)
+		move.w  #$500, cdbControlStatus(a5)
+		bset    #7, byte_5B18(a5)
 		clr.w   word_5B0E(a5)
-		move.w  #$28,cdbCommandCache(a5)
+		move.w  #$28, cdbCommandCache(a5)
 		bra.w   loc_2AD0
 ; ---------------------------------------------------------------------------
 
 loc_3590:               ; CODE XREF: BIOS:0000350Cj
-		bclr    #2,byte_5B18(a5)
+		bclr    #2, byte_5B18(a5)
 		beq.s   loc_359C
 		bra.w   loc_2FA6
 ; ---------------------------------------------------------------------------
 
 loc_359C:               ; CODE XREF: BIOS:00003596j
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_35DC
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.s   loc_35DC
-		cmpi.b  #0,d0
+		cmpi.b  #0, d0
 		beq.w   loc_2FA6
-		move.w  #3,word_5B20(a5)
+		move.w  #3, word_5B20(a5)
 		bra.s   loc_35BC
 ; ---------------------------------------------------------------------------
 
@@ -6470,7 +6470,7 @@ loc_35B8:               ; CODE XREF: BIOS:000035C4j
 		bsr.w   cdbSuspendExecution
 
 loc_35BC:               ; CODE XREF: BIOS:000035B6j
-		move.w  #$70,d0
+		move.w  #$70, d0
 		bsr.w   sub_B0C
 		bcs.s   loc_35B8
 
@@ -6487,65 +6487,65 @@ loc_35C6:               ; CODE XREF: BIOS:000035CEj
 loc_35DC:               ; CODE XREF: BIOS:000035A0j
 					; BIOS:000035A6j ...
 		bsr.w   sub_2BA2
-		move.w  #$100,cdbControlStatus(a5)
-		bclr    #7,byte_5B18(a5)
-		lea word_5AEA(a5),a0
-		lea cdbCommandCache(a5),a1
+		move.w  #$100, cdbControlStatus(a5)
+		bclr    #7, byte_5B18(a5)
+		lea word_5AEA(a5), a0
+		lea cdbCommandCache(a5), a1
 		bsr.w   copyCdbCommand
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_35FC:               ; CODE XREF: BIOS:00003558j
-		move.w  #$FFFF,word_5B0A(a5)
+		move.w  #$FFFF, word_5B0A(a5)
 		bsr.w   sub_2BBC
 
 loc_3606:               ; CODE XREF: BIOS:000034F2j
 					; BIOS:000034FAj ...
-		move.w  #1,cdbCommandCache(a5)
+		move.w  #1, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3610:               ; CODE XREF: BIOS:00002B84j
-		move.w  #$500,cdbControlStatus(a5)
+		move.w  #$500, cdbControlStatus(a5)
 		bsr.w   cddGetStatusCodeByte
-		cmpi.b  #8,d0
+		cmpi.b  #8, d0
 		beq.s   loc_3658
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		beq.s   loc_3632
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_3632
-		cmpi.b  #4,d0
+		cmpi.b  #4, d0
 		bne.s   loc_3606
 
 loc_3632:               ; CODE XREF: BIOS:00003624j
 					; BIOS:0000362Aj ...
-		btst    #1,cdcFlags0(a5)
+		btst    #1, cdcFlags0(a5)
 		bne.s   loc_363E
 		bsr.w   _cdcstop
 
 loc_363E:               ; CODE XREF: BIOS:00003638j
-		addq.w  #1,word_5B0E(a5)
-		move.w  word_5B0E(a5),d0
-		cmp.w   cdbSpindownDelay(a5),d0
+		addq.w  #1, word_5B0E(a5)
+		move.w  word_5B0E(a5), d0
+		cmp.w   cdbSpindownDelay(a5), d0
 		bls.w   cdbPrepareCommand
-		move.w  #$B,cdbCommandCache(a5)
+		move.w  #$B, cdbCommandCache(a5)
 		bra.w   loc_2ACA
 ; ---------------------------------------------------------------------------
 
 loc_3658:               ; CODE XREF: BIOS:0000361Ej
 		bsr.w   sub_D7C
-		cmpi.b  #6,d0
+		cmpi.b  #6, d0
 		bcc.s   loc_3606
 		bra.s   loc_3632
 ; ---------------------------------------------------------------------------
 
 loc_3664:               ; CODE XREF: BIOS:00003860j
 					; BIOS:0000388Cj
-		andi.b  #$9E,byte_5B18(a5)
-		bset    #1,byte_5B18(a5)
-		move.w  word_5AF4(a5),word_5ADC(a5)
-		move.w  #$30,word_5AFE(a5)
-		move.l  dword_5A30(a5),cdbArg1Cache(a5)
+		andi.b  #$9E, byte_5B18(a5)
+		bset    #1, byte_5B18(a5)
+		move.w  word_5AF4(a5), word_5ADC(a5)
+		move.w  #$30, word_5AFE(a5)
+		move.l  dword_5A30(a5), cdbArg1Cache(a5)
 		bra.w   loc_2FEE
 ; ---------------------------------------------------------------------------
 
@@ -6730,24 +6730,24 @@ loc_381A:               ; CODE XREF: BIOS:00003822j
 loc_3832:               ; CODE XREF: BIOS:000037F4j
 					; BIOS:000037FCj ...
 		bsr.w   sub_19C4
-		move.w  #$505,cdbControlStatus(a5)
-		bset    #6,byte_5B18(a5)
+		move.w  #$505, cdbControlStatus(a5)
+		bset    #6, byte_5B18(a5)
 		clr.w   word_5B0E(a5)
-		move.w  #$2B,cdbCommandCache(a5)
+		move.w  #$2B, cdbCommandCache(a5)
 		bra.w   loc_2AD0
 ; ---------------------------------------------------------------------------
 
 loc_3850:               ; CODE XREF: BIOS:000037EEj
-		cmpi.b  #$C,d0
+		cmpi.b  #$C, d0
 		beq.s   loc_3890
 
-		cmpi.b  #1,d0
+		cmpi.b  #1, d0
 		beq.s   loc_3890
 
-		cmpi.b  #0,d0
+		cmpi.b  #0, d0
 		beq.w   loc_3664
 
-		move.w  #3,word_5B20(a5)
+		move.w  #3, word_5B20(a5)
 		bra.s   loc_3870
 ; ---------------------------------------------------------------------------
 
@@ -6755,7 +6755,7 @@ loc_386C:               ; CODE XREF: BIOS:00003878j
 		bsr.w   cdbSuspendExecution
 
 loc_3870:               ; CODE XREF: BIOS:0000386Aj
-		move.w  #$70,d0
+		move.w  #$70, d0
 		bsr.w   sub_B0C
 		bcs.s   loc_386C
 
@@ -6778,9 +6778,9 @@ loc_3890:               ; CODE XREF: BIOS:00003854j
 
 		bsr.w   sub_2BA2
 
-		move.w  #$101,cdbControlStatus(a5)
-		bclr    #6,byte_5B18(a5)
-		move.w  #$2A,cdbCommandCache(a5)
+		move.w  #$101, cdbControlStatus(a5)
+		bclr    #6, byte_5B18(a5)
+		move.w  #$2A, cdbCommandCache(a5)
 		bra.w   loc_2AD0
 ; ---------------------------------------------------------------------------
 
@@ -6835,16 +6835,16 @@ loc_38B8:               ; CODE XREF: BIOS:00002B90j
 
 
 checkDiscBootBlock:             ; CODE XREF: sub_3A6C+1B2p
-	movem.l d0/a0-a1,-(sp)
+	movem.l d0/a0-a1, -(sp)
 
-	lea    regionBootBlock(pc), a1
+	lea regionBootBlock(pc), a1
+
 	move.w #705, d0
-
 	@loc_3E46:
 		cmpm.w (a0)+, (a1)+
 		dbne   d0, @loc_3E46
 
-	; Raise error (carry) flag if not equal
+	; Return error if it doesn't match
 	beq.s @return
 	m_setErrorFlag
 
