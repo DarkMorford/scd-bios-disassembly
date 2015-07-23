@@ -10,6 +10,10 @@ m_disableInterrupts:    macro
 m_enableInterrupts: macro
 	move #$2000, sr
 	endm
+	
+m_maskInterrupts:   macro level
+	move #($2000 | (level << 8)), sr
+	endm
 
 ;   Status register
 m_saveStatusRegister:   macro

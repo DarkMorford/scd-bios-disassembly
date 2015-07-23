@@ -141,8 +141,9 @@ loc_250:
 	movea.l (initialSSP).l, sp
 
 loc_256:
-	clr.b   (GA_INT_MASK).w
+	clr.b (GA_INT_MASK).w
 	m_disableInterrupts
+
 	movem.l _zeroes(pc), d0-a6
 	move.l  a0, usp
 	move.b  #0, (GA_CDD_CONTROL).w
@@ -359,7 +360,7 @@ loc_410:
 
 installUserCallbacks:
 	; Disable MD interrupt temporarily
-	move #$2200, sr
+	m_maskInterrupts INT_MD
 
 	lea (_USERCALL0).w, a0
 	bsr.w _setJmpTbl
@@ -2400,7 +2401,7 @@ _cdcread:               ; CODE XREF: executeCdbCommand+3Aj
 	m_setErrorFlag
 
 	m_saveStatusRegister
-	move #$2500, sr
+	m_maskInterrupts INT_CDC
 
 	; Return error if buffer is empty
 	lea    cdcRingBuffer(a5), a4
@@ -2600,7 +2601,7 @@ _cdctrn:                ; CODE XREF: executeCdbCommand+3Ej
 
 @loc_197A:
 	m_saveStatusRegister
-	move #$2500, sr
+	m_maskInterrupts INT_CDC
 
 	move.b #CDC_WRITE_IFCTRL, (GA_CDC_ADDRESS).w
 	move.b #$38, (GA_CDC_REGISTER).w
@@ -2624,7 +2625,7 @@ _cdctrn:                ; CODE XREF: executeCdbCommand+3Ej
 
 _cdcack:                ; CODE XREF: executeCdbCommand+42j
 	m_saveStatusRegister
-	move #$2500, sr
+	m_maskInterrupts INT_CDC
 
 	move.b #CDC_WRITE_DTACK, (GA_CDC_ADDRESS).w
 	move.b #0, (GA_CDC_REGISTER).w
@@ -2671,7 +2672,7 @@ sub_19D4:               ; CODE XREF: BIOS:loc_3890p
 
 _cdcsetmode:                ; CODE XREF: executeCdbCommand+66j
 	m_saveStatusRegister
-	move    #$2500, sr
+	m_maskInterrupts INT_CDC
 
 	andi.w  #$F, d1
 	lsl.w   #2,  d1
@@ -3428,7 +3429,7 @@ _scdinit:               ; CODE XREF: executeCdbCommand+46j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1F1E:               ; CODE XREF: _scdinit+2Cp _scdinit+34p ...
+sub_1F1E:
 	move.l a4, (a2)+
 
 	move.l (a6)+, d0
@@ -3457,8 +3458,8 @@ _scdstop:               ; CODE XREF: _scdstart+Ap executeCdbCommand+4Ej
 _scdstart:              ; CODE XREF: executeCdbCommand+4Aj
 	movem.l a4, -(sp)
 	m_saveStatusRegister
+	m_maskInterrupts INT_SCD
 
-	move    #$2600, sr
 	bsr.s   _scdstop
 
 	move.w  #7, scdFlags0(a5)
@@ -3478,14 +3479,15 @@ _scdstart:              ; CODE XREF: executeCdbCommand+4Aj
 	clr.b   byte_5A8E(a5)
 	move.b  #$FF, byte_5A8F(a5)
 
+	; Clear ring buffers
 	movea.l scdPcktBuffer(a5), a4
-	move.w  6(a4), 4(a4)
+	move.w  RINGBUFFER.writePtr(a4), RINGBUFFER.readPtr(a4)
 
 	movea.l scdPackBuffer(a5), a4
-	move.w  6(a4), 4(a4)
+	move.w  RINGBUFFER.writePtr(a4), RINGBUFFER.readPtr(a4)
 
 	movea.l scdQcodBuffer(a5), a4
-	move.w  6(a4), 4(a4)
+	move.w  RINGBUFFER.writePtr(a4), RINGBUFFER.readPtr(a4)
 
 	; Enable SCD interrupt
 	bset #GA_IEN6, (GA_INT_MASK).w
@@ -3519,13 +3521,13 @@ _scdpql:                ; CODE XREF: executeCdbCommand+5Ej
 _scdpq:                 ; CODE XREF: executeCdbCommand+5Aj
 	movem.l a4, -(sp)
 	m_saveStatusRegister
-	move #$2600, sr
+	m_maskInterrupts INT_SCD
 
 	movea.l scdQcodBuffer(a5), a4
 
-	move.w  6(a4), d0
-
-	cmp.w   4(a4), d0
+	; Return error if buffer is empty
+	move.w  RINGBUFFER.writePtr(a4), d0
+	cmp.w   RINGBUFFER.readPtr(a4), d0
 	beq.s   @loc_1FEC
 
 	movea.l a0, a1
@@ -3566,13 +3568,13 @@ _scdpq:                 ; CODE XREF: executeCdbCommand+5Aj
 _scdread:               ; CODE XREF: executeCdbCommand+56j
 	movem.l a4, -(sp)
 	m_saveStatusRegister
-	move #$2400,sr
+	m_maskInterrupts INT_CDD
 
 	movea.l scdPackBuffer(a5), a4
 
-	move.w 6(a4), d0
-
-	cmp.w 4(a4), d0
+	; Return error if buffer is empty
+	move.w RINGBUFFER.writePtr(a4), d0
+	cmp.w RINGBUFFER.readPtr(a4), d0
 	beq.s @loc_2032
 
 	movea.l a0, a1
@@ -3658,7 +3660,9 @@ sub_203E:               ; CODE XREF: BIOS:00000658p
 @loc_20B4:
 	lea (GA_SUBCODE_BUFFER).w, a0
 	lea (a0, d0.w), a0
+
 	movea.l scdPcktBuffer(a5), a4
+
 	bsr.w   writeRingBuffer
 	add.b   d1, byte_5A87(a5)
 
@@ -3878,12 +3882,13 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	movea.l scdPackBuffer(a5), a3
 	movea.l scdPcktBuffer(a5), a4
 
+	; Return if buffer is empty
 	move.w RINGBUFFER.writePtr(a4), d0
 	cmp.w  RINGBUFFER.readPtr(a4), d0
 	beq.s  @loc_227E
 
 	m_saveStatusRegister
-	move #$2300, sr
+	m_maskInterrupts INT_TIMER
 
 @loc_2226:
 	tst.b  scdFlags0+1(a5)
@@ -3892,7 +3897,7 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	subq.b #1, scdFlags0+1(a5)
 
 	m_saveStatusRegister
-	move #$2600, sr
+	m_maskInterrupts INT_SCD
 
 	bsr.w readRingBuffer
 	seq 1(sp)
@@ -3908,7 +3913,7 @@ updateSubcode:               ; CODE XREF: BIOS:0000061Ep
 	exg   a3, a4
 
 	m_saveStatusRegister
-	move #$2600, sr
+	m_maskInterrupts INT_SCD
 
 	bsr.w sub_22BC
 	bsr.w readRingBuffer
@@ -3982,16 +3987,16 @@ sub_22BC:               ; CODE XREF: updateSubcode+5Cp
 
 @loc_22C2:               ; CODE XREF: sub_22BC+22j
 	bmi.s @loc_22C8
-	sub.w $A(a4), d0
+	sub.w RINGBUFFER.bufferSize(a4), d0
 
 @loc_22C8:               ; CODE XREF: sub_22BC:loc_22C2j
-	add.w 4(a4), d0
+	add.w RINGBUFFER.readPtr(a4), d0
 	bpl.s @loc_22D2
 
-	add.w $A(a4), d0
+	add.w RINGBUFFER.bufferSize(a4), d0
 
 @loc_22D2:               ; CODE XREF: sub_22BC+10j
-	move.b $10(a4, d0.w), d0
+	move.b RINGBUFFER.structSize(a4, d0.w), d0
 	andi.w #$3F, d0
 	move.b d0, (a1)+
 
@@ -3999,7 +4004,7 @@ sub_22BC:               ; CODE XREF: updateSubcode+5Cp
 	move.w (a0)+, d0
 	bne.s  @loc_22C2
 
-	lea -$18(a1), a1
+	lea -24(a1), a1
 
 	rts
 ; End of function sub_22BC
