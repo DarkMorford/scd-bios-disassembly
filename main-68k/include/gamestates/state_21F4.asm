@@ -238,7 +238,7 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 	move.w #0, (word_219C14).l
 
 	; Clear $FFC102-$FFC10C
-	lea (word_FFFFC102).w, a0
+	lea (palette2Rotation).w, a0
 	moveq #4, d7
 	@loc_204C:
 		clr.w (a0)+
@@ -420,7 +420,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 
 	movem.l d0-d1/a1, -(sp)
 
-	moveq  #0, d0
+	moveq #0, d0
 
 	; Check controller #1 type
 	cmpi.b #JOYTYPE_TYPE7, (joy1Type).w
@@ -601,7 +601,7 @@ sub_2336:               ; CODE XREF: sub_2310+10p
 		move.w (a0)+, (VDP_DATA).l
 		dbf d7, @loc_233E
 
-	addi.l #$800000, d1
+	addi.l #$800000, d1     ; Add $80 to VDP address
 	dbf d6, sub_2336
 
 	rts
@@ -614,7 +614,7 @@ sub_2336:               ; CODE XREF: sub_2310+10p
 sub_2354:               ; CODE XREF: sub_238C+18p sub_238C+32p ...
 	movea.l a1, a2
 
-	; Clear $700 bytes starting at a2
+	; Clear $700 bytes
 	move.w #$1BF, d7
 	@loc_235A:
 		move.l #0, (a2)+
@@ -717,6 +717,7 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 
 	jsr    displayOff
 
+	; Return if sub-CPU has Word RAM
 	btst   #GA_RET, (GA_MEM_MODE).l
 	beq.w  @loc_24DC
 
@@ -743,16 +744,22 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 
 @loc_2478:
 	move.w (word_219C00).l, d3
+
+	; Get VRAM address for DMA
 	lsl.w  #1, d3
 	moveq  #0, d0
 	move.w word_24E2(pc, d3.w), d0
 
+	; Convert address to VDP format
 	lsl.l  #2, d0
 	lsr.w  #2, d0
 	swap   d0
 	ori.l  #$40000000, d0
+
+	; Get DMA word count
 	move.w word_24F2(pc, d3.w), d2
 
+	; Get DMA source address
 	lsl.w  #1, d3
 	move.l off_2502(pc, d3.w), d1
 
@@ -760,8 +767,9 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 
 	move.w (word_219C00).l, (word_FFFFC10A).w
 	move.b (byte_FFFFC138).w, (word_219C18).l
-	tst.b  (word_219C16).l
-	beq.s  @loc_24C0
+
+	tst.b (word_219C16).l
+	beq.s @loc_24C0
 
 	move.b (word_219C16).l, (byte_FFFFC10C).w
 
@@ -2385,7 +2393,7 @@ sub_2F58:               ; CODE XREF: sub_2424+50p
 	lea    palette_2F8C(pc), a0
 	adda.w d0, a0
 
-	lea (paletteBuffer0+2).w, a1
+	lea (paletteBuffer0+COLOR1).w, a1
 
 	moveq #7, d7
 	@loc_2F6A:
@@ -2401,6 +2409,7 @@ sub_2F58:               ; CODE XREF: sub_2424+50p
 	clr.w (dword_FFFFC106+2).w
 
 @loc_2F84:
+	; Signal palette update
 	bset #0, (vdpUpdateFlags).w
 	rts
 ; End of function sub_2F58
@@ -2428,23 +2437,24 @@ palette_2F8C:
 
 
 sub_2FAC:               ; CODE XREF: sub_2424:loc_2470p
-	lea (paletteBuffer2+6).w, a0
+	lea (paletteBuffer2+COLOR3).w, a0
 
-	addq.w #1,   (word_FFFFC102).w
-	cmpi.w #$10, (word_FFFFC102).w
+	addq.w #1,  (palette2Rotation).w
+	cmpi.w #16, (palette2Rotation).w
 	bne.s  @loc_2FC0
 
-	clr.w (word_FFFFC102).w
+	clr.w (palette2Rotation).w
 
-@loc_2FC0:               ; CODE XREF: sub_2FAC+Ej
-	move.w (word_FFFFC102).w, d0
+@loc_2FC0:
+	move.w (palette2Rotation).w, d0
 	lsr.w  #1, d0
 	lsl.w  #1, d0
 
-	move.w  palette_2FE0(pc, d0.w),  (a0)
-	move.w  palette_3000(pc, d0.w), 2(a0)
-	move.w  palette_3020(pc, d0.w), 4(a0)
+	move.w palette_2FE0(pc, d0.w),  (a0)
+	move.w palette_3000(pc, d0.w), 2(a0)
+	move.w palette_3020(pc, d0.w), 4(a0)
 
+	; Signal a palette update
 	bset #0, (vdpUpdateFlags).w
 	rts
 ; End of function sub_2FAC

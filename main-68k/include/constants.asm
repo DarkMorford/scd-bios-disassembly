@@ -14,6 +14,9 @@
 	; Commands for the Z80 driver
 	include "constants\z80Commands.asm"
 
+	; Color-related constants
+	include "constants\colors.asm"
+
 ;   Main loop states
 STATE_NULL   equ 0
 STATE_21F4   equ 4
