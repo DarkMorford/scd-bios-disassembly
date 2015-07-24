@@ -11,9 +11,11 @@ joy2Down    equ $FFFFFE22
 joy1Triggered   equ $FFFFFE21
 joy2Triggered   equ $FFFFFE23
 
+byte_FFFFFE24 equ $FFFFFE24
+byte_FFFFFE25 equ $FFFFFE25
+
 byte_FFFFFE0B equ $FFFFFE0B
 byte_FFFFFE17 equ $FFFFFE17
-byte_FFFFFE24 equ $FFFFFE24
 dword_FFFFFE12 equ $FFFFFE12
 joy1MouseData equ $FFFFFE00
 unk_FFFFFE0A equ $FFFFFE0A

@@ -611,6 +611,11 @@ sub_2336:               ; CODE XREF: sub_2310+10p
 ; =============== S U B R O U T I N E =======================================
 
 
+; Inputs:
+;   a0: Data source
+;   a1: Data destination
+;   d1:
+
 sub_2354:               ; CODE XREF: sub_238C+18p sub_238C+32p ...
 	movea.l a1, a2
 
@@ -712,6 +717,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 ; =============== S U B R O U T I N E =======================================
 
 
+; V-blank handler for state_21F4
 sub_2424:               ; DATA XREF: sub_1CFA+462o
 	bsr.w  sub_1818
 

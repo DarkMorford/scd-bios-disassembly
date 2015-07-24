@@ -197,6 +197,8 @@ sub_16D2:               ; CODE XREF: ROM:0000034Cj sub_16D2+8j ...
 sub_16E6:               ; CODE XREF: loadPrgFromWordRam+24p
 	bclr #0, (byte_FFFFFDDD).w
 	bset #GA_MAINFLAG7, (GA_COMM_MAINFLAGS).l
+	
+	; Give Word RAM to sub-CPU
 	bset #GA_DMNA, (GA_MEM_MODE).l
 	rts
 ; End of function sub_16E6

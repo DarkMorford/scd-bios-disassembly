@@ -1987,21 +1987,21 @@ sub_18CE:               ; CODE XREF: ROM:0000032Cj
 
 @loc_18DC:
 	lea (byte_FFFFFE24).w, a5
+	adda.w d0, a5
 
-	adda.w  d0, a5
-	andi.b  #$F, d1
-	bne.s   @loc_18FA
+	andi.b #$F, d1
+	bne.s  @loc_18FA
 
-	andi.w  #$F00, d1
-	beq.s   @loc_18FE
+	andi.w #$F00, d1
+	beq.s  @loc_18FE
 
-	subq.b  #1, (a5)
-	bpl.s   @loc_18FE
+	subq.b #1, (a5)
+	bpl.s  @loc_18FE
 
-	move.b  #5, (a5)
+	move.b #5, (a5)
 
-	lsr.w   #8, d1
-	bra.s   @loc_18FE
+	lsr.w  #8, d1
+	bra.s  @loc_18FE
 ; ---------------------------------------------------------------------------
 
 @loc_18FA:
@@ -2128,8 +2128,8 @@ loc_198E:
 
 ; Inputs:
 ;   d0: VDP address
-;   d1:
-;   d2:
+;   d1: Columns
+;   d2: Rows
 ;   d3:
 
 sub_199C:               ; CODE XREF: ROM:00000334j
@@ -2140,9 +2140,11 @@ sub_199C:               ; CODE XREF: ROM:00000334j
 
 	@loc_19A6:
 		move.w d3, d5
-		move.l d0, 4(a5)
-		move.w d1, d4
 
+		; Set VDP write address
+		move.l d0, 4(a5)
+
+		move.w d1, d4
 		@loc_19AE:
 			move.w d5, (a5)
 			add.w  d6, d5
@@ -2150,6 +2152,7 @@ sub_199C:               ; CODE XREF: ROM:00000334j
 
 		addq.w #1, d3
 
+		; Go to next row
 		swap  d0
 		add.w (vdpLineIncrement).w, d0
 		swap  d0
@@ -2669,9 +2672,11 @@ sub_30C2:               ; CODE XREF: sub_3040p
 	move.w #8, (unk_FFFFD380).w
 	bsr.w  sub_5FA2
 
+	; Vertical scroll
 	m_loadVsramWriteAddress 0
 	move.l #$200100, (VDP_DATA).l
 
+	; Horizontal scroll
 	m_loadVramWriteAddress $8400
 	move.w #$FF80, (VDP_DATA).l
 
@@ -2706,6 +2711,7 @@ vdpReg_318C:
 ; =============== S U B R O U T I N E =======================================
 
 
+; V-blank handler for state_3040
 sub_319E:                               ; DATA XREF: sub_30C2+1Co
 	lea (VDP_CONTROL).l, a4
 
@@ -9960,6 +9966,7 @@ sub_63D4:               ; CODE XREF: sub_31FE+Ej sub_63D4+8j
 
 
 sub_6476:
+	; Wait for sub-CPU to give us Word RAM
 	btst    #GA_RET, (GA_MEM_MODE).l
 	beq.s   sub_6476
 
@@ -9986,6 +9993,7 @@ sub_6476:
 	m_z80RequestBus
 
 	moveq   #0, d7
+
 @loc_64D0:
 	move.w  2(a0), d6
 	cmp.w   (a0), d6
@@ -10007,12 +10015,12 @@ sub_6476:
 	btst    #1, (GA_COMM_MAINFLAGS).l
 	beq.s   @loc_6512
 
-	move.w  #2000, d6
+	move.w  #2000, d6   ; NTSC
 
 	btst    #MDV_VMOD, (MD_VERSION).l
 	beq.s   @loc_650E
 
-	move.w  #6000, d6
+	move.w  #6000, d6   ; PAL
 
 @loc_650E:
 	cmp.w   d0, d7
@@ -10556,7 +10564,7 @@ loadPrgFromWordRam:         ; CODE XREF: ROM:000005E2j
 		move.l (a0)+, (a1)+
 		dbf d0, @loc_688A
 
-	moveq #$FFFFFFFF,d1
+	moveq #$FFFFFFFF, d1
 	bsr.w sub_183A
 
 	lea (sub_68AE).l, a1
@@ -13463,6 +13471,7 @@ loc_868A:               ; CODE XREF: sub_866A+1Cj
 ; =============== S U B R O U T I N E =======================================
 
 
+; V-blank handler for state_7374
 sub_86A6:               ; DATA XREF: sub_873A+20o
 	btst  #GA_RET, (GA_MEM_MODE).l
 	beq.s @loc_86E2
@@ -13546,7 +13555,7 @@ sub_873A:               ; CODE XREF: sub_7374p
 
 	bsr.w   waitForWordRam
 
-	lea sub_86A6,a1
+	lea sub_86A6, a1
 	jsr setVblankUserRoutine
 
 	move.l  #0,(mainCommData+8).w
@@ -16316,12 +16325,12 @@ unk_E882:
 unk_E9F2:
 	incbin "misc\nemesis_E9F2.bin"
 
-word_EB12: 
+word_EB12:
 	incbin "misc\unk_EB12.bin"
-		
+
 dword_EC72:
 	incbin "misc\unk_EC72.bin"
-		
+
 word_ECF2:
 	incbin "misc\unk_ECF2.bin"
 
