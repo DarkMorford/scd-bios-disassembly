@@ -5235,7 +5235,7 @@ sub_319E:                               ; DATA XREF: sub_30C2+1Co
 	; Disable DMA
 	move.w (vdpRegCache+2).w, (a4)
 
-	move.l #$50000003, (a4)             ; VRAM $D000
+	m_loadVramWriteAddress $D000, (a4)
 	move.w (spriteTable).w, -4(a4)
 
 	m_restoreStatusRegister
@@ -5340,11 +5340,11 @@ loc_32DC:
 ; ---------------------------------------------------------------------------
 
 loc_32F8:               ; CODE XREF: sub_329A+5Aj
-	btst    #7, (joy1Down).w
+	btst    #JOYBIT_START, (joy1Down).w
 	bne.s   loc_3342
 	tst.b   (byte_FFFFD003).w
 	beq.s   loc_331A
-	btst    #4, (joy1Triggered).w
+	btst    #JOYBIT_BTNB, (joy1Triggered).w
 	bne.w   loc_34A2
 	btst    #1, 2(a0)
 	beq.s   loc_331A
@@ -5376,7 +5376,7 @@ loc_3322:
 
 loc_3342:               ; CODE XREF: sub_329A+64j
 	move.b  (joy1Triggered).w,d0
-	btst    #7,d0
+	btst    #JOYBIT_START,d0
 	beq.w   loc_33AE
 	move.w  #8,$5C(a0)
 	bsr.w   sub_1846
@@ -5773,7 +5773,7 @@ sub_3654:               ; CODE XREF: sub_329A+90j
 sub_367C:               ; CODE XREF: sub_3654+12p
 	move.b  (joy1Triggered).w,d1
 
-	btst    #2, d1
+	btst    #JOYBIT_LEFT, d1
 	beq.s   @loc_3692
 
 	tst.w   $32(a0)
@@ -5784,7 +5784,7 @@ sub_367C:               ; CODE XREF: sub_3654+12p
 ; ---------------------------------------------------------------------------
 
 @loc_3692:
-	btst    #3, d1
+	btst    #JOYBIT_RIGHT, d1
 	beq.s   @loc_36A4
 
 	cmpi.w  #2, $32(a0)
@@ -5793,7 +5793,7 @@ sub_367C:               ; CODE XREF: sub_3654+12p
 	addq.w  #1, $32(a0)
 
 @loc_36A4:
-	btst    #1, d1
+	btst    #JOYBIT_DOWN, d1
 	beq.s   @loc_36B8
 
 	cmpi.w  #2, $34(a0)
@@ -5804,7 +5804,7 @@ sub_367C:               ; CODE XREF: sub_3654+12p
 ; ---------------------------------------------------------------------------
 
 @loc_36B8:
-	btst    #0, d1
+	btst    #JOYBIT_UP, d1
 	beq.s   @locret_36C8
 
 	tst.w   $34(a0)
@@ -7824,7 +7824,7 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 
 	andi.w #$FF, d1
 
-	btst   #0, (joy1Down).w
+	btst   #JOYBIT_UP, (joy1Down).w
 	beq.s  @loc_4360
 
 	addq.w #1, d1
@@ -7870,7 +7870,7 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 
 @loc_43A4:
 	andi.w #$FF, d0
-	btst   #2, (joy1Down).w
+	btst   #JOYBIT_LEFT, (joy1Down).w
 	beq.s  @loc_43B2
 
 	addq.w #1, d0
@@ -10532,7 +10532,7 @@ locret_5730:                ; CODE XREF: sub_5722+2j sub_5722+8j
 
 
 sub_5732:               ; CODE XREF: sub_44E2+1Ep sub_45BE+4Ep ...
-	move.l  #$43580003,d0
+	m_loadVramWriteAddress $C358, d0
 	bsr.w   sub_1846
 	bne.s   sub_5754
 	tst.b   (byte_FFFFD003).w
@@ -11117,7 +11117,7 @@ sub_59DE:               ; CODE XREF: sub_3A40+1Cj
 	bne.s   loc_5A60
 
 loc_59F2:               ; CODE XREF: sub_59DE+6j sub_59DE+Cj
-	move.l  #$45BE0003,d0
+	m_loadVramWriteAddress $C5BE, d0
 	tst.b   (byte_FFFFD003).w
 	beq.s   loc_5A1C
 	cmpi.w  #4,d1
@@ -11180,14 +11180,15 @@ sub_5A64:               ; CODE XREF: sub_59DE+32p
 	movea.w word_5A7E(pc,d1.w),a1
 	moveq   #9,d1
 	moveq   #1,d2
-	move.l  #$45BE0003,d0
+	m_loadVramWriteAddress $C5BE, d0
 	bsr.w   writeTilemapToVram
 	move.w  (sp)+,d1
 	rts
 ; End of function sub_5A64
 
 ; ---------------------------------------------------------------------------
-word_5A7E:  dc.w $EC3E
+word_5A7E:
+	dc.w $EC3E
 	dc.w $EC16
 	dc.w $EBC6
 	dc.w $EBEE
@@ -11204,7 +11205,7 @@ sub_5A90:               ; CODE XREF: sub_4D78:loc_4D84j
 	cmpi.w  #2,d0
 	bhi.s   locret_5ACA
 	move.w  d0,d1
-	move.l  #$44BE0003,d0
+	m_loadVramWriteAddress $C4BE, d0
 	tst.w   d1
 	bne.s   loc_5ABC
 	moveq   #9,d1
@@ -11241,7 +11242,7 @@ sub_5AD0:               ; CODE XREF: sub_516C+10p
 	mulu.w  #$C,d0
 	lea (unk_FFFFEAEE).w,a1
 	adda.w  d0,a1
-	move.l  #$44B20003,d0
+	m_loadVramWriteAddress $C4B2, d0
 	moveq   #5,d1
 	bra.w   writeToVram
 ; End of function sub_5AD0
@@ -11251,12 +11252,12 @@ sub_5AD0:               ; CODE XREF: sub_516C+10p
 
 
 sub_5AEC:               ; CODE XREF: sub_5FA2+16p
-	move.l  #$43240003,d0
+	m_loadVramWriteAddress $C324, d0
 	lea (decompScratch).w,a1
 	moveq   #$19,d1
 	moveq   #$E,d2
 	jsr writeTilemapToVram(pc)
-	move.l  #$46D80003,d0
+	m_loadVramWriteAddress $C6D8, d0
 	lea (unk_FFFFE30C).w,a1
 	moveq   #9,d1
 	moveq   #$E,d2
@@ -11337,7 +11338,7 @@ sub_5B82:               ; CODE XREF: sub_4C8E+6p sub_4E9E+8p
 	move.w  #$2000,d0
 	bsr.w   sub_5764
 	move.w  #1,(word_FFFFD052).w
-	move.l  #$4AA40003,d0
+	m_loadVramWriteAddress $CAA4, d0
 	lea (unk_FFFFE550).w,a1
 	moveq   #$19,d1
 	moveq   #8,d2
@@ -11396,7 +11397,7 @@ unk_5BE2:   dc.b   2        ; DATA XREF: sub_5B82+22o
 
 sub_5BEC:               ; CODE XREF: sub_4E48+3Ap
 	move.w  #2,(word_FFFFD052).w
-	move.l  #$4AA40003,d0
+	m_loadVramWriteAddress $CAA4, d0
 	lea (unk_FFFFE724).w,a1
 	moveq   #$19,d1
 	moveq   #8,d2
@@ -11421,7 +11422,7 @@ sub_5C20:               ; CODE XREF: sub_3B28+4p sub_3BAE+4p ...
 	moveq   #$A,d1
 	moveq   #0,d0
 	bsr.w   sub_5764
-	move.l  #$4AA40003,d0
+	m_loadVramWriteAddress $CAA4, d0
 	moveq   #$19,d1
 	moveq   #8,d2
 	move.w  #0,d3
@@ -11443,7 +11444,7 @@ locret_5C4E:                ; CODE XREF: sub_5C20+28j
 
 sub_5C50:               ; CODE XREF: sub_3710+138p
 				; sub_3E6A+58p ...
-	move.l  #$4C2A0003,d0
+	m_loadVramWriteAddress $CC2A, d0
 	moveq   #0,d2
 	move.w  (word_FFFFD040).w,d4
 	move.w  (word_FFFFD100).w,d6
@@ -11457,7 +11458,7 @@ sub_5C50:               ; CODE XREF: sub_3710+138p
 
 sub_5C68:               ; CODE XREF: sub_3710+1A6p
 				; sub_3950:loc_39A6p ...
-	move.l  #$4D2A0003,d0
+	m_loadVramWriteAddress $CD2A, d0
 	moveq   #0,d2
 	move.w  (word_FFFFD042).w,d4
 	move.w  (word_FFFFD168).w,d6
@@ -11485,7 +11486,7 @@ sub_5C8A:               ; CODE XREF: sub_3040:loc_3092p
 	beq.s   locret_5CF8
 	btst    #4,(byte_FFFFD004).w
 	bne.s   locret_5CF8
-	move.l  #$46AA0003,d0
+	m_loadVramWriteAddress $C6AA, d0
 	move.w  (word_FFFFD03E).w,d1
 	moveq   #0,d2
 	move.w  (unk_FFFFD03C).w,d3
@@ -11515,7 +11516,7 @@ loc_5CD6:               ; CODE XREF: sub_5C8A+48j
 	movem.l (sp)+,d1/d3/a1
 
 loc_5CEA:               ; CODE XREF: sub_5C8A+50j
-	move.l  #$46AA0003,d0
+	m_loadVramWriteAddress $C6AA, d0
 	move.w  #$2000,d2
 	bra.w   sub_5D4C
 ; ---------------------------------------------------------------------------
@@ -11532,7 +11533,7 @@ sub_5CFA:               ; CODE XREF: sub_4400+8Cp
 				; sub_4D9E:loc_4DD0p ...
 	move.w  (unk_FFFFD1D0).w,d2
 	beq.w   sub_5DB0
-	move.l  #$46AA0003,d0
+	m_loadVramWriteAddress $C6AA, d0
 	move.w  (word_FFFFD03E).w,d1
 	lea (unk_FFFFD1D2).w,a1
 	mulu.w  #$A,d1
@@ -11627,9 +11628,9 @@ loc_5D94:               ; CODE XREF: sub_5D82+Cj
 
 sub_5DB0:               ; CODE XREF: sub_45BE+38p sub_5CFA+4j
 	clr.w   (word_FFFFD03E).w
-	move.l  #$46AA0003,d0
+	m_loadVramWriteAddress $C6AA, d0
 	bsr.w   loc_5DC4
-	move.l  #$472A0003,d0
+	m_loadVramWriteAddress $C72A, d0
 
 loc_5DC4:               ; CODE XREF: sub_5DB0+Ap
 	lea (word_FFFFE172).w,a1
@@ -11688,12 +11689,12 @@ sub_5DEE:               ; CODE XREF: sub_59DE+38p
 
 
 sub_5DFA:               ; CODE XREF: sub_30C2+ACp
-	move.l  #$54B80003,d0
+	m_loadVramWriteAddress $D4B8, d0
 	lea (unk_FFFFE30C).w,a1
 	moveq   #9,d1
 	moveq   #$E,d2
 	jsr writeTilemapToVram(pc)
-	move.l  #$51380003,d0
+	m_loadVramWriteAddress $D138, d0
 	bsr.w   sub_5754
 	move.w  #$2000,d0
 	moveq   #3,d1
@@ -11706,20 +11707,20 @@ sub_5DFA:               ; CODE XREF: sub_30C2+ACp
 
 
 sub_5E22:               ; CODE XREF: sub_4F9A+Ap
-		bsr.w   sub_5E88
-		move.l  #$42200003,d6
-		bsr.w   loc_67E2
-		move.l  #$43580003,d0
-		bsr.w   sub_5754
-		moveq   #0,d0
-		moveq   #9,d1
-		bsr.w   sub_5764
-		moveq   #8,d1
-		bsr.w   sub_5764
-		moveq   #3,d1
-		bsr.w   sub_59DE
-		bsr.w   sub_5ED2
-		rts
+	bsr.w   sub_5E88
+	m_loadVramWriteAddress $C220, d6
+	bsr.w   loc_67E2
+	m_loadVramWriteAddress $C358, d0
+	bsr.w   sub_5754
+	moveq   #0,d0
+	moveq   #9,d1
+	bsr.w   sub_5764
+	moveq   #8,d1
+	bsr.w   sub_5764
+	moveq   #3,d1
+	bsr.w   sub_59DE
+	bsr.w   sub_5ED2
+	rts
 ; End of function sub_5E22
 
 
@@ -11727,13 +11728,13 @@ sub_5E22:               ; CODE XREF: sub_4F9A+Ap
 
 
 sub_5E54:               ; CODE XREF: sub_4FB4+6p
-		bsr.s   resetWindowVPos
-		bsr.w   sub_5732
-		move.l  #$42200003,d6
-		bsr.w   sub_6816
-		moveq   #6,d1
-		bsr.w   sub_59DE
-		rts
+	bsr.s   resetWindowVPos
+	bsr.w   sub_5732
+	m_loadVramWriteAddress $C220, d6
+	bsr.w   sub_6816
+	moveq   #6,d1
+	bsr.w   sub_59DE
+	rts
 ; End of function sub_5E54
 
 
@@ -11741,17 +11742,17 @@ sub_5E54:               ; CODE XREF: sub_4FB4+6p
 
 
 sub_5E6C:               ; CODE XREF: sub_329A+238j
-		bsr.w   sub_4218
-		bls.s   loc_5E74
-		bsr.s   resetWindowVPos
+	bsr.w   sub_4218
+	bls.s   loc_5E74
+	bsr.s   resetWindowVPos
 
 loc_5E74:               ; CODE XREF: sub_3B28+3Ep sub_5E6C+4j
-		move.l  #$51380003,d0
-		lea (unk_FFFFF5C6).w,a1
-		moveq   #9,d1
-		moveq   #$15,d2
-		jsr writeTilemapToVram(pc)
-		rts
+	m_loadVramWriteAddress $D138, d0
+	lea (unk_FFFFF5C6).w,a1
+	moveq   #9,d1
+	moveq   #$15,d2
+	jsr writeTilemapToVram(pc)
+	rts
 ; End of function sub_5E6C
 
 
@@ -11779,16 +11780,18 @@ resetWindowVPos:            ; CODE XREF: sub_5B82+5Ap sub_5E54p ...
 
 
 sub_5EA8:               ; CODE XREF: sub_329A+23Cj
-	move.l  #$11380003,d0
+	m_loadVramReadAddress $D138, d0
 	lea (unk_FFFFF5C6).w,a1
 	moveq   #9,d1
 	moveq   #$15,d2
 	jsr sub_6282(pc)
-	move.l  #$51380003,d0
+
+	m_loadVramWriteAddress $D138, d0
 	moveq   #9,d1
 	move.w  #$15,d2
 	move.w  #0,d3
 	jsr fillVramTilemap(pc)
+
 	bsr.s   sub_5E88
 	rts
 ; End of function sub_5EA8
@@ -11799,15 +11802,19 @@ sub_5EA8:               ; CODE XREF: sub_329A+23Cj
 
 sub_5ED2:               ; CODE XREF: sub_329A:loc_34C8p
 				; sub_5E22+2Cp
-	lea (VDP_DATA).l,a5
-	move.l  #$42BA0003,4(a5)
-	move.l  #$C6F9C6FA,(a5)
-	move.l  #$42C40003,4(a5)
-	move.l  #$C6F9C6FD,(a5)
-	move.l  #$42CC0003,4(a5)
-	move.w  #$C6FE,(a5)
-	move.l  #$42D40003,4(a5)
-	move.l  #$C6FBC6FC,(a5)
+	lea (VDP_DATA).l, a5
+
+	m_loadVramWriteAddress $C2BA, 4(a5)
+	move.l #$C6F9C6FA, (a5)
+
+	m_loadVramWriteAddress $C2C4, 4(a5)
+	move.l #$C6F9C6FD, (a5)
+
+	m_loadVramWriteAddress $C2CC, 4(a5)
+	move.w #$C6FE, (a5)
+
+	m_loadVramWriteAddress $C2D4, 4(a5)
+	move.l #$C6FBC6FC, (a5)
 	rts
 ; End of function sub_5ED2
 
@@ -11817,7 +11824,7 @@ sub_5ED2:               ; CODE XREF: sub_329A:loc_34C8p
 
 sub_5F10:               ; CODE XREF: sub_329A+228p
 	lea (VDP_DATA).l,a5
-	move.l  #$42BA0003,4(a5)
+	m_loadVramWriteAddress $C2BA, 4(a5)
 	move.w  #$C001,d0
 	moveq   #$13,d1
 
@@ -11843,12 +11850,13 @@ sub_5F2C:               ; CODE XREF: sub_30C2+4Ap
 
 sub_5F36:               ; CODE XREF: sub_3040+34p sub_5AEC+2Cp
 	lea (VDP_DATA).l,a5
-	move.l  #$492C0003,4(a5)
+	m_loadVramWriteAddress $C92C, 4(a5)
 	move.w  (dword_FFFFD032).w,d0
 	lea (unk_FFFFEAAE).w,a1
 	lea (unk_FFFFD044).w,a2
 	bsr.s   loc_5F66
-	move.l  #$482C0003,4(a5)
+	
+	m_loadVramWriteAddress $C82C, 4(a5)
 	move.w  (dword_FFFFD032+2).w,d0
 	lea (unk_FFFFEAAE).w,a1
 	lea (unk_FFFFD048).w,a2
@@ -11892,7 +11900,7 @@ locret_5FA0:                ; CODE XREF: sub_5F36+5Ej
 sub_5FA2:               ; CODE XREF: sub_30C2+7Ap
 	bsr.w   sub_5FBE
 	lea (unk_FFFFED06).w,a1
-	move.l  #$70000003,d0
+	m_loadVramWriteAddress $F000, d0
 	moveq   #$27,d1 ; '''
 	moveq   #$1B,d2
 	jsr writeTilemapToVram(pc)
@@ -11933,7 +11941,7 @@ loc_5FDE:               ; CODE XREF: sub_5FBE+2Aj
 ; ---------------------------------------------------------------------------
 
 loc_5FEA:               ; CODE XREF: sub_5FBE+22j
-	move.l  #$70600003,d0
+	m_loadVramWriteAddress $F060, d0
 	move.l  #$11188188,d1
 	moveq   #$19,d7
 	lea (word_15108).l,a1
@@ -12120,7 +12128,7 @@ sub_6130:               ; CODE XREF: sub_3040+40p
 	beq.w   locret_61DE
 	bset    #2,(a0)
 	move.b  #$B4,(unk_FFFFD05F).w
-	move.l  #$5A040003,d0
+	m_loadVramWriteAddress $DA04, d0
 	lea asc_6214(pc),a1 ; "  PRESS THE B BUTTON TO"
 	bra.w   loc_6248
 ; ---------------------------------------------------------------------------
@@ -12136,7 +12144,7 @@ loc_6160:               ; CODE XREF: sub_6130+Ej
 loc_6174:               ; CODE XREF: sub_6130+34j sub_6130+3Aj
 	bset    #0,(a0)
 	bclr    #2,(a0)
-	move.l  #$5A040003,d0
+	m_loadVramWriteAddress $DA04, d0
 	bra.s   loc_61D2
 ; ---------------------------------------------------------------------------
 
@@ -12151,7 +12159,7 @@ loc_6184:               ; CODE XREF: sub_6130+8j
 	beq.s   locret_61DE
 	bset    #3,(a0)
 	move.b  #$B4,(unk_FFFFD05F).w
-	move.l  #$52840003,d0
+	m_loadVramWriteAddress $D284, d0
 	lea asc_61E0(pc),a1 ; "  PRESS THE B BUTTON TO"
 	bra.w   loc_6248
 ; ---------------------------------------------------------------------------
@@ -12165,7 +12173,7 @@ loc_61B6:               ; CODE XREF: sub_6130+5Ej
 loc_61C4:               ; CODE XREF: sub_6130+8Aj
 	bset    #1,(a0)
 	bclr    #3,(a0)
-	move.l  #$52840003,d0
+	m_loadVramWriteAddress $D284, d0
 
 loc_61D2:               ; CODE XREF: sub_6130+52j
 	moveq   #$19,d1
@@ -12369,7 +12377,7 @@ sub_6396:               ; CODE XREF: sub_4400+C6p
 sub_63AC:               ; CODE XREF: sub_30C2+A8p
 	clr.b  (byte_FFFFD003).w
 
-	move.l #$40200000, (VDP_CONTROL).l
+	m_loadVramWriteAddress $20
 
 	moveq #7, d0
 	@loc_63BC:
@@ -12399,7 +12407,7 @@ sub_63D4:               ; CODE XREF: sub_31FE+Ej sub_63D4+8j
 	move.w  #$8730, (VDP_CONTROL).l
 	move.w  #$8730, (vdpRegCache+$E).w
 
-	move.l  #$40000010, (VDP_CONTROL).l     ; VSRAM $0000
+	m_loadVsramWriteAddress 0
 	move.w  #$20, (VDP_DATA).l
 
 	lea (VDP_CONTROL).l, a4
@@ -12464,10 +12472,10 @@ sub_6476:
 	tst.b   (byte_FFFFD061).w
 	beq.s   @loc_64BC
 
-	move.l  #$44020002, (VDP_CONTROL).l     ; VRAM $8402
+	m_loadVramWriteAddress $8402
 	move.w  (word_20E080).l, (a3)
 
-	move.l  #$40020010, (VDP_CONTROL).l     ; VSRAM $0002
+	m_loadVsramWriteAddress 2
 	move.w  (word_20E082).l, (a3)
 
 @loc_64BC:
@@ -12933,7 +12941,7 @@ sub_67B6:               ; CODE XREF: sub_63D4:loc_6442p
 
 
 sub_67DC:               ; CODE XREF: sub_63AC+1Ep
-	move.l #$50000003, d6
+	m_loadVramWriteAddress $D000, d6
 
 loc_67E2:               ; CODE XREF: sub_5E22+Ap
 	move.w #$C001, d3
@@ -12992,7 +13000,7 @@ sub_681C:               ; CODE XREF: sub_63AC+22p
 					; ROM:000065B2p
 	movem.l d4-d6/a5, -(sp)
 
-	move.l  #$60000003, d0  ; VRAM $E000
+	m_loadVramWriteAddress $E000, d0
 	moveq   #38,        d1
 	moveq   #26,        d2
 	move.w  #$6003,     d3
@@ -13257,7 +13265,7 @@ sub_6A26:               ; CODE XREF: playSegaAnimation:loc_69C4p
 	lea (unk_FFFFE0F6).w, a1
 
 loc_6A2A:
-	move.l #$45900003, d0   ; VRAM $C590
+	m_loadVramWriteAddress $C590, d0
 	moveq  #2, d1
 	moveq  #4, d2
 	jmp writeTilemapToVram(pc)
@@ -14207,7 +14215,7 @@ locret_7852:                ; CODE XREF: sub_783E+Cj
 
 
 sub_7854:               ; CODE XREF: sub_873A+84p
-	move.l  #$42000000,(VDP_CONTROL).l
+	m_loadVramWriteAddress $200
 	lea (VDP_DATA).l,a0
 	moveq   #$FFFFFFFF,d0
 	moveq   #7,d1
@@ -14321,9 +14329,9 @@ loc_78F4:               ; CODE XREF: sub_78D8+16j
 
 sub_790A:               ; CODE XREF: sub_77A0p sub_7F66p
 	pea (a0)
-	cmpi.b  #7,(joy1Type).w
+	cmpi.b  #JOYTYPE_TYPE7,(joy1Type).w
 	beq.s   loc_791E
-	cmpi.b  #3,(joy1Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
 	beq.s   loc_7940
 	bra.s   loc_794E
 ; ---------------------------------------------------------------------------
@@ -14359,7 +14367,7 @@ loc_794E:               ; CODE XREF: sub_790A+12j sub_790A+34j
 	add.w   d0,(word_FFFFFF0A).w
 
 loc_795E:               ; CODE XREF: sub_790A+42j
-	cmpi.b  #3,(joy2Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy2Type).w
 	bne.s   loc_7974
 
 loc_7966:               ; CODE XREF: sub_790A+32j
@@ -14392,9 +14400,9 @@ word_7988:  dc.w 0
 
 sub_7990:               ; CODE XREF: sub_7C0A+4p
 	pea (a0)
-	cmpi.b  #7,(joy1Type).w
+	cmpi.b  #JOYTYPE_TYPE7,(joy1Type).w
 	beq.s   loc_79A4
-	cmpi.b  #3,(joy1Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
 	beq.s   loc_79C6
 	bra.s   loc_79D4
 ; ---------------------------------------------------------------------------
@@ -14430,7 +14438,7 @@ loc_79D4:               ; CODE XREF: sub_7990+12j sub_7990+34j
 	add.w   d0,(word_FFFFFF0A).w
 
 loc_79E4:               ; CODE XREF: sub_7990+42j
-	cmpi.b  #3,(joy2Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy2Type).w
 	bne.s   loc_79FA
 
 loc_79EC:               ; CODE XREF: sub_7990+32j
@@ -14479,7 +14487,7 @@ sub_7A16:               ; CODE XREF: sub_790A+3Ap sub_790A+60p ...
 sub_7A1E:               ; CODE XREF: sub_752C:loc_7540p
 					; sub_769C+10p ...
 	movem.l d0,-(sp)
-	cmpi.b  #3,(joy1Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
 	bne.s   loc_7A32
 	tst.b   (byte_FFFFFE0B).w
 	bne.s   loc_7A58
@@ -14492,7 +14500,7 @@ loc_7A32:               ; CODE XREF: sub_7A1E+Aj
 	bne.s   loc_7A58
 
 loc_7A3A:               ; CODE XREF: sub_7A1E+12j
-	cmpi.b  #3,(joy2Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy2Type).w
 	bne.s   loc_7A52
 	tst.b   (byte_FFFFFE17).w
 	beq.s   loc_7A58
@@ -15959,7 +15967,7 @@ sub_86A6:               ; DATA XREF: sub_873A+20o
 	btst  #GA_RET, (GA_MEM_MODE).l
 	beq.s @loc_86E2
 
-	move.l #$74000003, (VDP_CONTROL).l      ; VRAM $F400
+	m_loadVramWriteAddress $F400
 
 	lea (dword_220E00).l, a0
 	lea (VDP_DATA).l,     a1
@@ -15969,7 +15977,7 @@ sub_86A6:               ; DATA XREF: sub_873A+20o
 		move.l (a0)+, (a1)
 		dbeq   d0, @loc_86C8
 
-	move.l #$40000003, d0                   ; VRAM $C000
+	m_loadVramWriteAddress $C000, d0
 	move.l #WordRAM_Bank1, d1
 	move.w #$700, d2
 	bsr.w  dmaTransferToVramWithRewrite
@@ -16052,15 +16060,15 @@ sub_873A:               ; CODE XREF: sub_7374p
 
 	clr.l   (dword_220E00).l
 
-	move.l  #$60000000,(VDP_CONTROL).l
+	m_loadVramWriteAddress $2000
 	lea (unk_15300).l,a1
 	jsr NemDec(pc)
 
-	move.l  #$61C00000,(VDP_CONTROL).l
+	m_loadVramWriteAddress $21C0
 	lea (unk_1546E).l,a1
 	jsr NemDec(pc)
 
-	move.l  #$44000000,d0
+	m_loadVramWriteAddress $400, d0
 	move.w  #0,(fontTileOffset).w
 	move.l  #$EE0EE,d1
 	bsr.w   loc_1952
@@ -16090,13 +16098,13 @@ loc_87D6:               ; CODE XREF: sub_873A+9Ej
 
 
 sub_87EC:               ; CODE XREF: ROM:000073ACj
-		moveq   #$3B,d7 ; ';'
-
-loc_87EE:               ; CODE XREF: sub_87EC+6j
+	moveq #59, d7
+	@loc_87EE:               
 		bsr.w   waitForVblank
-		dbf d7,loc_87EE
-		move.w  #$FFFF,(word_FFFFFF00).w
-		rts
+		dbf d7, @loc_87EE
+	
+	move.w #$FFFF, (word_FFFFFF00).w
+	rts
 ; End of function sub_87EC
 
 ; ---------------------------------------------------------------------------
