@@ -91,7 +91,9 @@ byte_BF2 equ $BF2
 word_BF4 equ $BF4
 word_BF6 equ $BF6
 flags_BFC equ $BFC
+dword_BFE equ $BFE
 dword_C02 equ $C02
+dword_C06 equ $C06
 
 subcodeScratch equ $C0A ; (through $1359)
 
