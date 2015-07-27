@@ -11643,10 +11643,12 @@ loc_77D8:               ; CODE XREF: sub_77A0+42j
 
 
 sub_77EA:               ; CODE XREF: sub_78D8+2Cp
-	lea (WordRAM_Bank1).l,a1
-	lea (off_15DC6).l,a3
-	adda.w  d1,a1
-	bra.s   loc_7814
+	lea (WordRAM_Bank1).l, a1
+	lea (word_15DC6).l,     a3
+
+	adda.w d1, a1
+
+	bra.s loc_7814
 ; End of function sub_77EA
 
 
@@ -11658,23 +11660,27 @@ sub_77EA:               ; CODE XREF: sub_78D8+2Cp
 ;   d2: Index into lookup table at $15920
 
 sub_77FA:               ; CODE XREF: sub_754E+Ap sub_754E+14p ...
-	lea (WordRAM_Bank1).l,a1
-	lea (word_15920).l,a2
-	lea (off_15DC6).l,a3
-	adda.w  d1,a1
-	add.w   d2,d2
-	adda.w  (a2,d2.w),a2
+	lea (WordRAM_Bank1).l, a1
+	lea (word_15920).l,    a2
+	lea (word_15DC6).l,     a3
 
-loc_7814:               ; CODE XREF: sub_77EA+Ej sub_77FA+26j
-	move.w  (a2)+,d2
-	bmi.s   locret_7822
-	lsl.w   #2,d2
-	lea (a3,d2.w),a0
-	bsr.s   sub_7824
-	bra.s   loc_7814
+	adda.w d1, a1
+
+	add.w   d2, d2
+	adda.w (a2, d2.w), a2
+
+	loc_7814:
+		move.w (a2)+, d2
+		bmi.s  @locret_7822
+
+		lsl.w  #2, d2
+		lea   (a3, d2.w), a0
+
+		bsr.s sub_7824
+		bra.s loc_7814
 ; ---------------------------------------------------------------------------
 
-locret_7822:                ; CODE XREF: sub_77FA+1Cj
+@locret_7822:                ; CODE XREF: sub_77FA+1Cj
 	rts
 ; End of function sub_77FA
 
@@ -11683,17 +11689,21 @@ locret_7822:                ; CODE XREF: sub_77FA+1Cj
 
 
 sub_7824:               ; CODE XREF: sub_77FA+24p
-	movem.w (a0),d1-d2
-	subq.w  #1,d1
-	add.w   d0,d2
+	movem.w (a0), d1-d2
 
-loc_782C:               ; CODE XREF: sub_7824+14j
-	move.w  d2,(a1)
-	addq.w  #1,d2
-	move.w  d2,$80(a1)
-	addq.w  #1,d2
-	addq.w  #2,a1
-	dbf d1,loc_782C
+	subq.w #1, d1
+	add.w  d0, d2
+
+	@loc_782C:
+		move.w d2, (a1)
+
+		addq.w #1, d2
+		move.w d2, $80(a1)
+
+		addq.w #1, d2
+		addq.w #2, a1
+		dbf d1, @loc_782C
+
 	rts
 ; End of function sub_7824
 
@@ -12720,60 +12730,80 @@ loc_7FFE:
 
 sub_800C:               ; CODE XREF: ROM:00007D96j
 					; ROM:0000813Ej
-	bset    #7,(word_FFFFFF04).w
-	bne.s   loc_8066
-	clr.l   (dword_220E00).l
-	lea (dword_220E00).l,a0
-	move.w  #$8F,d4
-	bsr.w   loc_7880
-	movem.w word_8092(pc),d0-d2
+	bset  #7, (word_FFFFFF04).w
+	bne.s loc_8066
+
+	clr.l (dword_220E00).l
+
+	lea    (dword_220E00).l, a0
+	move.w #$8F, d4
+	bsr.w  loc_7880
+
+	movem.w word_8092(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_8098(pc),d0-d2
+
+	movem.w word_8098(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_809E(pc),d0-d2
+
+	movem.w word_809E(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_80A4(pc),d0-d2
+
+	movem.w word_80A4(pc), d0-d2
 	bsr.w   sub_77FA
-	lea $120(a4),a0
-	move.w  #$71E,d0
-	move.w  #(loc_7FFE+2),d1
-	bsr.w   sub_783E
-	move.w  #1,(word_FFFFFF0A).w
+
+	lea    $120(a4), a0
+	move.w #$71E, d0
+	move.w #(loc_7FFE+2), d1
+	bsr.w  sub_783E
+
+	move.w #1, (word_FFFFFF0A).w
 
 loc_8066:               ; CODE XREF: sub_800C+6j
-	bsr.w   sub_80FA
-	bsr.w   sub_7A1E
-	beq.s   locret_8082
-	tst.w   (word_FFFFFF0A).w
-	bne.s   loc_8084
-	moveq   #Z80CMD_FF91,d7
-	bsr.w   sendCommandToZ80
-	move.w  #$C,(word_FFFFFF04).w
+	bsr.w sub_80FA
+
+	bsr.w sub_7A1E
+	beq.s locret_8082
+
+	tst.w (word_FFFFFF0A).w
+	bne.s loc_8084
+
+	moveq #Z80CMD_FF91, d7
+	bsr.w sendCommandToZ80
+
+	move.w #$C, (word_FFFFFF04).w
 
 locret_8082:                ; CODE XREF: sub_800C+62j
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_8084:               ; CODE XREF: sub_800C+68j
-	moveq   #Z80CMD_FF90,d7
-	bsr.w   sendCommandToZ80
-	move.w  #$14,(word_FFFFFF04).w
+	moveq #Z80CMD_FF90, d7
+	bsr.w sendCommandToZ80
+
+	move.w #$14, (word_FFFFFF04).w
 	rts
 ; End of function sub_800C
 
 ; ---------------------------------------------------------------------------
-word_8092:  dc.w $8100      ; DATA XREF: sub_800C+1Cw
-		dc.w $692
-		dc.w $18
-word_8098:  dc.w $8100      ; DATA XREF: sub_800C+26w
-		dc.w $594
-		dc.w $14
-word_809E:  dc.w $8100      ; DATA XREF: sub_800C+30w
-		dc.w $6B8
-		dc.w $15
-word_80A4:  dc.w $8100      ; DATA XREF: sub_800C+3Aw
-		dc.w $79A
-		dc.w $F
+word_8092:
+	dc.w $8100
+	dc.w $692
+	dc.w $18
+
+word_8098:
+	dc.w $8100
+	dc.w $594
+	dc.w $14
+
+word_809E:
+	dc.w $8100
+	dc.w $6B8
+	dc.w $15
+
+word_80A4:
+	dc.w $8100
+	dc.w $79A
+	dc.w $F
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -16436,97 +16466,105 @@ unk_1546E:
 	incbin "misc\nemesis_1546E.bin"
 
 word_15920:
-	dc.w $4C
-	dc.w $78
-	dc.w $90
-	dc.w $AC
-	dc.w $C4
-	dc.w $F2
-	dc.w $104
-	dc.w $116
-	dc.w $130
-	dc.w $14A
-	dc.w $162
-	dc.w $17A
-	dc.w $184
-	dc.w $1B8
-	dc.w $1D2
-	dc.w $1E2
-	dc.w $1F2
-	dc.w $212
-	dc.w $234
-	dc.w $256
-	dc.w $290
-	dc.w $2B4
-	dc.w $2B8
-	dc.w $2DA
-	dc.w $2FC
-	dc.w $306
-	dc.w $360
-	dc.w $37A
-	dc.w $3C6
-	dc.w $3E2
-	dc.w $3FE
-	dc.w $41E
-	dc.w $450
-	dc.w $472
-	dc.w $338
-	dc.w $48E
-	dc.w $49C
-	dc.w $3A6
+	dc.w (word_1596C - word_15920)  ; $0
+	dc.w (word_15998 - word_15920)  ; $1
+	dc.w (word_159B0 - word_15920)  ; $2
+	dc.w (word_159CC - word_15920)  ; $3
+	dc.w (word_159E4 - word_15920)  ; $4
+	dc.w (word_15A12 - word_15920)  ; $5
+	dc.w (word_15A24 - word_15920)  ; $6
+	dc.w (word_15A36 - word_15920)  ; $7
+	dc.w (word_15A50 - word_15920)  ; $8
+	dc.w (word_15A6A - word_15920)  ; $9
+	dc.w (word_15A82 - word_15920)  ; $A
+	dc.w (word_15A9A - word_15920)  ; $B
+	dc.w (word_15AA4 - word_15920)  ; $C
+	dc.w (word_15AD8 - word_15920)  ; $D
+	dc.w (word_15AF2 - word_15920)  ; $E
+	dc.w (word_15B02 - word_15920)  ; $F
+	dc.w (word_15B12 - word_15920)  ; $10
+	dc.w (word_15B32 - word_15920)  ; $11
+	dc.w (word_15B54 - word_15920)  ; $12
+	dc.w (word_15B76 - word_15920)  ; $13
+	dc.w (word_15BB0 - word_15920)  ; $14
+	dc.w (word_15BD4 - word_15920)  ; $15
+	dc.w (word_15BD8 - word_15920)  ; $16
+	dc.w (word_15BFA - word_15920)  ; $17
+	dc.w (word_15C1C - word_15920)  ; $18
+	dc.w (word_15C26 - word_15920)  ; $19
+	dc.w (word_15C80 - word_15920)  ; $1A
+	dc.w (word_15C9A - word_15920)  ; $1B
+	dc.w (word_15CE6 - word_15920)  ; $1C
+	dc.w (word_15D02 - word_15920)  ; $1D
+	dc.w (word_15D1E - word_15920)  ; $1E
+	dc.w (word_15D3E - word_15920)  ; $1F
+	dc.w (word_15D70 - word_15920)  ; $20
+	dc.w (word_15D92 - word_15920)  ; $21
+	dc.w (word_15C58 - word_15920)  ; $22
+	dc.w (word_15DAE - word_15920)  ; $23
+	dc.w (word_15DBC - word_15920)  ; $24
+	dc.w (word_15CC6 - word_15920)  ; $25
+
+word_1596C:
 	dc.w $36
 	dc.w $2A
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $24
 	dc.w $37
 	dc.w $2B
 	dc.w $2E
 	dc.w $36
-	dc.w $F
+	dc.w $0F
 	dc.w $2B
 	dc.w $30
-	dc.w 2
+	dc.w $02
 	dc.w $2F
 	dc.w $27
 	dc.w $2F
 	dc.w $31
 	dc.w $34
 	dc.w $3B
-	dc.w 2
-	dc.w 0
+	dc.w $02
+	dc.w $00
 	dc.w $FFFF
+
+word_15998:
 	dc.w $28
 	dc.w $31
 	dc.w $34
 	dc.w $2F
 	dc.w $23
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $35
 	dc.w $1C
-	dc.w 2
+	dc.w $02
 	dc.w $FFFF
+
+word_159B0:
 	dc.w $35
 	dc.w $23
 	dc.w $38
 	dc.w $27
 	dc.w $26
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
-	dc.w $A
+	dc.w $0A
 	dc.w $35
-	dc.w $B
+	dc.w $0B
 	dc.w $FFFF
+
+word_159CC:
 	dc.w $28
 	dc.w $34
 	dc.w $27
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $2F
 	dc.w $27
 	dc.w $2F
@@ -16534,10 +16572,12 @@ word_15920:
 	dc.w $34
 	dc.w $3B
 	dc.w $FFFF
+
+word_159E4:
 	dc.w $36
 	dc.w $2A
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $23
 	dc.w $34
@@ -16547,89 +16587,105 @@ word_15920:
 	dc.w $26
 	dc.w $29
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $2F
 	dc.w $27
 	dc.w $2F
 	dc.w $31
 	dc.w $34
 	dc.w $3B
-	dc.w 2
-	dc.w 1
+	dc.w $02
+	dc.w $01
 	dc.w $FFFF
+
+word_15A12:
 	dc.w $28
 	dc.w $31
 	dc.w $34
 	dc.w $2F
 	dc.w $23
 	dc.w $36
-	dc.w 2
-	dc.w 0
+	dc.w $02
+	dc.w $00
 	dc.w $FFFF
+
+word_15A24:
 	dc.w $28
 	dc.w $31
 	dc.w $34
 	dc.w $2F
 	dc.w $23
 	dc.w $36
-	dc.w 2
-	dc.w 1
+	dc.w $02
+	dc.w $01
 	dc.w $FFFF
+
+word_15A36:
 	dc.w $27
 	dc.w $34
 	dc.w $23
 	dc.w $35
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
-	dc.w 2
-	dc.w 0
+	dc.w $02
+	dc.w $00
 	dc.w $FFFF
+
+word_15A50:
 	dc.w $27
 	dc.w $34
 	dc.w $23
 	dc.w $35
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
-	dc.w 2
-	dc.w 1
+	dc.w $02
+	dc.w $01
 	dc.w $FFFF
+
+word_15A6A:
 	dc.w $25
 	dc.w $31
 	dc.w $32
 	dc.w $3B
-	dc.w 2
-	dc.w 0
-	dc.w 2
+	dc.w $02
+	dc.w $00
+	dc.w $02
 	dc.w $36
 	dc.w $31
-	dc.w 2
-	dc.w 1
+	dc.w $02
+	dc.w $01
 	dc.w $FFFF
+
+word_15A82:
 	dc.w $25
 	dc.w $31
 	dc.w $32
 	dc.w $3B
-	dc.w 2
-	dc.w 1
-	dc.w 2
+	dc.w $02
+	dc.w $01
+	dc.w $02
 	dc.w $36
 	dc.w $31
-	dc.w 2
-	dc.w 0
+	dc.w $02
+	dc.w $00
 	dc.w $FFFF
+
+word_15A9A:
 	dc.w $27
 	dc.w $3A
 	dc.w $2B
 	dc.w $36
 	dc.w $FFFF
+
+word_15AA4:
 	dc.w $28
 	dc.w $31
 	dc.w $34
@@ -16640,35 +16696,39 @@ word_15920:
 	dc.w $2B
 	dc.w $30
 	dc.w $29
-	dc.w 2
+	dc.w $02
 	dc.w $39
 	dc.w $2B
 	dc.w $2E
 	dc.w $2E
-	dc.w 2
+	dc.w $02
 	dc.w $27
 	dc.w $34
 	dc.w $23
 	dc.w $35
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $23
 	dc.w $2E
 	dc.w $2E
 	dc.w $FFFF
+
+word_15AD8:
 	dc.w $35
 	dc.w $23
 	dc.w $38
 	dc.w $27
 	dc.w $26
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
 	dc.w $35
-	dc.w 3
+	dc.w $03
 	dc.w $FFFF
+
+word_15AF2:
 	dc.w $28
 	dc.w $31
 	dc.w $34
@@ -16677,21 +16737,25 @@ word_15920:
 	dc.w $36
 	dc.w $21
 	dc.w $FFFF
+
+word_15B02:
 	dc.w $3B
 	dc.w $27
 	dc.w $35
-	dc.w 2
-	dc.w 2
+	dc.w $02
+	dc.w $02
 	dc.w $30
 	dc.w $31
 	dc.w $FFFF
+
+word_15B12:
 	dc.w $28
 	dc.w $31
 	dc.w $34
 	dc.w $2F
 	dc.w $23
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $31
 	dc.w $2F
@@ -16701,16 +16765,18 @@ word_15920:
 	dc.w $36
 	dc.w $27
 	dc.w $FFFF
+
+word_15B32:
 	dc.w $32
 	dc.w $34
 	dc.w $27
 	dc.w $35
 	dc.w $35
-	dc.w 2
+	dc.w $02
 	dc.w $23
 	dc.w $30
 	dc.w $3B
-	dc.w 2
+	dc.w $02
 	dc.w $24
 	dc.w $37
 	dc.w $36
@@ -16718,72 +16784,82 @@ word_15920:
 	dc.w $31
 	dc.w $30
 	dc.w $FFFF
+
+word_15B54:
 	dc.w $36
 	dc.w $2A
 	dc.w $27
-	dc.w 2
-	dc.w 0
-	dc.w 2
+	dc.w $02
+	dc.w $00
+	dc.w $02
 	dc.w $28
 	dc.w $31
 	dc.w $34
 	dc.w $2F
 	dc.w $23
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $35
 	dc.w $1C
 	dc.w $FFFF
+
+word_15B76:
 	dc.w $30
 	dc.w $37
 	dc.w $2F
 	dc.w $24
 	dc.w $27
 	dc.w $34
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
 	dc.w $30
 	dc.w $23
 	dc.w $2F
 	dc.w $27
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
-	dc.w 2
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
+	dc.w $02
 	dc.w $37
 	dc.w $35
 	dc.w $27
 	dc.w $26
 	dc.w $FFFF
+
+word_15BB0:
 	dc.w $2B
 	dc.w $35
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $31
 	dc.w $2D
-	dc.w 2
+	dc.w $02
 	dc.w $36
 	dc.w $31
-	dc.w 2
+	dc.w $02
 	dc.w $27
 	dc.w $34
 	dc.w $23
 	dc.w $35
 	dc.w $27
 	dc.w $FFFF
+
+word_15BD4:
 	dc.w $21
 	dc.w $FFFF
+
+word_15BD8:
 	dc.w $27
 	dc.w $34
 	dc.w $23
@@ -16791,7 +16867,7 @@ word_15920:
 	dc.w $37
 	dc.w $34
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $31
 	dc.w $2F
@@ -16801,108 +16877,122 @@ word_15920:
 	dc.w $36
 	dc.w $27
 	dc.w $FFFF
+
+word_15BFA:
 	dc.w $36
 	dc.w $2A
 	dc.w $27
-	dc.w 2
-	dc.w 1
-	dc.w 2
+	dc.w $02
+	dc.w $01
+	dc.w $02
 	dc.w $28
 	dc.w $31
 	dc.w $34
 	dc.w $2F
 	dc.w $23
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $35
 	dc.w $1C
 	dc.w $FFFF
+
+word_15C1C:
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
 	dc.w $FFFF
+
+word_15C26:
 	dc.w $36
 	dc.w $2A
 	dc.w $27
 	dc.w $34
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $35
-	dc.w 2
+	dc.w $02
 	dc.w $30
 	dc.w $31
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $27
 	dc.w $30
 	dc.w $31
 	dc.w $37
 	dc.w $29
 	dc.w $2A
-	dc.w 2
+	dc.w $02
 	dc.w $28
 	dc.w $34
 	dc.w $27
 	dc.w $27
 	dc.w $FFFF
+
+word_15C58:
 	dc.w $2F
 	dc.w $27
 	dc.w $2F
 	dc.w $31
 	dc.w $34
 	dc.w $3B
-	dc.w 2
+	dc.w $02
 	dc.w $36
 	dc.w $31
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $31
 	dc.w $32
 	dc.w $3B
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
 	dc.w $FFFF
+
+word_15C80:
 	dc.w $25
 	dc.w $23
 	dc.w $30
 	dc.w $30
 	dc.w $31
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $31
 	dc.w $32
 	dc.w $3B
 	dc.w $10
 	dc.w $FFFF
+
+word_15C9A:
 	dc.w $23
 	dc.w $30
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
 	dc.w $27
 	dc.w $2F
-	dc.w 2
+	dc.w $02
 	dc.w $39
 	dc.w $2B
 	dc.w $36
 	dc.w $2A
-	dc.w 2
+	dc.w $02
 	dc.w $36
 	dc.w $2A
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $30
 	dc.w $23
 	dc.w $2F
 	dc.w $27
 	dc.w $FFFF
+
+word_15CC6:
 	dc.w $23
 	dc.w $2E
 	dc.w $34
@@ -16910,7 +17000,7 @@ word_15920:
 	dc.w $23
 	dc.w $26
 	dc.w $3B
-	dc.w 2
+	dc.w $02
 	dc.w $27
 	dc.w $3A
 	dc.w $2B
@@ -16919,11 +17009,13 @@ word_15920:
 	dc.w $35
 	dc.w $10
 	dc.w $FFFF
+
+word_15CE6:
 	dc.w $25
 	dc.w $31
 	dc.w $32
 	dc.w $3B
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $31
 	dc.w $2F
@@ -16933,13 +17025,15 @@ word_15920:
 	dc.w $36
 	dc.w $27
 	dc.w $FFFF
+
+word_15D02:
 	dc.w $32
 	dc.w $2E
 	dc.w $27
 	dc.w $23
 	dc.w $35
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $28
 	dc.w $31
 	dc.w $34
@@ -16947,13 +17041,15 @@ word_15920:
 	dc.w $23
 	dc.w $36
 	dc.w $FFFF
+
+word_15D1E:
 	dc.w $2B
 	dc.w $35
-	dc.w 2
+	dc.w $02
 	dc.w $30
 	dc.w $31
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $32
 	dc.w $34
 	dc.w $27
@@ -16963,11 +17059,13 @@ word_15920:
 	dc.w $36
 	dc.w $10
 	dc.w $FFFF
+
+word_15D3E:
 	dc.w $26
 	dc.w $23
 	dc.w $36
 	dc.w $23
-	dc.w 2
+	dc.w $02
 	dc.w $35
 	dc.w $36
 	dc.w $31
@@ -16975,7 +17073,7 @@ word_15920:
 	dc.w $23
 	dc.w $29
 	dc.w $27
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $30
 	dc.w $28
@@ -16988,30 +17086,34 @@ word_15920:
 	dc.w $31
 	dc.w $30
 	dc.w $FFFF
+
+word_15D70:
 	dc.w $2B
 	dc.w $35
-	dc.w 2
+	dc.w $02
 	dc.w $2B
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $31
 	dc.w $2D
-	dc.w 2
+	dc.w $02
 	dc.w $36
 	dc.w $31
-	dc.w 2
+	dc.w $02
 	dc.w $25
 	dc.w $31
 	dc.w $32
 	dc.w $3B
 	dc.w $FFFF
+
+word_15D92:
 	dc.w $25
 	dc.w $23
 	dc.w $30
 	dc.w $30
 	dc.w $31
 	dc.w $36
-	dc.w 2
+	dc.w $02
 	dc.w $28
 	dc.w $31
 	dc.w $34
@@ -17019,6 +17121,8 @@ word_15920:
 	dc.w $23
 	dc.w $36
 	dc.w $FFFF
+
+word_15DAE:
 	dc.w $2F
 	dc.w $27
 	dc.w $2F
@@ -17026,79 +17130,81 @@ word_15920:
 	dc.w $34
 	dc.w $3B
 	dc.w $FFFF
+
+word_15DBC:
 	dc.w $2F
 	dc.w $27
 	dc.w $30
 	dc.w $37
 	dc.w $FFFF
 
-off_15DC6:
-	dc.l $40000
-	dc.l $30008
-	dc.l $1000E
-	dc.l $10010
-	dc.l $10012
-	dc.l $10014
-	dc.l $10016
-	dc.l $10018
-	dc.l $1001A
-	dc.l $1001C
-	dc.l $1001E
-	dc.l $10020
-	dc.l $10022
-	dc.l $10024
-	dc.l $10026
-	dc.l $10028
-	dc.l $1002A
-	dc.l $1002C
-	dc.l $1002E
-	dc.l $10030
-	dc.l $10032
-	dc.l $10034
-	dc.l $10036
-	dc.l $10038
-	dc.l $1003A
-	dc.l $1003C
-	dc.l $1003E
-	dc.l $10040
-	dc.l $10042
-	dc.l $10044
-	dc.l $10046
-	dc.l $10048
-	dc.l $1004A
-	dc.l $1004C
-	dc.l $1004E
-	dc.l $10050
-	dc.l $10052
-	dc.l $10054
-	dc.l $10056
-	dc.l $10058
-	dc.l $1005A
-	dc.l $1005C
-	dc.l $1005E
-	dc.l $10060
-	dc.l $10062
-	dc.l $10064
-	dc.l $10066
-	dc.l $10068
-	dc.l $1006A
-	dc.l $1006C
-	dc.l $1006E
-	dc.l $10070
-	dc.l $10072
-	dc.l $10074
-	dc.l $10076
-	dc.l $10078
-	dc.l $1007A
-	dc.l $1007C
-	dc.l $1007E
-	dc.l $10080
-	dc.l $10082
-	dc.l $10084
-	dc.l $10086
-	dc.l $10088
-	dc.l $1008A
-	dc.l $1008C
+word_15DC6:
+	dc.w 4, $00
+	dc.w 3, $08
+	dc.w 1, $0E
+	dc.w 1, $10
+	dc.w 1, $12
+	dc.w 1, $14
+	dc.w 1, $16
+	dc.w 1, $18
+	dc.w 1, $1A
+	dc.w 1, $1C
+	dc.w 1, $1E
+	dc.w 1, $20
+	dc.w 1, $22
+	dc.w 1, $24
+	dc.w 1, $26
+	dc.w 1, $28
+	dc.w 1, $2A
+	dc.w 1, $2C
+	dc.w 1, $2E
+	dc.w 1, $30
+	dc.w 1, $32
+	dc.w 1, $34
+	dc.w 1, $36
+	dc.w 1, $38
+	dc.w 1, $3A
+	dc.w 1, $3C
+	dc.w 1, $3E
+	dc.w 1, $40
+	dc.w 1, $42
+	dc.w 1, $44
+	dc.w 1, $46
+	dc.w 1, $48
+	dc.w 1, $4A
+	dc.w 1, $4C
+	dc.w 1, $4E
+	dc.w 1, $50
+	dc.w 1, $52
+	dc.w 1, $54
+	dc.w 1, $56
+	dc.w 1, $58
+	dc.w 1, $5A
+	dc.w 1, $5C
+	dc.w 1, $5E
+	dc.w 1, $60
+	dc.w 1, $62
+	dc.w 1, $64
+	dc.w 1, $66
+	dc.w 1, $68
+	dc.w 1, $6A
+	dc.w 1, $6C
+	dc.w 1, $6E
+	dc.w 1, $70
+	dc.w 1, $72
+	dc.w 1, $74
+	dc.w 1, $76
+	dc.w 1, $78
+	dc.w 1, $7A
+	dc.w 1, $7C
+	dc.w 1, $7E
+	dc.w 1, $80
+	dc.w 1, $82
+	dc.w 1, $84
+	dc.w 1, $86
+	dc.w 1, $88
+	dc.w 1, $8A
+	dc.w 1, $8C
 
 fill_15ECE:
 	dcb.b 306, $FF
