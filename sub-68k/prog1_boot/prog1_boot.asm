@@ -2669,27 +2669,28 @@ framesToTimecode:               ; CODE XREF: sub_7080+26p
 
 sub_71E6:               ; CODE XREF: sub_6178+10j
 					; BOOT:loc_7240p ...
-		lea word_32(a6),a0
-		move.w  (a0),d1
-		beq.s   locret_71FA
+	lea word_32(a6), a0
+	
+	move.w  (a0), d1
+	beq.s   locret_71FA
 
-		clr.w   (a0)+
-		move.w  (a0),d0
-		add.w   d1,d1
-		add.w   d1,d1
-		jmp *+2(pc,d1.w)
+	clr.w   (a0)+
+	move.w  (a0), d0
+	add.w   d1, d1
+	add.w   d1,d1
+	jmp *+2(pc, d1.w)
 ; ---------------------------------------------------------------------------
 
 locret_71FA:
-		rts
+	rts
 ; End of function sub_71E6
 
 ; ---------------------------------------------------------------------------
-		bra.w   sub_6142
+	bra.w   sub_6142
 ; ---------------------------------------------------------------------------
-		bra.w   loc_79A2
+	bra.w   loc_79A2
 ; ---------------------------------------------------------------------------
-		bra.w   locret_71FA
+	bra.w   locret_71FA
 ; ---------------------------------------------------------------------------
 
 loc_7208:               ; CODE XREF: BOOT:000060A2j

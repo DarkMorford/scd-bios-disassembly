@@ -5361,7 +5361,7 @@ loc_2BF0:               ; CODE XREF: BIOS:00002B94j
 
 	bsr.w   cddGetStatusCodeByte
 
-	cmpi.b  #$E,d 0
+	cmpi.b  #$E, d0
 	beq.w   loc_2C24
 
 	cmpi.b  #5, d0
