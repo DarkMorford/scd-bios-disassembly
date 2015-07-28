@@ -387,12 +387,12 @@ initCdBoot:               ; CODE XREF: boot_user0+10p
 
 ; ---------------------------------------------------------------------------
 dword_6218:
-	dc.l $3B4 ; $65CC
-	dc.l $3B8 ; $65D0
-	dc.l $3BC ; $65D4
-	dc.l $3C4 ; $65DC
-	dc.l $3CC ; $65E4
-	dc.l $3DC ; $65F4
+	dc.l (dword_65CC - dword_6218)
+	dc.l (dword_65D0 - dword_6218)
+	dc.l (dword_65D4 - dword_6218)
+	dc.l (dword_65DC - dword_6218)
+	dc.l (dword_65E4 - dword_6218)
+	dc.l (dword_65F4 - dword_6218)
 	dc.l 0
 
 ; =============== S U B R O U T I N E =======================================
@@ -2404,12 +2404,12 @@ sub_7048:               ; CODE XREF: BOOT:00007042p
 		move    #4,ccr
 		sbcd    -(a1),-(a0)
 		sbcd    -(a1),-(a0)
-		move    sr,-(sp)
+		m_saveStatusRegister
 		bcc.s   loc_7068
 		subi.b  #$40,(a0) ; '@'
 
 loc_7068:               ; CODE XREF: sub_7048+1Aj
-		move    (sp)+,sr
+		m_restoreStatusRegister
 		sbcd    -(a1),-(a0)
 		move.w  (a0),d0
 		rts
@@ -2484,17 +2484,17 @@ sub_70B6:               ; CODE XREF: sub_6A02+38p
 		move.b  (a1),d0
 		moveq   #$40,d1 ; '@'
 		abcd    d1,d0
-		move    sr,-(sp)
+		m_saveStatusRegister
 		move.b  d0,(a1)
-		move    (sp)+,sr
+		m_restoreStatusRegister
 		movem.l (sp)+,d0-d1
 		bra.s   loc_70E0
 ; ---------------------------------------------------------------------------
 
 loc_70D8:               ; CODE XREF: sub_70B6+4j
-		move    sr,-(sp)
+		m_saveStatusRegister
 		addi.b  #$40,(a1) ; '@'
-		move    (sp)+,sr
+		m_restoreStatusRegister
 
 loc_70E0:               ; CODE XREF: sub_70B6+Aj sub_70B6+20j
 		abcd    -(a2),-(a1)
@@ -2511,17 +2511,17 @@ loc_70E0:               ; CODE XREF: sub_70B6+Aj sub_70B6+20j
 		move.b  (a1),d0
 		moveq   #$25,d1 ; '%'
 		abcd    d1,d0
-		move    sr,-(sp)
+		m_saveStatusRegister
 		move.b  d0,(a1)
-		move    (sp)+,sr
+		m_restoreStatusRegister
 		movem.l (sp)+,d0-d1
 		bra.s   loc_710E
 ; ---------------------------------------------------------------------------
 
 loc_7106:               ; CODE XREF: BOOT:000070E8j
-		move    sr,-(sp)
+		m_saveStatusRegister
 		addi.b  #$25,(a1) ; '%'
-		move    (sp)+,sr
+		m_restoreStatusRegister
 
 loc_710E:               ; CODE XREF: BOOT:000070EEj
 					; BOOT:00007104j
@@ -2539,9 +2539,9 @@ loc_710E:               ; CODE XREF: BOOT:000070EEj
 ; ---------------------------------------------------------------------------
 
 loc_712A:               ; CODE XREF: BOOT:00007110j
-		move    sr,-(sp)
+		m_saveStatusRegister
 		addi.b  #$40,(a1) ; '@'
-		move    (sp)+,sr
+		m_restoreStatusRegister
 
 loc_7132:               ; CODE XREF: BOOT:00007116j
 					; BOOT:00007128j
@@ -2670,7 +2670,7 @@ framesToTimecode:               ; CODE XREF: sub_7080+26p
 sub_71E6:               ; CODE XREF: sub_6178+10j
 					; BOOT:loc_7240p ...
 	lea word_32(a6), a0
-	
+
 	move.w  (a0), d1
 	beq.s   locret_71FA
 

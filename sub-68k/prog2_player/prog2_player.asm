@@ -180,7 +180,7 @@ loc_189F2:              ; CODE XREF: sub_189A2+26j
 	clr.b   $12(a3)
 	move.b  #7,$13(a3)
 
-@locret_18A38:               
+@locret_18A38:
 	rts
 
 ; =============== S U B R O U T I N E =======================================
@@ -190,14 +190,14 @@ sub_18A3A:              ; CODE XREF: sub_189A2:loc_189CCp
 	move.b  d5,d0
 	move.b  2(a3),d1
 
-@loc_18A40:              
+@loc_18A40:
 	subq.b  #1,d1
 	beq.s   @loc_18A48
 	add.b   d5,d0
 	bra.s   @loc_18A40
 ; ---------------------------------------------------------------------------
 
-@loc_18A48:              
+@loc_18A48:
 	move.b  d0,$C(a3)
 	move.b  d0,$B(a3)
 	rts
@@ -215,7 +215,7 @@ sub_18A52:              ; CODE XREF: sub_18980+1Ej
 	jsr sub_18ED8(pc)
 	addq.w  #4,sp
 
-@locret_18A64:               
+@locret_18A64:
 	rts
 ; End of function sub_18A52
 
@@ -240,7 +240,7 @@ sub_18A66:              ; CODE XREF: sub_18980+12p
 	rts
 ; ---------------------------------------------------------------------------
 
-@loc_18A94:              
+@loc_18A94:
 	addq.w  #4,sp
 	rts
 ; End of function sub_18A66
@@ -257,7 +257,7 @@ sub_18A98:              ; CODE XREF: sub_18980+Ep
 	bra.w   loc_18B0C
 ; ---------------------------------------------------------------------------
 
-@locret_18AAA:               
+@locret_18AAA:
 	rts
 ; End of function sub_18A98
 
@@ -276,7 +276,7 @@ loc_18ABA:              ; CODE XREF: sub_18AAC+4j
 		bne.w   locret_18B0A
 		btst    #1,0(a3)
 		bne.w   locret_18B0A
-		lea (unk_FF0020).l,a0
+		lea (pcm_FF0020).l,a0
 		moveq   #0,d0
 		moveq   #0,d1
 		move.b  1(a3),d1
@@ -382,57 +382,72 @@ loc_18BA4:              ; CODE XREF: sub_18AAC+E8j
 
 sub_18BB0:              ; CODE XREF: PLAYER:00018F84j
 					; playerMain+2Cj
-	lea unk_19544(pc),a0
-	move.l  (a0)+,d0
-	beq.s   @locret_18C24
-	bmi.s   @locret_18C24
-	subq.w  #1,d0
+	lea dword_19544(pc), a0
 
-@loc_18BBC:              ; CODE XREF: sub_18BB0:loc_18C20j
-	movea.l (a0)+,a1
-	adda.l  $10(a5),a1
-	tst.b   $D(a1)
-	beq.s   @loc_18C20
-	movea.l 0(a1),a2
-	adda.l  $10(a5),a2
-	move.w  $E(a1),d1
-	move.w  d1,d5
-	rol.w   #4,d1
-	ori.b   #$80,d1
-	andi.w  #$F00,d5
-	move.l  4(a1),d2
-	move.w  d2,d3
-	rol.w   #4,d3
-	andi.w  #$F,d3
+	move.l (a0)+, d0
+	beq.s  @locret_18C24
+	bmi.s  @locret_18C24
 
-@loc_18BEC:              ; CODE XREF: sub_18BB0+6Cj
-	move.b  d1,$F(a4)
-	move.w  d2,d4
-	cmpi.w  #$1000,d2
-	bls.s   @loc_18BFC
-	move.w  #$1000,d4
+	subq.w #1, d0
 
-@loc_18BFC:              ; CODE XREF: sub_18BB0+46j
-	add.w   d5,d2
-	sub.w   d5,d4
-	subq.w  #1,d4
-	lea (PCM_DATA).l,a3
-	adda.w  d5,a3
-	adda.w  d5,a3
+	@loc_18BBC:
+		movea.l (a0)+, a1
+		adda.l  $10(a5), a1
 
-@loc_18C0C:              ; CODE XREF: sub_18BB0+60j
-	move.b  (a2)+,(a3)+
-	addq.w  #1,a3
-	dbf d4,@loc_18C0C
-	subi.w  #$1000,d2
-	addq.b  #1,d1
-	moveq   #0,d5
-	dbf d3,@loc_18BEC
+		tst.b   $D(a1)
+		beq.s   @loc_18C20
 
-@loc_18C20:              ; CODE XREF: sub_18BB0+16j
-	dbf d0,@loc_18BBC
+		movea.l 0(a1), a2
+		adda.l  $10(a5), a2
 
-@locret_18C24:               ; CODE XREF: sub_18BB0+6j sub_18BB0+8j
+		move.w  $E(a1), d1
+
+		move.w  d1, d5
+
+		rol.w   #4, d1
+		ori.b   #$80, d1
+
+		andi.w  #$F00, d5
+
+		move.l  4(a1), d2
+
+		move.w  d2, d3
+		rol.w   #4, d3
+		andi.w  #$F, d3
+
+		@loc_18BEC:
+			move.b d1, PCM_CTRL(a4)
+
+			move.w d2, d4
+			cmpi.w #$1000, d2
+			bls.s  @loc_18BFC
+
+			move.w #$1000, d4
+
+		@loc_18BFC:
+			add.w d5, d2
+
+			sub.w  d5, d4
+			subq.w #1, d4
+
+			lea (PCM_DATA).l, a3
+			adda.w d5, a3
+			adda.w d5, a3
+
+			@loc_18C0C:
+				move.b (a2)+, (a3)+
+				addq.w #1, a3
+				dbf d4, @loc_18C0C
+
+			subi.w #$1000, d2
+			addq.b #1, d1
+			moveq  #0, d5
+			dbf d3, @loc_18BEC
+
+	@loc_18C20:
+		dbf d0, @loc_18BBC
+
+@locret_18C24:
 	rts
 ; End of function sub_18BB0
 
@@ -845,8 +860,8 @@ sub_18F88:              ; CODE XREF: PLAYER:00018F80p
 
 	moveq #7, d1
 	@loc_18F8E:
-		lea    (unk_FF3C01).l, a0
-		move.b d3, $F(a4)
+		lea    (pcm_FF3C01).l, a0
+		move.b d3, PCM_CTRL(a4)
 		moveq  #$FFFFFFFF, d2
 
 		move.w #$1FF, d0
@@ -868,15 +883,15 @@ playerMain:              ; CODE XREF: sub_18004j
 					; PLAYER:00018014j ...
 	jsr initAddressRegs(pc)
 
-	move.b #$FF, $11(a4)
-	move.b #$80, $F(a4)
+	move.b #$FF, PCM_CHAN(a4)
+	move.b #$80, PCM_CTRL(a4)
 
 	lea    sub_18000(pc), a0
 	suba.l $1C(a6), a0
 
-	move.l a0, $10(a5)
-	move.b #$FF, 2(a5)
-	move.b #$80, 9(a5)
+	move.l a0, long_10(a5)
+	move.b #$FF, byte_2(a5)
+	move.b #$80, byte_9(a5)
 
 	jsr sub_18F88(pc)
 
@@ -890,7 +905,7 @@ playerMain:              ; CODE XREF: sub_18004j
 initAddressRegs:                ; CODE XREF: playerVblank+4p playerMainp
 	lea unk_192D0(pc), a6
 	lea RAM_BASE(pc), a5
-	lea (unk_FF0000).l, a4
+	lea (PCM_BASE).l, a4
 	rts
 ; End of function initAddressRegs
 
@@ -1236,7 +1251,7 @@ loc_191B4:              ; CODE XREF: PLAYER:000190E4j
 loc_191BA:              ; CODE XREF: PLAYER:000190F4j
 		moveq   #0,d0
 		move.b  (a2)+,d0
-		lea unk_19544(pc),a0
+		lea dword_19544(pc),a0
 		addq.w  #4,a0
 		lsl.w   #2,d0
 		movea.l (a0,d0.w),a0
@@ -1980,43 +1995,19 @@ off_19304:  dc.l $800        ; DATA XREF: PLAYER:off_19300o
 		dc.b $F2 ; ò
 		dc.b $F2 ; ò
 		dc.b   0
-unk_19544:  dc.b   0        ; DATA XREF: sub_18BB0o
+
+dword_19544:        ; DATA XREF: sub_18BB0o
 					; PLAYER:000191BEo
-		dc.b   0
-		dc.b   0
-		dc.b   7
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $64 ; d
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $74 ; t
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $84 ; „
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $94 ; ”
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $A4 ; ¤
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $B4 ; ´
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $C4 ; Ä
-		dc.b   0
-		dc.b   1
-		dc.b $95 ; •
-		dc.b $D4 ; Ô
+	dc.l 7
+	dc.l $19564
+	dc.l $19574
+	dc.l $19584
+	dc.l $19594
+	dc.l $195A4
+	dc.l $195B4
+	dc.l $195C4
+	dc.l $195D4
+
 		dc.b   0
 		dc.b   0
 		dc.b   9

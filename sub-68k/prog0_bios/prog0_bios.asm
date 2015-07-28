@@ -192,7 +192,7 @@ loc_292:
 	cmpi.l  #'SEGA', (a1)
 	bne.w   _reset
 
-	; Verify BIOS checksum
+	; Compute BIOS checksum
 	move.l GENHEADER.romEnd(a1), d1
 	addq.l #1, d1
 	lea    _start(pc), a0
@@ -210,9 +210,11 @@ loc_292:
 		dbf d2, @loc_2E0
 		dbf d1, @loc_2E0
 
+	; Fetch proper checksum from header
 	move.w GENHEADER.checksum(a1), d1
 	beq.s  loc_2F6
 
+	; Reset system if checksum fails
 	cmp.w d1, d0
 	bne.w _reset
 
@@ -279,13 +281,13 @@ installDefaultJumpTable:
 	bra.w sub_556
 ; ---------------------------------------------------------------------------
 word_378:
-	dc.w $2E8   ; $660
-	dc.w $27A   ; $5F2
-	dc.w $2E8   ; $660
-	dc.w $298   ; $610
-	dc.w $2BC   ; $634
-	dc.w $2D0   ; $648
-	dc.w $2E8   ; $660
+	dc.w (locret_660   - word_378)
+	dc.w (mdInterrupt  - word_378)
+	dc.w (locret_660   - word_378)
+	dc.w (cddInterrupt - word_378)
+	dc.w (cdcInterrupt - word_378)
+	dc.w (scdInterrupt - word_378)
+	dc.w (locret_660   - word_378)
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
@@ -297,8 +299,8 @@ loc_388:
 	bra.w sub_556
 ; ---------------------------------------------------------------------------
 word_398:
-	dc.w $238   ; $5D0
-	dc.w $24A   ; $5E2
+	dc.w (_setJmpTbl     - word_398)
+	dc.w (_waitForVBlank - word_398)
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
@@ -720,6 +722,8 @@ scdInterrupt:
 
 @loc_65C:
 	movem.l (sp)+, d0-a6
+
+locret_660:
 	rte
 
 ; =============== S U B M O D U L E =========================================

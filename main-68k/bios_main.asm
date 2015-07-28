@@ -7810,13 +7810,14 @@ loc_5586:               ; CODE XREF: sub_54B2+B4j
 ; End of function sub_54B2
 
 ; ---------------------------------------------------------------------------
-dword_5590: dc.l $45AA0003      ; DATA XREF: sub_54B2+4Co
-	dc.l $42BE0003
-	dc.l $45B20003
-	dc.l $42C80003
-	dc.l $45B80003
-	dc.l $42CE0003
-	dc.l $42D80003
+dword_5590:      ; DATA XREF: sub_54B2+4Co
+	dc.l $45AA0003      ; VRAM $C5AA
+	dc.l $42BE0003      ; VRAM $C2BE
+	dc.l $45B20003      ; VRAM $C5B2
+	dc.l $42C80003      ; VRAM $C2C8
+	dc.l $45B80003      ; VRAM $C5B8
+	dc.l $42CE0003      ; VRAM $C2CE
+	dc.l $42D80003      ; VRAM $C2D8
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -9058,19 +9059,19 @@ sub_5D22:               ; CODE XREF: sub_5C50+14j sub_5C68+14j ...
 	move.l  d0,(VDP_CONTROL).l
 	moveq   #9,d5
 
-loc_5D2A:               ; CODE XREF: sub_5D22+16j
+@loc_5D2A:               ; CODE XREF: sub_5D22+16j
 	cmp.w   d4,d6
-	ble.s   loc_5D3E
+	ble.s   @loc_5D3E
 	move.b  (a1,d4.w),d1
 	bsr.w   sub_5D82
 	addq.w  #1,d4
-	dbf d5,loc_5D2A
+	dbf d5,@loc_5D2A
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_5D3E:               ; CODE XREF: sub_5D22+Aj sub_5D22+24j
+@loc_5D3E:               ; CODE XREF: sub_5D22+Aj sub_5D22+24j
 	move.l  (word_FFFFE172).w,(VDP_DATA).l
-	dbf d5,loc_5D3E
+	dbf d5,@loc_5D3E
 	rts
 ; End of function sub_5D22
 
@@ -9746,13 +9747,13 @@ locret_6280:                ; CODE XREF: sub_6130+12Aj
 sub_6282:               ; CODE XREF: sub_5EA8+Ep
 	lea (VDP_DATA).l,a5
 
-loc_6288:               ; CODE XREF: sub_6282+26j
+@loc_6288:
 	move.l  d0,4(a5)
 	move.w  d1,d3
 
-loc_628E:               ; CODE XREF: sub_6282+Ej
+@loc_628E:
 	move.w  (a5),(a1)+
-	dbf d3,loc_628E
+	dbf d3,@loc_628E
 	nop
 	movem.l d6-d7,-(sp)
 	clr.l   d7
@@ -9760,7 +9761,7 @@ loc_628E:               ; CODE XREF: sub_6282+Ej
 	swap    d7
 	add.l   d7,d0
 	movem.l (sp)+,d6-d7
-	dbf d2,loc_6288
+	dbf d2,@loc_6288
 	rts
 ; End of function sub_6282
 
@@ -10613,7 +10614,7 @@ sendInt2ToSubCpu:
 
 playSegaAnimation:               ; CODE XREF: ROM:00000364j
 	move.l (_LEVEL6+2).w, -(sp)
-	move.w (_LEVEL6).w, -(sp)
+	move.w (_LEVEL6).w,   -(sp)
 
 	move.l a1, -(sp)
 
@@ -11644,7 +11645,7 @@ loc_77D8:               ; CODE XREF: sub_77A0+42j
 
 sub_77EA:               ; CODE XREF: sub_78D8+2Cp
 	lea (WordRAM_Bank1).l, a1
-	lea (word_15DC6).l,     a3
+	lea (word_15DC6).l,    a3
 
 	adda.w d1, a1
 
@@ -11662,7 +11663,7 @@ sub_77EA:               ; CODE XREF: sub_78D8+2Cp
 sub_77FA:               ; CODE XREF: sub_754E+Ap sub_754E+14p ...
 	lea (WordRAM_Bank1).l, a1
 	lea (word_15920).l,    a2
-	lea (word_15DC6).l,     a3
+	lea (word_15DC6).l,    a3
 
 	adda.w d1, a1
 
@@ -11784,12 +11785,14 @@ sub_7892:               ; CODE XREF: sub_78D8+8p sub_7EA8+52p ...
 	divu.w  #$A,d0
 	bsr.s   sub_78CC
 	move.w  d0,(a0)
-	movea.l (sp)+,a0
-	moveq   #4,d0
 
-loc_78B8:               ; CODE XREF: sub_7892+28j
-	tst.w   (a0)+
-	dbne    d0,loc_78B8
+	movea.l (sp)+,a0
+
+	moveq   #4,d0
+	@loc_78B8:
+		tst.w   (a0)+
+		dbne    d0,@loc_78B8
+
 	bne.s   loc_78C2
 	addq.w  #1,d0
 
