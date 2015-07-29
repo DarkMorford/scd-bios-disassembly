@@ -16,6 +16,9 @@
 
 	; Color-related constants
 	include "constants\colors.asm"
+	
+	; CD module contants
+	include "constants\cd.asm"
 
 ;   Main loop states
 STATE_NULL   equ 0

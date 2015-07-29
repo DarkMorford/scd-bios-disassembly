@@ -12,7 +12,7 @@ JOYBIT_DOWN     equ 1
 JOYBIT_UP       equ 0
 
 JOYTYPE_MEGAMOUSE   equ 3
-JOYTYPE_TYPE7       equ 7
+JOYTYPE_MULTITAP    equ 7
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -85,7 +85,7 @@ setupJoypads:
 ; =============== S U B R O U T I N E =======================================
 
 ; Input parameters:
-; a6 - JOYDATA1
+; a6 - JOYDATAn
 
 detectControllerType:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
 	movem.l d1-d3, -(sp)
@@ -147,38 +147,40 @@ sub_1174:               ; CODE XREF: detectControllerType+26p detectControllerT
 
 
 sub_118C:               ; CODE XREF: ROM:0000069Cp
-	; Test controller 1
+	; Detect controller #1
 	lea (JOYDATA1).l, a6
 	bsr.s detectControllerType
 
-	; Skip controller 1 if unchanged
+	; Skip if no change
 	cmp.b (joy1Type).w, d7
 	beq.s @loc_11AE
 
 	move.b d7, (joy1Type).w
-	cmpi.b #JOYTYPE_TYPE7, d7
+
+	cmpi.b #JOYTYPE_MULTITAP, d7
 	beq.s  @loc_11AA
 
 	cmpi.b #JOYTYPE_MEGAMOUSE, d7
 	bne.s  @loc_11AE
 
 @loc_11AA:
-	; Non-standard controller
+	; Team Player or Mega Mouse
 	moveq #0, d1
 	bsr.s @loc_11CC
 
 @loc_11AE:
-	; Test controller 2
+	; Detect controller #2
 	addq.w #2, a6
 	bsr.s  detectControllerType
 
-	; Skip controller 2 if unchanged
+	; Skip if no change
 	cmp.b (joy2Type).w, d7
 	beq.s @locret_11D6
 
 	move.b d7, (joy2Type).w
+
 	moveq  #1, d1
-	cmpi.b #JOYTYPE_TYPE7, d7
+	cmpi.b #JOYTYPE_MULTITAP, d7
 	beq.s  @loc_11CC
 
 	cmpi.b #JOYTYPE_MEGAMOUSE, d7
@@ -188,7 +190,7 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 ; ---------------------------------------------------------------------------
 
 @loc_11CC:
-	; Non-standard controller
+	; Team Player or Mega Mouse
 	moveq #0, d0
 	bsr.w sub_12F4
 	bcc.s @locret_11D6
@@ -203,36 +205,41 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 
 
 sub_11D8:               ; CODE XREF: vblankHandler+26p
-	cmpi.b #JOYTYPE_TYPE7, (joy1Type).w
+	cmpi.b #JOYTYPE_MULTITAP, (joy1Type).w
 	bne.s  loc_1218
 
-	lea     (joy1Down).w, a1
-	move.l  a1, -(sp)
+	; Port 1 has multitap
+	lea    (joy1Down).w, a1
+	move.l a1, -(sp)
 
-	lea     (joy2MouseData).w, a2
-	moveq   #0, d1
-	bsr.w   sub_1484
+	lea   (joy2MouseData).w, a2
+	moveq #0, d1
+	bsr.w readMultitap
 
+	; Check if control pad was found
 	movea.l (sp)+, a3
 	cmpa.l  a3, a1
 	bne.s   loc_11F8
 
-	clr.w   (a1)
+	; Control pad not found, clear data
+	clr.w (a1)
 
 loc_11F8:
-	lea   (unk_FFFFFE1A).w, a3
+	lea (multitapControllerTypes).w, a3
 
+	; Check if multitap has a mouse
 	moveq #3, d0
 	@loc_11FE:
 		cmpi.b #2, (a3)+
 		dbeq   d0, @loc_11FE
 
+	; Skip to controller port 2 if no mouse
 	bne.s loc_1264
 
-	lea     (joy2MouseData).w, a5
-	lea     (joy2Down).w, a0
-	bsr.w   readMouseButtons
-	bra.w   loc_12BA
+	lea   (joy2MouseData).w, a5
+	lea   (joy2Down).w, a0
+	bsr.w readMouseButtons
+	bra.w loc_12BA
 ; ---------------------------------------------------------------------------
 
 loc_1218:               ; CODE XREF: sub_11D8+6j
@@ -258,22 +265,23 @@ loc_1250:               ; CODE XREF: sub_11D8+46j
 	; Port 1 has Mega Mouse
 	lea (joy1MouseData).w, a5
 
-	moveq #0,d1
-	moveq #1,d0
+	moveq #0, d1
+	moveq #1, d0
 
 	bsr.w sub_12F4
 	bcs.s loc_12C4
 
-	lea   (joy1Down).w,a0
+	lea   (joy1Down).w, a0
 	bsr.s readMouseButtons
 
 loc_1264:               ; CODE XREF: sub_11D8+2Ej sub_11D8+76j
 	cmpi.b #JOYTYPE_MEGAMOUSE, (joy2Type).w
 	beq.s  loc_12A6
 
-	cmpi.b #JOYTYPE_TYPE7, (joy2Type).w
+	cmpi.b #JOYTYPE_MULTITAP, (joy2Type).w
 	bne.s  loc_1276
 
+	; Totally ignore multitap on port 2
 	bra.s  loc_12BA
 ; ---------------------------------------------------------------------------
 
@@ -334,15 +342,16 @@ readMouseButtons:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
 	bclr   #0, d0
 	beq.s  @loc_12DE
 
-	bset   #6, d0
+	bset   #JOYBIT_BTNA, d0
 
 @loc_12DE:
 	bclr   #1, d0
 	beq.s  @loc_12E8
 
-	bset   #4, d0
+	bset   #JOYBIT_BTNB, d0
 
 @loc_12E8:
+	; Compute triggered buttons
 	move.b (a0), d1
 
 	eor.b  d0, d1
@@ -377,8 +386,8 @@ sub_12F4:               ; CODE XREF: loc_11CC+2p sub_11D8+80p ...
 
 ; ---------------------------------------------------------------------------
 word_1318:
-	dc.w 8      ; $1320
-	dc.w $4C    ; readMegaMouse
+	dc.w (sub_1320 - word_1318)
+	dc.w (readMegaMouse - word_1318)
 	dc.w $166   ; $147E     ; bchg d0, -(a6)
 	dc.w $166   ; $147E     ; bchg d0, -(a6)
 
@@ -392,11 +401,11 @@ sub_1320:
 	m_z80WaitForBus
 
 	move.b #$60, 6(a6)
-	bsr.w  loc_1452
+	bsr.w  waitForTlHigh
 	bcs.s  @loc_1356
 
 	move.b #$40, (a6)
-	bsr.w  loc_1452
+	bsr.w  waitForTlHigh
 	bcs.s  @loc_1356
 
 	m_z80ReleaseBus
@@ -424,53 +433,53 @@ readMegaMouse:
 	move.b #$60, 6(a6)
 	move.b #$60,  (a6)
 
-	bsr.w loc_1452
-	bcs.s @loc_13E6
+	bsr.w waitForTlHigh
+	bcs.s @mouseReadFailed
 
 	move.b #$20, (a6)
-	bsr.w  loc_1452
-	bcs.s  @loc_13E6
+	bsr.w  waitForTlHigh
+	bcs.s  @mouseReadFailed
 
 	btst  #JOYDATA_PD2, d0
-	bne.s @loc_13E6
+	bne.s @mouseReadFailed
 
-	bsr.w sub_1466
-	bcs.s @loc_13E6
+	bsr.w readControllerDataLow
+	bcs.s @mouseReadFailed
 
-	bsr.w sub_144E
-	bcs.s @loc_13E6
+	bsr.w readControllerDataHigh
+	bcs.s @mouseReadFailed
 
 	moveq #2, d6
 	@loc_13AE:
-		bsr.w sub_1466
-		bcs.s @loc_13E6
-
+		bsr.w readControllerDataLow
+		bcs.s @mouseReadFailed
 		move.b (a6), (a4)+
-		bsr.w  sub_144E
-		bcs.s  @loc_13E6
 
+		bsr.w  readControllerDataHigh
+		bcs.s  @mouseReadFailed
 		move.b (a6), (a4)+
+
 		dbf d6, @loc_13AE
 
 	moveq #2, d6
 	@loc_13C4:
-		bsr.w sub_1466
-		bcs.s @loc_13E6
+		bsr.w readControllerDataLow
+		bcs.s @mouseReadFailed
 
-		bsr.w sub_144E
-		bcs.s @loc_13E6
+		bsr.w readControllerDataHigh
+		bcs.s @mouseReadFailed
 
 		dbf d6, @loc_13C4
 
 	move.b #$60, (a6)
-	bsr.w  loc_1452
+	bsr.w  waitForTlHigh
 
 	m_z80ReleaseBus
 
-	bra.s sub_13FC
+	bra.s computeMouseMotion
 ; ---------------------------------------------------------------------------
 
-@loc_13E6:
+@mouseReadFailed:
 	move.b #$60, (a6)
 	m_z80ReleaseBus
 	clr.l 6(a5)
@@ -483,7 +492,7 @@ readMegaMouse:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_13FC:               ; CODE XREF: sub_136A+7Aj sub_157C+1Ap
+computeMouseMotion:               ; CODE XREF: sub_136A+7Aj sub_157C+1Ap
 	lea (a5), a4
 
 	moveq   #0, d0
@@ -492,8 +501,8 @@ sub_13FC:               ; CODE XREF: sub_136A+7Aj sub_157C+1Ap
 	movep.w 2(a4), d0
 	movep.w 3(a4), d1
 
-	andi.w  #$F0F, d0
-	andi.w  #$F0F, d1
+	andi.w  #$0F0F, d0
+	andi.w  #$0F0F, d1
 
 	lsl.w   #4, d0
 	or.w    d1, d0
@@ -501,24 +510,31 @@ sub_13FC:               ; CODE XREF: sub_136A+7Aj sub_157C+1Ap
 	andi.w  #$FF, d1
 	lsr.w   #8, d0
 
+	; Check for inverted Y axis
 	btst  #1, (a4)
 	beq.s @loc_1428
 
 	subi.w #$100, d1
 
 @loc_1428:
+	; Check for Y overflow
 	btst  #3, (a4)
 	beq.s @loc_1430
+
 	clr.b d1
 
 @loc_1430:
 	neg.w  d1
 	move.w d1, 8(a4)
+
+	; Check for inverted X axis
 	btst   #0, (a4)
 	beq.s  @loc_1440
+
 	subi.w #$100, d0
 
 @loc_1440:
+	; Check for X overflow
 	btst  #2, (a4)
 	beq.s @loc_1448
 
@@ -527,62 +543,68 @@ sub_13FC:               ; CODE XREF: sub_136A+7Aj sub_157C+1Ap
 @loc_1448:
 	move.w d0, 6(a4)
 	rts
-; End of function sub_13FC
+; End of function computeMouseMotion
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_144E:               ; CODE XREF: sub_136A+3Cp sub_136A+4Cp ...
+readControllerDataHigh:
+	; Set TR high
 	move.b #$20, (a6)
 
-loc_1452:               ; CODE XREF: sub_1324+18p sub_1324+22p ...
+waitForTlHigh:               ; CODE XREF: sub_1324+18p sub_1324+22p ...
+	; Clear carry bit
 	andi #$FE, ccr
 
+	; Wait for the controller to drive TL high
 	@loc_1456:
 		move.b (a6), d0
 		btst   #JOYDATA_TL, d0
 		dbne   d7, @loc_1456
 
-	beq.s loc_147E
+	beq.s joypadReadFailed
 
 	move.b (a6), d0
 	rts
-; End of function sub_144E
+; End of function readControllerDataHigh
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1466:               ; CODE XREF: sub_136A+36p
-					; sub_136A:loc_13AEp ...
+readControllerDataLow:
+	; Set TR low
 	move.b #0, (a6)
-	andi   #$FE, ccr
 
+	; Clear carry bit
+	andi #$FE, ccr
+
+	; Wait for the controller to drive TL low
 	@loc_146E:
 		move.b (a6), d0
 		btst   #JOYDATA_TL, d0
 		dbeq   d7, @loc_146E
 
-	bne.s loc_147E
+	bne.s joypadReadFailed
 
 	move.b (a6), d0
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_147E:               ; CODE XREF: sub_144E+12j sub_1466+12j
+joypadReadFailed:
 	ori #1, ccr
 	rts
-; End of function sub_1466
+; End of function readControllerDataLow
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1484:               ; CODE XREF: sub_11D8+14p
+readMultitap:               ; CODE XREF: sub_11D8+14p
 	movem.l d1-a0/a3-a6, -(sp)
 
-	lea (unk_FFFFFE1A).w, a0
+	lea (multitapControllerTypes).w, a0
 
 	add.w d1, d1
 	lea (JOYDATA1).l, a6
@@ -591,82 +613,94 @@ sub_1484:               ; CODE XREF: sub_11D8+14p
 	m_z80RequestBus
 	m_z80WaitForBus
 
-	move.b  #$20,  (a6)
-	move.b  #$60, 6(a6)
-	move.w  #$FF, d7
+	; Set TR high, TH low
+	move.b #$20, (a6)
 
-	btst    #4, (a6)
-	beq.w   loc_1510
+	move.b #$60, 6(a6)
+	move.w #$FF, d7
 
-	bsr.s   sub_1466
-	bcs.s   loc_1510
+	btst  #JOYDATA_TL, (a6)
+	beq.w joypadTransferFailed
 
-	andi.b  #$F, d0
-	bsr.s   sub_144E
-	bcs.s   loc_1510
+	; Read two handshake bytes
+	bsr.s  readControllerDataLow
+	bcs.s  joypadTransferFailed
+	andi.b #$F, d0
 
-	andi.b  #$F, d0
-	bsr.s   sub_1466
-	bcs.s   loc_1510
+	bsr.s  readControllerDataHigh
+	bcs.s  joypadTransferFailed
+	andi.b #$F, d0
 
-	move.b  d0, (a0)+
-	bsr.w   sub_144E
-	bcs.s   loc_1510
+	; Get controller A type
+	bsr.s  readControllerDataLow
+	bcs.s  joypadTransferFailed
+	move.b d0, (a0)+
 
-	move.b  d0, (a0)+
-	bsr.s   sub_1466
-	bcs.s   loc_1510
+	; Get controller B type
+	bsr.w  readControllerDataHigh
+	bcs.s  joypadTransferFailed
+	move.b d0, (a0)+
 
-	move.b  d0, (a0)+
-	moveq   #$20, d6
-	bsr.w   sub_144E
-	bcs.s   loc_1510
+	; Get controller C type
+	bsr.s  readControllerDataLow
+	bcs.s  joypadTransferFailed
+	move.b d0, (a0)+
 
-	move.b  d0, (a0)+
-	andi.l  #$0F0F0F0F, -(a0)
+	moveq #$20, d6
 
-	bsr.s   sub_1522
-	bsr.s   sub_1522
-	bsr.s   sub_1522
-	bsr.s   sub_1522
+	; Get controller D type
+	bsr.w  readControllerDataHigh
+	bcs.s  joypadTransferFailed
+	move.b d0, (a0)+
 
-	move.b  #$60, (a6)
-	bsr.w   loc_1452
+	; Clear the high nybbles since they're not data
+	andi.l #$0F0F0F0F, -(a0)
+
+	; Read each attached controller (gamepad/mouse)
+	bsr.s sub_1522
+	bsr.s sub_1522
+	bsr.s sub_1522
+	bsr.s sub_1522
+
+	; Set TH high (reset transfer)
+	move.b #$60, (a6)
+	bsr.w  waitForTlHigh
 
 	m_z80ReleaseBus
 	movem.l (sp)+, d1-a0/a3-a6
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_1510:
+joypadTransferFailed:
+	; Set TH high (reset transfer)
 	move.b #$60, (a6)
 	m_z80ReleaseBus
 	movem.l (sp)+, d1-a0/a3-a6
 	rts
-; End of function sub_1484
+; End of function readMultitap
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1522:               ; CODE XREF: sub_1484+6Ep sub_1484+70p ...
+sub_1522:               ; CODE XREF: readMultitap+6Ep readMultitap+70p ...
 	moveq  #0,    d0
 	move.b (a0)+, d0
 
 	cmpi.b #2, d0
 	bhi.s  @locret_1540
 
-	add.w  d0, d0
-	add.w  d0, d0
-	jmp    @loc_1534(pc, d0.w)
+	add.w d0, d0
+	add.w d0, d0
+	jmp   @loc_1534(pc, d0.w)
 ; ---------------------------------------------------------------------------
 
 @loc_1534:
-	bra.w   sub_154C
+	bra.w sub_154C      ; 3-button control pad
 ; ---------------------------------------------------------------------------
-	bra.w   loc_1542
+	bra.w loc_1542      ; 6-button control pad
 ; ---------------------------------------------------------------------------
-	bra.w   sub_157C
+	bra.w sub_157C      ; Mouse
 ; ---------------------------------------------------------------------------
 
 @locret_1540:
@@ -674,9 +708,12 @@ sub_1522:               ; CODE XREF: sub_1484+6Ep sub_1484+70p ...
 ; ---------------------------------------------------------------------------
 
 loc_1542:               ; CODE XREF: sub_1522+16j
+	; Read 3-button data
 	bsr.s sub_154C
-	bsr.w sub_15B2
-	bcs.s loc_1510
+
+	; Read ModeXYZ buttons (and throw them out)
+	bsr.w readNextControllerData
+	bcs.s joypadTransferFailed
 	rts
 ; End of function sub_1522
 
@@ -685,23 +722,27 @@ loc_1542:               ; CODE XREF: sub_1522+16j
 
 
 sub_154C:               ; CODE XREF: sub_1522:loc_1534j
-					; sub_1522:loc_1542p
-	bsr.w  sub_15B2
-	bcs.s  loc_1510
-
+	; Read D-pad
+	bsr.w  readNextControllerData
+	bcs.s  joypadTransferFailed
 	andi.w #$F, d0
-	move.w d0,  d1
-	bsr.w  sub_15B2
-	bcs.s  loc_1510
 
+	move.w d0, d1
+
+	; Read SACB buttons
+	bsr.w  readNextControllerData
+	bcs.s  joypadTransferFailed
 	andi.w #$F, d0
-	asl.w  #4,  d0
-	or.b   d0,  d1
+
+	asl.w  #4, d0
+	or.b   d0, d1
 	not.b  d1
 
-	cmpa.l #$FFFFFE20, a1
+	; Only write data from controller A
+	cmpa.l #joy1Down, a1
 	bhi.s  @locret_157A
 
+	; Compute triggered buttons
 	move.b (a1), d0
 
 	eor.b  d1, d0
@@ -719,28 +760,32 @@ sub_154C:               ; CODE XREF: sub_1522:loc_1534j
 
 
 sub_157C:               ; CODE XREF: sub_1522+1Aj
-	moveq  #5, d1
-	cmpa.l #$FFFFFE0C, a2
+	moveq #5, d1
+
+	; Throw out data if multiple mice
+	cmpa.l #joy2MouseData, a2
 	bhi.s  @loc_15A0
 
 	lea (a2), a4
+
+	; Read raw mouse data
 	@loc_1588:
-		bsr.w  sub_15B2
-		bcs.s  loc_1510
+		bsr.w readNextControllerData
+		bcs.s joypadTransferFailed
 
 		move.b d0, (a4)+
 		dbf d1, @loc_1588
 
 	lea (a2), a5
-	bsr.w sub_13FC
+	bsr.w computeMouseMotion
 
 	lea $C(a2), a2
 	rts
 ; ---------------------------------------------------------------------------
 
 	@loc_15A0:
-		bsr.w   sub_15B2
-		bcs.w   loc_1510
+		bsr.w   readNextControllerData
+		bcs.w   joypadTransferFailed
 
 		dbf d1, @loc_15A0
 
@@ -760,8 +805,8 @@ sub_15AE:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_15B2:               ; CODE XREF: sub_1522+22p sub_154Cp ...
-	bchg  #5, d6
-	beq.w sub_144E
-	bra.w sub_1466
-; End of function sub_15B2
+readNextControllerData:     ; CODE XREF: sub_1522+22p sub_154Cp ...
+	bchg  #JOYDATA_TR, d6
+	beq.w readControllerDataHigh
+	bra.w readControllerDataLow
+; End of function readNextControllerData

@@ -248,7 +248,7 @@ sub_1730:               ; CODE XREF: ROM:00000378j
 
 @loc_1742:
 	moveq  #$FFFFFFFF, d1
-	bsr.w  sub_183A
+	bsr.w  setDiscType
 
 @loc_1748:
 	moveq  #0, d3
@@ -429,7 +429,7 @@ sub_1800:               ; CODE XREF: ROM:0000035Cj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1818:               ; CODE XREF: vblankHandler+32p
+checkDiscReady:               ; CODE XREF: vblankHandler+32p
 					; sub_2424p
 	btst  #GA_MAINFLAG1, (mainCommFlags).w
 	beq.s @locret_1830
@@ -440,9 +440,9 @@ sub_1818:               ; CODE XREF: vblankHandler+32p
 	jmp    loc_1832(pc, d0.w)
 ; ---------------------------------------------------------------------------
 
-@locret_1830:                ; CODE XREF: sub_1818+6j
+@locret_1830:                ; CODE XREF: checkDiscReady+6j
 	rts
-; End of function sub_1818
+; End of function checkDiscReady
 
 ; ---------------------------------------------------------------------------
 
@@ -450,41 +450,41 @@ loc_1832:
 	nop
 	rts
 ; ---------------------------------------------------------------------------
-	bra.w *+4
+	bra.w setDiscType
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_183A:               ; CODE XREF: ROM:00000542p
+setDiscType:               ; CODE XREF: ROM:00000542p
 					; sub_1730+14p ...
-	move.b d1, (byte_FFFFFDDC).w
+	move.b d1, (insertedDiscType).w
 	rts
-; End of function sub_183A
+; End of function setDiscType
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1840:               ; CODE XREF: sub_21F4:loc_2264p
+getDiscType:               ; CODE XREF: sub_21F4:loc_2264p
 					; sub_329A+30p ...
-	move.b (byte_FFFFFDDC).w, d0
+	move.b (insertedDiscType).w, d0
 	rts
-; End of function sub_1840
+; End of function getDiscType
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1846:               ; CODE XREF: sub_21F4+E8p
+checkDiscBootable:               ; CODE XREF: sub_21F4+E8p
 					; sub_21F4:loc_2306p ...
-	cmpi.b #4, (byte_FFFFFDDC).w
+	cmpi.b #CD_GAMESYSTEM, (insertedDiscType).w
 	beq.s  @locret_1854
 
-	cmpi.b #6, (byte_FFFFFDDC).w
+	cmpi.b #CD_GAMEBOOT, (insertedDiscType).w
 
 @locret_1854:
 	rts
-; End of function sub_1846
+; End of function checkDiscBootable
 
 
 ; =============== S U B R O U T I N E =======================================

@@ -10,7 +10,7 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 
 	bsr.w displayOff
 
-	bsr.w sub_1098
+	bsr.w sendE3ToZ80
 
 	bsr.w loadDefaultVdpRegs
 
@@ -174,12 +174,14 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 
 	clr.w (word_219C00).l
 
+	; Clear Word RAM $220000-$240000 (Second 1M bank)
 	lea    (WordRAM_Bank1).l, a0
 	move.w #$7FFF, d7
 	@loc_1F44:
 		clr.l (a0)+
 		dbf d7, @loc_1F44
 
+	; Copy $BB46-$D0C6 to $200080-$201600
 	lea    (dword_BB46).l, a0
 	lea    (unk_200080).l, a1
 	move.w #1375, d7
@@ -187,6 +189,7 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 		move.l (a0)+, (a1)+
 		dbf d7, @loc_1F5A
 
+	; Copy $D09E-$E69E to $201880-$202E80
 	lea    (dword_D09E).l, a0
 	lea    (unk_201880).l, a1
 	move.w #1407, d7
@@ -265,49 +268,49 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 	move.w #$25, d1
 	move.w #4,   d2
 	move.w #1,   d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $E882, d0
 	move.w #$25, d1
 	move.w #4,   d2
 	move.w #$BF, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $EB02, d0
 	move.w #$25,  d1
 	move.w #4,    d2
 	move.w #$17D, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $ED82, d0
 	move.w #$25,  d1
 	move.w #4,    d2
 	move.w #$475, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $F402, d0
 	move.w #$25,  d1
 	move.w #4,    d2
 	move.w #$23B, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $F682, d0
 	move.w #$25,  d1
 	move.w #4,    d2
 	move.w #$2F9, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $F902, d0
 	move.w #$25,  d1
 	move.w #4,    d2
 	move.w #$3B7, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVramWriteAddress $FB82, d0
 	move.w #$25,  d1
 	move.w #4,    d2
 	move.w #$475, d3
-	jsr    sub_199C
+	jsr writeTransposedTilemapToVram
 
 	m_loadVsramWriteAddress 0
 	move.w #$120, (VDP_DATA).l
@@ -408,9 +411,11 @@ palette_21EC:
 
 
 sub_21F4:               ; CODE XREF: ROM:000005DAj
+	; Load assets for this state
 	bsr.w sub_1CFA
 
 @loc_21F8:
+	; Set a countdown for 600 frames (10 seconds)
 	move.w #600, (word_FFFFC100).w
 
 @loc_21FE:
@@ -423,10 +428,10 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	moveq #0, d0
 
 	; Check controller #1 type
-	cmpi.b #JOYTYPE_TYPE7, (joy1Type).w
+	cmpi.b #JOYTYPE_MULTITAP, (joy1Type).w
 	bne.s  @loc_2224
 
-	lea (unk_FFFFFE1A).w, a1
+	lea (multitapControllerTypes).w, a1
 
 	moveq #3, d1
 	@loc_221A:
@@ -469,10 +474,10 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 ; ---------------------------------------------------------------------------
 
 @loc_2264:
-	bsr.w  sub_1840
+	bsr.w  getDiscType
 
 	tst.b  d0
-	bmi.s  @loc_2298
+	bmi.s  @loc_2298    ; CD drive not ready
 
 	tst.b  (byte_FFFFFE3A).w
 	bmi.s  @loc_21FE
@@ -481,8 +486,11 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	bne.w  @loc_22D4
 
 	move.b (joy1Triggered).w, d0
+	
+	; Check START button
 	bmi.s  @loc_228E
 
+	; Check ABC buttons
 	andi.b #$70, d0
 	beq.s  @loc_2294
 
@@ -503,8 +511,11 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	bne.s  @loc_22BC
 
 	move.b (joy1Triggered).w, d0
+	
+	; Check START button
 	bmi.s  @loc_22AE
 
+	; Check ABC buttons
 	andi.b #$70, d0
 	bne.s  @loc_22B6
 
@@ -538,7 +549,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	cmpi.b #2, (byte_FFFFC0FF).w
 	beq.s  @loc_22E2
 
-	bsr.w  sub_1846
+	bsr.w  checkDiscBootable
 	beq.s  @loc_22F8
 
 @loc_22E2:
@@ -554,6 +565,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 ; ---------------------------------------------------------------------------
 
 @loc_22F8:
+	; Bootable disc loaded, go to launch state
 	move.b #Z80CMD_E1, d7
 	jsr    sendCommandToZ80
 
@@ -562,7 +574,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 ; ---------------------------------------------------------------------------
 
 @loc_2306:
-	jsr   sub_1846
+	jsr   checkDiscBootable
 	beq.s @loc_22F8
 	bra.w @loc_21FE
 ; End of function sub_21F4
@@ -585,8 +597,8 @@ sub_2310:               ; CODE XREF: sub_21F4+66p
 
 ; ---------------------------------------------------------------------------
 off_2326:
-	dc.l unk_FFFFC13A
-	dc.l unk_FFFFC83A
+	dc.l unk_FFFFC13A   ; No buttons pressed
+	dc.l unk_FFFFC83A   ; At least one of SABC pressed
 	dc.l unk_FFFFCF3A
 	dc.l unk_FFFFD63A
 
@@ -719,7 +731,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 
 ; V-blank handler for state_21F4
 sub_2424:               ; DATA XREF: sub_1CFA+462o
-	bsr.w  sub_1818
+	bsr.w  checkDiscReady
 
 	jsr    displayOff
 
@@ -745,8 +757,8 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	move.w #$120, (VDP_DATA).l
 
 @loc_2470:
-	bsr.w sub_2FAC
-	bsr.w sub_2F58
+	bsr.w rotatePalette2
+	bsr.w rotatePalette0
 
 @loc_2478:
 	move.w (word_219C00).l, d3
@@ -2392,7 +2404,7 @@ sub_2F4A:               ; CODE XREF: ROM:00002CC0j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2F58:               ; CODE XREF: sub_2424+50p
+rotatePalette0:               ; CODE XREF: sub_2424+50p
 	move.w (dword_FFFFC106+2).w, d0
 	lsl.w  #1, d0
 
@@ -2418,7 +2430,7 @@ sub_2F58:               ; CODE XREF: sub_2424+50p
 	; Signal palette update
 	bset #0, (vdpUpdateFlags).w
 	rts
-; End of function sub_2F58
+; End of function rotatePalette0
 
 ; ---------------------------------------------------------------------------
 palette_2F8C:
@@ -2442,7 +2454,7 @@ palette_2F8C:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2FAC:               ; CODE XREF: sub_2424:loc_2470p
+rotatePalette2:               ; CODE XREF: sub_2424:loc_2470p
 	lea (paletteBuffer2+COLOR3).w, a0
 
 	addq.w #1,  (palette2Rotation).w
@@ -2463,7 +2475,7 @@ sub_2FAC:               ; CODE XREF: sub_2424:loc_2470p
 	; Signal a palette update
 	bset #0, (vdpUpdateFlags).w
 	rts
-; End of function sub_2FAC
+; End of function rotatePalette2
 
 ; ---------------------------------------------------------------------------
 palette_2FE0:

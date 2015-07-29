@@ -194,11 +194,11 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   loadDefaultFont
 ; ---------------------------------------------------------------------------
-	bra.w   sub_18CE
+	bra.w   handleDpadRepeat
 ; ---------------------------------------------------------------------------
 	bra.w   decompressEnigma
 ; ---------------------------------------------------------------------------
-	bra.w   sub_199C
+	bra.w   writeTransposedTilemapToVram
 ; ---------------------------------------------------------------------------
 	bra.w   randWithModulo
 ; ---------------------------------------------------------------------------
@@ -246,7 +246,7 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   setFadeInTargetPalette
 ; ---------------------------------------------------------------------------
-	bra.w   sub_1A28
+	bra.w   processDmaTransferQueue
 ; ---------------------------------------------------------------------------
 	bra.w   sub_1A38
 ; ---------------------------------------------------------------------------
@@ -504,8 +504,8 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 
 	m_disableInterrupts
 
-	moveq #$FFFFFFFF, d1
-	bsr.w sub_183A
+	moveq #CD_NOTREADY, d1
+	bsr.w setDiscType
 
 	clr.b (byte_FFFFFE54).w
 	btst  #JOYCTRL_PC6, (JOYCTRL3).l
@@ -576,7 +576,7 @@ mainJumpTable:
 ; ---------------------------------------------------------------------------
 	bra.w sub_21F4
 ; ---------------------------------------------------------------------------
-	bra.w sub_3040
+	bra.w state_3040
 ; ---------------------------------------------------------------------------
 	bra.w loadPrgFromWordRam
 ; ---------------------------------------------------------------------------
@@ -901,7 +901,7 @@ vblankHandler:
 	bsr.w sub_11D8
 	clr.b (vblankCode).w
 	bsr.w sub_1658
-	bsr.w sub_1818
+	bsr.w checkDiscReady
 
 	movem.l (sp)+, d0-a6
 	rte
@@ -1258,7 +1258,7 @@ dmaTransferToVram:          ; CODE XREF: ROM:000002D0j
 ; d1 - Source address
 ; d2 - DMA length
 
-dmaTransferToVramWithRewrite:       ; CODE XREF: ROM:000002D4j sub_1A28+8p ...
+dmaTransferToVramWithRewrite:       ; CODE XREF: ROM:000002D4j processDmaTransferQueue+8p ...
 	move.l  a1, -(sp)
 
 	movea.l d1, a1
@@ -1903,7 +1903,8 @@ copyToZ80Ram:               ; CODE XREF: playSegaAnimation+A2p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1098:
+; Temporary name until I find out what the command E3 does.
+sendE3ToZ80:
 	move.b #Z80CMD_E3, d7
 
 sendCommandToZ80:
@@ -1917,7 +1918,7 @@ sendCommandToZ80:
 	m_z80ReleaseBus
 	m_restoreStatusRegister
 	rts
-; End of function sub_1098
+; End of function sendE3ToZ80
 
 
 ; =============== S U B M O D U L E =========================================
@@ -1986,7 +1987,7 @@ dmaSendSpriteTable:         ; CODE XREF: ROM:0000030Cj
 ; d0: Joypad 0/1
 ; a1:
 
-sub_18CE:               ; CODE XREF: ROM:0000032Cj
+handleDpadRepeat:               ; CODE XREF: ROM:0000032Cj
 	move.l  a5, -(sp)
 
 	move.w  (joy1Down).w, d1
@@ -1997,15 +1998,18 @@ sub_18CE:               ; CODE XREF: ROM:0000032Cj
 	move.w  (joy2Down).w, d1
 
 @loc_18DC:
-	lea (byte_FFFFFE24).w, a5
+	lea (joy1RepeatDelay).w, a5
 	adda.w d0, a5
 
-	andi.b #$F, d1
+	; Check for D-pad trigger
+	andi.b #$0F, d1
 	bne.s  @loc_18FA
 
-	andi.w #$F00, d1
+	; No trigger, check for D-pad hold
+	andi.w #$0F00, d1
 	beq.s  @loc_18FE
 
+	; Direction is held
 	subq.b #1, (a5)
 	bpl.s  @loc_18FE
 
@@ -2016,6 +2020,7 @@ sub_18CE:               ; CODE XREF: ROM:0000032Cj
 ; ---------------------------------------------------------------------------
 
 @loc_18FA:
+	; D-pad triggered
 	move.b #$14, (a5)
 
 @loc_18FE:
@@ -2023,7 +2028,7 @@ sub_18CE:               ; CODE XREF: ROM:0000032Cj
 
 	movea.l (sp)+, a5
 	rts
-; End of function sub_18CE
+; End of function handleDpadRepeat
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2139,11 +2144,11 @@ loc_198E:
 
 ; Inputs:
 ;   d0: VDP address
-;   d1: Columns
-;   d2: Rows
-;   d3:
+;   d1: Columns - 1
+;   d2: Rows - 1
+;   d3: Pattern descriptor for first tile
 
-sub_199C:               ; CODE XREF: ROM:00000334j
+writeTransposedTilemapToVram:           ; CODE XREF: ROM:00000334j
 	lea (VDP_DATA).l, a5
 
 	move.w d2, d6
@@ -2171,7 +2176,7 @@ sub_199C:               ; CODE XREF: ROM:00000334j
 		dbf d2, @loc_19A6
 
 	rts
-; End of function sub_199C
+; End of function writeTransposedTilemapToVram
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2247,7 +2252,7 @@ convertToBcd:                ; CODE XREF: ROM:00000380j
 ; Input:
 ; a1:
 
-sub_1A28:               ; CODE XREF: ROM:00000394j
+processDmaTransferQueue:               ; CODE XREF: ROM:00000394j
 	move.w (a1)+, d2
 	beq.s  @locret_1A36
 
@@ -2255,12 +2260,12 @@ sub_1A28:               ; CODE XREF: ROM:00000394j
 
 	jsr dmaTransferToVramWithRewrite
 
-	bra.s sub_1A28
+	bra.s processDmaTransferQueue
 ; ---------------------------------------------------------------------------
 
 @locret_1A36:
 	rts
-; End of function sub_1A28
+; End of function processDmaTransferQueue
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2282,7 +2287,7 @@ sub_1A38:               ; CODE XREF: ROM:00000398j
 
 	jsr dmaTransferToVramWithRewrite
 
-	bra.s sub_1A28
+	bra.s processDmaTransferQueue
 ; ---------------------------------------------------------------------------
 
 @locret_1A4C:
@@ -2518,7 +2523,7 @@ updateObjectPosition:               ; CODE XREF: updateObjects+22p
 ; a1: Address of sprite table
 
 updateObjects:               ; CODE XREF: ROM:000002F4j
-					; sub_3040+2Cp ...
+					; state_3040+2Cp ...
 	move.l  a1, (spriteTableAddress).w
 	move.l  a1, -(sp)
 	move.w  #1, (nextSpriteIndex).w
@@ -2567,13 +2572,14 @@ updateObjects:               ; CODE XREF: ROM:000002F4j
 
 	; Game state 1 ($21F4)
 	include "gamestates\state_21F4.asm"
-	
+
 	; Game state 2 ($3040)
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3040:               ; CODE XREF: ROM:000005DEj
+state_3040:               ; CODE XREF: ROM:000005DEj
+	; Load assets for this state
 	bsr.w sub_30C2
 
 @loc_3044:
@@ -2589,8 +2595,8 @@ sub_3040:               ; CODE XREF: ROM:000005DEj
 	cmpi.b #1, (byte_FFFFD002).w
 	beq.s  @loc_3070
 
-	lea    (unk_FFFFD300).w, a0
-	lea    (spriteTable).w,  a1
+	lea (obj_FFFFD300).w, a0
+	lea (spriteTable).w,  a1
 	moveq  #1,   d0
 	move.w #$80, d1
 	jsr updateObjects
@@ -2634,13 +2640,14 @@ sub_3040:               ; CODE XREF: ROM:000005DEj
 @loc_30BC:
 	moveq #STATE_LOAD, d0
 	jmp   setNextState(pc)
-; End of function sub_3040
+; End of function state_3040
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_30C2:               ; CODE XREF: sub_3040p
+; Asset loader for state_3040
+sub_30C2:               ; CODE XREF: state_3040p
 	st (byte_FFFFFE28).w
 
 	jsr displayOff(pc)
@@ -2650,11 +2657,12 @@ sub_30C2:               ; CODE XREF: sub_3040p
 	lea vdpReg_318C(pc), a1
 	jsr loadVdpRegs(pc)
 
-	jsr sub_1098(pc)
+	jsr sendE3ToZ80(pc)
 
 	lea (sub_319E).l, a1
 	jsr setVblankUserRoutine(pc)
 
+	; Clear the state's work RAM
 	bsr.w sub_328C
 
 	move.b #1,   (byte_FFFFD010).w
@@ -2664,10 +2672,14 @@ sub_30C2:               ; CODE XREF: sub_3040p
 
 	clr.w (word_FFFFD166).w
 
+	; Clear more RAM
 	bsr.w sub_5260
 	bsr.w sub_5F2C
+
+	; Get Word RAM in 1M mode
 	bsr.w sub_62C8
 
+	; Copy data into Word RAM
 	jsr sub_6342(pc)
 
 	clr.l (spriteTable).w
@@ -2676,7 +2688,7 @@ sub_30C2:               ; CODE XREF: sub_3040p
 	move.l #$3180, (dword_FFFFFE34).w
 
 	; Clear RAM $FFD300-$FFD500
-	lea   (unk_FFFFD300).w, a0
+	lea (obj_FFFFD300).w, a0
 	moveq #$7F, d7
 	bsr.w clearRamSegment
 
@@ -2829,21 +2841,27 @@ sub_328C:               ; CODE XREF: sub_30C2+26p
 
 
 sub_329A:               ; CODE XREF: sub_30C2+70p
-	lea (unk_FFFFD300).w, a0
-	move.w  #4, (a0)
-	move.b  #$80, $18(a0)
-	move.l  #$12BBD, 4(a0)
-	clr.l   $36(a0)
-	move.l  #1, $32(a0)
-	bsr.w   sub_1846
-	beq.s   loc_32D4
-	move.l  #$10003, $32(a0)
-	bsr.w   sub_1840
-	bne.s   loc_32D4
-	clr.l   $32(a0)
+	lea (obj_FFFFD300).w, a0
 
-loc_32D4:               ; CODE XREF: sub_329A+26j sub_329A+34j
-	clr.w   $24(a0)
+	; Initialize structure
+	move.w  #4, (a0)
+	move.b  #$80, STR329A.byte18(a0)
+	move.l  #$12BBD, STR329A.dword4(a0)
+	clr.l   STR329A.dword36(a0)
+	move.l  #1, STR329A.word32(a0)
+
+	bsr.w   checkDiscBootable
+	beq.s   @loc_32D4
+
+	move.l  #$10003, STR329A.word32(a0)
+
+	bsr.w   getDiscType
+	bne.s   @loc_32D4
+
+	clr.l   STR329A.word32(a0)
+
+@loc_32D4:
+	clr.w   STR329A.word24(a0)
 	bra.w   sub_35CA
 ; ---------------------------------------------------------------------------
 
@@ -2852,7 +2870,7 @@ loc_32DC:
 	bsr.w sub_42B8
 	lea   $44(a0), a1
 	moveq #0, d0
-	bsr.w sub_18CE
+	bsr.w handleDpadRepeat
 	btst  #3, (byte_FFFFD008).w
 	beq.s loc_32F8
 	rts
@@ -2894,39 +2912,48 @@ loc_3322:
 ; ---------------------------------------------------------------------------
 
 loc_3342:               ; CODE XREF: sub_329A+64j
-	move.b  (joy1Triggered).w,d0
-	btst    #JOYBIT_START,d0
-	beq.w   loc_33AE
-	move.w  #8,$5C(a0)
-	bsr.w   sub_1846
-	bne.w   loc_338E
-	tst.w   $24(a0)
-	bne.s   loc_336E
-	cmpi.l  #1,$32(a0)
-	beq.w   sub_4054
+	move.b (joy1Triggered).w, d0
 
-loc_336E:               ; CODE XREF: sub_329A+C6j
+	btst  #JOYBIT_START, d0
+	beq.w loc_33AE
+
+	move.w #8, $5C(a0)
+
+	bsr.w checkDiscBootable
+	bne.w @loc_338E
+
+	tst.w $24(a0)
+	bne.s @loc_336E
+
+	cmpi.l #1, $32(a0)
+	beq.w  sub_4054
+
+@loc_336E:
 	bsr.w   sub_3AE4
+
 	tst.b   (byte_FFFFD003).w
-	beq.s   loc_3382
+	beq.s   @loc_3382
+
 	move.l  #$10003,$32(a0)
-	bra.s   loc_338A
+	bra.s   @loc_338A
 ; ---------------------------------------------------------------------------
 
-loc_3382:               ; CODE XREF: sub_329A+DCj
+@loc_3382:
 	move.l  #1,$32(a0)
 
-loc_338A:               ; CODE XREF: sub_329A+E6j
+@loc_338A:
 	bra.w   sub_35CA
 ; ---------------------------------------------------------------------------
 
-loc_338E:               ; CODE XREF: sub_329A+BEj
+@loc_338E:
 	bsr.w   sub_3AE4
 	bsr.w   sub_1856
 	bcs.s   loc_33A6
+
 	btst    #0,(byte_FFFFD008).w
 	bne.s   loc_33A6
-	bsr.w   sub_1840
+
+	bsr.w   getDiscType
 	bne.s   loc_33AA
 
 loc_33A6:               ; CODE XREF: sub_329A+FCj
@@ -2940,22 +2967,29 @@ loc_33AA:               ; CODE XREF: sub_329A+10Aj
 loc_33AE:               ; CODE XREF: sub_329A+B0j
 	bsr.w   sub_1856
 	bcs.s   loc_33F0
+
 	btst    #0,(byte_FFFFD008).w
 	bne.s   loc_33F0
-	bsr.w   sub_1840
+
+	bsr.w   getDiscType
 	beq.s   loc_33F0
+
 	tst.w   $5C(a0)
 	bmi.s   loc_33CC
+
 	addq.w  #1,$5C(a0)
 
 loc_33CC:               ; CODE XREF: sub_329A+12Cj
-	move.b  (joy1Triggered).w,d0
-	andi.b  #$7C,d0 ; '|'
+	move.b  (joy1Triggered).w, d0
+	andi.b  #$7C, d0
 	beq.w   sub_35CA
-	cmpi.w  #$10,$5C(a0)
+
+	cmpi.w  #$10, $5C(a0)
 	bls.w   sub_35CA
+
 	bsr.s   loc_33F8
 	bsr.w   sub_35CA
+
 	clr.w   $5C(a0)
 	bra.w   sub_4054
 ; ---------------------------------------------------------------------------
@@ -2967,15 +3001,19 @@ loc_33F0:               ; CODE XREF: sub_329A+118j
 ; ---------------------------------------------------------------------------
 
 loc_33F8:               ; CODE XREF: sub_329A+148p
-	btst    #6,d0
-	bne.s   loc_342A
-	btst    #5,d0
-	bne.s   loc_341A
-	btst    #4,d0
-	bne.s   loc_3434
-	btst    #3,d0
-	bne.s   loc_343E
-	move.l  #3,$32(a0)
+	btst  #JOYBIT_BTNA, d0
+	bne.s loc_342A
+
+	btst  #JOYBIT_BTNC, d0
+	bne.s loc_341A
+
+	btst  #JOYBIT_BTNB, d0
+	bne.s loc_3434
+
+	btst  #JOYBIT_RIGHT, d0
+	bne.s loc_343E
+
+	move.l #3, $32(a0)
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -3066,7 +3104,7 @@ loc_34DA:               ; CODE XREF: sub_329A+1C0j
 	bcs.s   loc_34F2
 	btst    #0,(byte_FFFFD008).w
 	bne.s   loc_34F2
-	bsr.w   sub_1840
+	bsr.w   getDiscType
 	bne.s   loc_34FA
 
 loc_34F2:               ; CODE XREF: sub_329A+248j
@@ -3090,7 +3128,7 @@ loc_3512:               ; CODE XREF: sub_329A+264j
 	move.w  $34(a0),d0
 	bne.s   loc_3532
 	move.l  #1,$32(a0)
-	bsr.w   sub_1846
+	bsr.w   checkDiscBootable
 	beq.s   loc_352E
 	move.l  #$10003,$32(a0)
 
@@ -3120,7 +3158,7 @@ loc_355C:               ; CODE XREF: sub_329A+2AAj
 					; sub_329A+2B0j ...
 	btst    #0,d1
 	beq.s   loc_358C
-	bsr.w   sub_1846
+	bsr.w   checkDiscBootable
 	beq.s   loc_3570
 	cmpi.w  #3,$34(a0)
 	bra.s   loc_3576
@@ -3163,36 +3201,36 @@ loc_35BE:               ; CODE XREF: sub_329A+25Cj
 
 ; ---------------------------------------------------------------------------
 unk_35C0:        ; DATA XREF: sub_329A:loc_3532o
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b   2
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b   0
+	dc.b 0
+	dc.b 0
+	dc.b 0
+	dc.b 2
+	dc.b 2
+	dc.b 0
+	dc.b 0
+	dc.b 0
+	dc.b 0
+	dc.b 0
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_35CA:               ; CODE XREF: sub_329A+3Ej
 					; sub_329A:loc_338Aj ...
-	move.w  $32(a0), d0
-	or.w    $34(a0), d0
+	move.w  STR329A.word32(a0), d0
+	or.w    STR329A.word34(a0), d0
 	bmi.s   @locret_35EE
 
 	bsr.s   sub_3624
 
-	clr.b   $4C(a0)
+	clr.b   STR329A.byte4C(a0)
 
-	move.w  $30(a0), d1
+	move.w  STR329A.word30(a0), d1
 	add.w   d1, d1
 	add.w   d1, d1
 
-	move.w  word_35F0(pc, d1.w), $C(a0)
-	move.w  word_35F2(pc, d1.w), 8(a0)
+	move.w  word_35F0(pc, d1.w), STR329A.wordC(a0)
+	move.w  word_35F2(pc, d1.w), STR329A.word8(a0)
 
 @locret_35EE:
 	rts
@@ -3203,28 +3241,40 @@ word_35F0:
 	dc.w $C8
 word_35F2:
 	dc.w $138
+
 	dc.w $A6
 	dc.w $188
+
 	dc.w $B6
 	dc.w $188
+
 	dc.w $DE
 	dc.w $174
+
 	dc.w $D6
 	dc.w $192
+
 	dc.w $DE
 	dc.w $1A8
+
 	dc.w $EE
 	dc.w $174
+
 	dc.w $E6
 	dc.w $192
+
 	dc.w $EE
 	dc.w $1A8
+
 	dc.w $F6
 	dc.w $192
+
 	dc.w $104
 	dc.w $192
+
 	dc.w $116
 	dc.w $188
+
 	dc.w $126
 	dc.w $188
 
@@ -3234,7 +3284,7 @@ word_35F2:
 sub_3624:               ; CODE XREF: sub_329A+33Ap
 					; sub_3BD8:loc_3C8Ej
 	moveq  #0, d0
-	move.w $34(a0), d1
+	move.w STR329A.word34(a0), d1
 	lea    word_3642(pc), a1
 
 	subq.w #1, d1
@@ -3245,8 +3295,8 @@ sub_3624:               ; CODE XREF: sub_329A+33Ap
 		dbf   d1, @loc_3632
 
 @loc_3638:
-	add.w  $32(a0), d0
-	move.w d0, $30(a0)
+	add.w  STR329A.word32(a0), d0
+	move.w d0, STR329A.word30(a0)
 	rts
 ; End of function sub_3624
 
@@ -3837,7 +3887,7 @@ loc_3A60:               ; CODE XREF: sub_3A40+14j
 	cmpi.b  #$59,d2 ; 'Y'
 	bls.s   loc_3AA8
 	moveq   #1,d2
-	move.b  #$14,(byte_FFFFFE24).w
+	move.b  #$14,(joy1RepeatDelay).w
 	bra.s   loc_3AA8
 ; ---------------------------------------------------------------------------
 
@@ -3850,7 +3900,7 @@ loc_3A8C:               ; CODE XREF: sub_3A40+32j
 	cmpi.b  #1,d2
 	bge.s   loc_3AA8
 	moveq   #$59,d2 ; 'Y'
-	move.b  #$14,(byte_FFFFFE24).w
+	move.b  #$14,(joy1RepeatDelay).w
 
 loc_3AA8:               ; CODE XREF: sub_3A40+40j sub_3A40+4Aj ...
 	move.b  d2,(a6)
@@ -4058,7 +4108,7 @@ sub_3BD8:               ; CODE XREF: sub_329A+1BCj
 	btst  #0, (byte_FFFFD008).w
 	bne.s @loc_3BEC
 
-	bsr.w sub_1840
+	bsr.w getDiscType
 	bne.s @loc_3BF4
 
 @loc_3BEC:
@@ -4072,7 +4122,7 @@ sub_3BD8:               ; CODE XREF: sub_329A+1BCj
 
 	move.l #1, $32(a0)
 
-	bsr.w  sub_1846
+	bsr.w  checkDiscBootable
 	beq.s  @loc_3C10
 
 	move.l #$10003, $32(a0)
@@ -4092,7 +4142,7 @@ sub_3BD8:               ; CODE XREF: sub_329A+1BCj
 	tst.b (byte_FFFFD003).w
 	bne.s @loc_3C2E
 
-	bsr.w sub_1846
+	bsr.w checkDiscBootable
 	beq.s @loc_3C30
 
 @loc_3C2E:
@@ -5163,7 +5213,7 @@ sub_41EE:               ; CODE XREF: sub_329A:loc_33A6p
 					; sub_4400+74p ...
 	movem.l a0, -(sp)
 
-	lea   (unk_FFFFD300).w, a0
+	lea   (obj_FFFFD300).w, a0
 	bsr.w sub_3AEC
 
 	st    $4C(a0)
@@ -5210,7 +5260,7 @@ sub_4220:
 	clr.w               OBJ6B14.word32(a0)
 
 @loc_423E:
-	lea (unk_FFFFD300).w, a1
+	lea (obj_FFFFD300).w, a1
 
 	cmpi.w  #$C, OBJ6B14.word24(a1)
 	bne.s   @loc_42B0
@@ -5265,10 +5315,10 @@ sub_4220:
 
 
 sub_42B8:               ; CODE XREF: sub_329A+46p
-	cmpi.b #JOYTYPE_TYPE7, (joy1Type).w
+	cmpi.b #JOYTYPE_MULTITAP, (joy1Type).w
 	bne.s  @loc_42D0
 
-	lea (unk_FFFFFE1A).w, a1
+	lea (multitapControllerTypes).w, a1
 
 	moveq #3, d0
 	@loc_42C6:
@@ -5380,7 +5430,7 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 ; ---------------------------------------------------------------------------
 
 @loc_439A:
-	bsr.w sub_1846
+	bsr.w checkDiscBootable
 	bne.s @loc_4396
 
 	moveq #0, d0
@@ -5406,7 +5456,7 @@ sub_42B8:               ; CODE XREF: sub_329A+46p
 	tst.l  $34(a0)
 	bne.s  @locret_43CC
 
-	bsr.w  sub_1846
+	bsr.w  checkDiscBootable
 	bne.s  @loc_4396
 
 @locret_43CC:
@@ -5441,7 +5491,7 @@ sub_43DE:               ; CODE XREF: sub_4B46p sub_4BA2+9Cp
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_43F2:               ; CODE XREF: sub_3040+10p
+sub_43F2:               ; CODE XREF: state_3040+10p
 	move.w (word_FFFFD020).w, d0
 	beq.s  @locret_43FE
 
@@ -5480,7 +5530,7 @@ sub_4400:               ; CODE XREF: sub_43F2+6p
 	bne.w   sub_45BE
 
 	bclr    #5, (word_FFFFD020+1).w
-	bra.w   *+4
+	bra.w   @loc_444E
 ; ---------------------------------------------------------------------------
 
 @loc_444E:
@@ -5561,8 +5611,8 @@ sub_44D6:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_44E2:               ; CODE XREF: sub_3040:loc_3070p
-	bsr.w sub_1840
+sub_44E2:               ; CODE XREF: state_3040:loc_3070p
+	bsr.w getDiscType
 
 	bmi.s @loc_4504
 
@@ -5570,7 +5620,7 @@ sub_44E2:               ; CODE XREF: sub_3040:loc_3070p
 	beq.s @loc_44F8
 
 	moveq #$FFFFFFFF, d1
-	bsr.w sub_183A
+	bsr.w setDiscType
 
 	bra.s @loc_4504
 ; ---------------------------------------------------------------------------
@@ -5707,7 +5757,7 @@ sub_45BE:               ; CODE XREF: sub_4400+40j
 	clr.b   (word_FFFFFE44+1).w
 	clr.w   (word_FFFFFE40).w
 	moveq   #$FFFFFFFF,d1
-	bsr.w   sub_183A
+	bsr.w   setDiscType
 	bsr.w   sub_5732
 	bsr.w   sub_41EE
 	moveq   #7,d1
@@ -6558,13 +6608,16 @@ loc_4C62:               ; CODE XREF: sub_4C54+Aj
 
 sub_4C74:               ; CODE XREF: sub_4730+80p
 					; sub_4BA2:loc_4BF0p
-	move.l  (word_FFFFFE40).w,d0
-	moveq   #4,d1
-	swap    d1
-	movem.l a0-a1,-(sp)
+	move.l (word_FFFFFE40).w, d0
+
+	moveq #4, d1
+	swap  d1
+
+	movem.l a0-a1, -(sp)
 	bsr.w   sub_1A4E
-	movem.l (sp)+,a0-a1
-	cmp.w   (dword_FFFFD028).w,d0
+	movem.l (sp)+, a0-a1
+
+	cmp.w (dword_FFFFD028).w, d0
 	rts
 ; End of function sub_4C74
 
@@ -6825,7 +6878,7 @@ sub_4E48:               ; CODE XREF: ROM:0000456Ej
 	beq.w   sub_5250
 	tst.b   (word_FFFFFE44+1).w
 	beq.w   sub_5250
-	bsr.w   sub_1840
+	bsr.w   getDiscType
 	beq.s   loc_4E94
 	btst    #2,(a0)
 	beq.s   loc_4E6E
@@ -6949,7 +7002,7 @@ loc_4F3C:               ; CODE XREF: sub_45BE+24p
 sub_4F64:               ; CODE XREF: ROM:00004546j
 	btst    #0,(a0)
 	bne.w   sub_5250
-	bsr.w   sub_1846
+	bsr.w   checkDiscBootable
 	bne.w   sub_5250
 	move.w  #$2000,d0
 	moveq   #$E,d1
@@ -7342,8 +7395,9 @@ loc_5240:               ; CODE XREF: sub_5232+6j
 
 
 sub_5246:
-	bsr.w   sub_53C2
-	move.b  d1,(byte_FFFFD038).w
+	bsr.w sub_53C2
+
+	move.b d1, (byte_FFFFD038).w
 	rts
 ; End of function sub_5246
 
@@ -7352,10 +7406,11 @@ sub_5246:
 
 
 sub_5250:               ; CODE XREF: sub_4822+22j sub_48FE+22j ...
-	moveq   #Z80CMD_FF92,d7
-	jsr sendCommandToZ80(pc)
-	clr.w   (word_FFFFD000).w
-	clr.b   (byte_FFFFD002).w
+	moveq #Z80CMD_FF92, d7
+	jsr   sendCommandToZ80(pc)
+
+	clr.w (word_FFFFD000).w
+	clr.b (byte_FFFFD002).w
 	rts
 ; End of function sub_5250
 
@@ -7365,17 +7420,20 @@ sub_5250:               ; CODE XREF: sub_4822+22j sub_48FE+22j ...
 
 sub_5260:               ; CODE XREF: sub_30C2+46p
 				; sub_4EF6:loc_4F0Ap ...
-	movem.l d7/a6,-(sp)
-	clr.w   (word_FFFFD042).w
-	clr.w   (word_FFFFD168).w
-	clr.w   (word_FFFFD166).w
-	lea (unk_FFFFD16A).w,a6
-	moveq   #$18,d7
+	movem.l d7/a6, -(sp)
 
-loc_5276:               ; CODE XREF: sub_5260+18j
-	clr.l   (a6)+
-	dbf d7,loc_5276
-	movem.l (sp)+,d7/a6
+	clr.w (word_FFFFD042).w
+	clr.w (word_FFFFD168).w
+	clr.w (word_FFFFD166).w
+
+	lea (unk_FFFFD16A).w, a6
+
+	moveq #24, d7
+	@loc_5276:
+		clr.l (a6)+
+		dbf d7, @loc_5276
+
+	movem.l (sp)+, d7/a6
 	rts
 ; End of function sub_5260
 
@@ -7580,11 +7638,12 @@ sub_53B0:               ; CODE XREF: sub_4A0E+16p sub_4A0E+32p ...
 
 
 sub_53B6:               ; CODE XREF: sub_4400+B8p sub_62E4+56p
-	cmp.w   (word_FFFFD1CE).w,d0
-	beq.s   locret_53C0
-	move.w  d0,(word_FFFFD1CE).w
+	cmp.w  (word_FFFFD1CE).w, d0
+	beq.s  @locret_53C0
 
-locret_53C0:                ; CODE XREF: sub_53B6+4j
+	move.w d0, (word_FFFFD1CE).w
+
+@locret_53C0:                ; CODE XREF: sub_53B6+4j
 	rts
 ; End of function sub_53B6
 
@@ -7734,7 +7793,7 @@ sub_548C:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_54B2:               ; CODE XREF: sub_3040+3Cp
+sub_54B2:               ; CODE XREF: state_3040+3Cp
 	moveq   #0,d0
 	moveq   #0,d1
 	btst    #4,(byte_FFFFD004).w
@@ -7981,7 +8040,7 @@ locret_56B4:                ; CODE XREF: sub_5694+4j sub_5694+14j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_56B6:               ; CODE XREF: sub_3040+38p
+sub_56B6:               ; CODE XREF: state_3040+38p
 	moveq   #0,d0
 	lea (byte_FFFFD058).w,a0
 	moveq   #$16,d1
@@ -8036,14 +8095,16 @@ locret_5720:                ; CODE XREF: sub_56B6+5Aj
 
 
 sub_5722:               ; CODE XREF: sub_56B6+8p sub_56B6+Ep ...
-	tst.b   (a0)+
-	beq.s   locret_5730
-	subq.b  #1,-1(a0)
-	bne.s   locret_5730
-	bra.w   sub_5764
+	tst.b (a0)+
+	beq.s @locret_5730
+
+	subq.b #1, -1(a0)
+	bne.s  @locret_5730
+
+	bra.w sub_5764
 ; ---------------------------------------------------------------------------
 
-locret_5730:                ; CODE XREF: sub_5722+2j sub_5722+8j
+@locret_5730:
 	rts
 ; End of function sub_5722
 
@@ -8053,18 +8114,19 @@ locret_5730:                ; CODE XREF: sub_5722+2j sub_5722+8j
 
 sub_5732:               ; CODE XREF: sub_44E2+1Ep sub_45BE+4Ep ...
 	m_loadVramWriteAddress $C358, d0
-	bsr.w   sub_1846
-	bne.s   sub_5754
-	tst.b   (byte_FFFFD003).w
-	beq.s   loc_5746
+	bsr.w checkDiscBootable
+	bne.s sub_5754
+
+	tst.b (byte_FFFFD003).w
+	beq.s @loc_5746
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_5746:               ; CODE XREF: sub_5732+10j
-	lea (unk_FFFFE438).w,a1
-	moveq   #9,d1
-	move.w  #6,d2
-	bra.w   writeTilemapToVram
+@loc_5746:
+	lea (addr_FFFFE438).w, a1
+	moveq  #9, d1
+	move.w #6, d2
+	bra.w  writeTilemapToVram
 ; End of function sub_5732
 
 
@@ -8072,10 +8134,10 @@ loc_5746:               ; CODE XREF: sub_5732+10j
 
 
 sub_5754:               ; CODE XREF: sub_5732+Aj sub_5DFA+18p ...
-	lea (unk_FFFFE4C4).w,a1
-	moveq   #9,d1
-	move.w  #6,d2
-	bra.w   writeTilemapToVram
+	lea (addr_FFFFE4C4).w, a1
+	moveq  #9, d1
+	move.w #6, d2
+	bra.w  writeTilemapToVram
 
 	rts
 ; End of function sub_5754
@@ -8085,9 +8147,10 @@ sub_5754:               ; CODE XREF: sub_5732+Aj sub_5DFA+18p ...
 
 
 sub_5764:               ; CODE XREF: sub_3B28+46p sub_4718+4j ...
-	btst    #0,(byte_FFFFD004).w
+	btst    #0, (byte_FFFFD004).w
 	beq.s   loc_5774
-	lea unk_5904(pc),a1
+
+	lea unk_5904(pc), a1
 	bsr.s   sub_57CE
 	bra.s   loc_5780
 ; ---------------------------------------------------------------------------
@@ -8655,7 +8718,7 @@ loc_59F2:               ; CODE XREF: sub_59DE+6j sub_59DE+Cj
 loc_5A1C:               ; CODE XREF: sub_59DE+1Ej
 	cmpi.w  #6,d1
 	bne.s   loc_5A5E
-	tst.b   (byte_FFFFFDDC).w
+	tst.b   (insertedDiscType).w
 	beq.s   loc_5A60
 	btst    #1,(byte_FFFFD008).w
 	bne.s   loc_5A3E
@@ -9001,7 +9064,7 @@ sub_5C80:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_5C8A:               ; CODE XREF: sub_3040:loc_3092p
+sub_5C8A:               ; CODE XREF: state_3040:loc_3092p
 	btst    #2,(byte_FFFFD004).w
 	beq.s   locret_5CF8
 	btst    #4,(byte_FFFFD004).w
@@ -9210,15 +9273,17 @@ sub_5DEE:               ; CODE XREF: sub_59DE+38p
 
 sub_5DFA:               ; CODE XREF: sub_30C2+ACp
 	m_loadVramWriteAddress $D4B8, d0
-	lea (unk_FFFFE30C).w,a1
-	moveq   #9,d1
-	moveq   #$E,d2
+	lea (unk_FFFFE30C).w, a1
+	moveq #9,  d1
+	moveq #$E, d2
 	jsr writeTilemapToVram(pc)
+
 	m_loadVramWriteAddress $D138, d0
-	bsr.w   sub_5754
-	move.w  #$2000,d0
-	moveq   #3,d1
-	bsr.w   sub_5764
+	bsr.w sub_5754
+
+	move.w #$2000, d0
+	moveq  #3, d1
+	bsr.w  sub_5764
 	rts
 ; End of function sub_5DFA
 
@@ -9359,8 +9424,8 @@ loc_5F24:               ; CODE XREF: sub_5F10+16j
 
 
 sub_5F2C:               ; CODE XREF: sub_30C2+4Ap
-	clr.l   (dword_FFFFD062).w
-	clr.l   (dword_FFFFD066).w
+	clr.l (dword_FFFFD062).w
+	clr.l (dword_FFFFD066).w
 	rts
 ; End of function sub_5F2C
 
@@ -9368,7 +9433,7 @@ sub_5F2C:               ; CODE XREF: sub_30C2+4Ap
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_5F36:               ; CODE XREF: sub_3040+34p sub_5AEC+2Cp
+sub_5F36:               ; CODE XREF: state_3040+34p sub_5AEC+2Cp
 	lea (VDP_DATA).l,a5
 	m_loadVramWriteAddress $C92C, 4(a5)
 	move.w  (dword_FFFFD032).w,d0
@@ -9418,13 +9483,16 @@ locret_5FA0:                ; CODE XREF: sub_5F36+5Ej
 
 
 sub_5FA2:               ; CODE XREF: sub_30C2+7Ap
-	bsr.w   sub_5FBE
-	lea (unk_FFFFED06).w,a1
+	bsr.w sub_5FBE
+
+	lea (unk_FFFFED06).w, a1
 	m_loadVramWriteAddress $F000, d0
-	moveq   #$27,d1 ; '''
-	moveq   #$1B,d2
+	moveq #$27, d1
+	moveq #$1B, d2
 	jsr writeTilemapToVram(pc)
-	bsr.w   sub_5AEC
+
+	bsr.w sub_5AEC
+
 	rts
 ; End of function sub_5FA2
 
@@ -9433,44 +9501,52 @@ sub_5FA2:               ; CODE XREF: sub_30C2+7Ap
 
 
 sub_5FBE:               ; CODE XREF: sub_5FA2p
-	lea off_602C(pc),a0
-	movea.l (a0)+,a1
+	lea off_602C(pc), a0
+
+	movea.l (a0)+, a1
 	jsr loadPalettesToBuffer(pc)
-	bsr.s   sub_6018
-	bsr.s   sub_6018
 
-loc_5FCC:               ; CODE XREF: sub_5FBE+1Cj
-	move.l  (a0)+,d0
-	beq.s   loc_5FDC
-	movea.l (a0)+,a1
-	move.l  (a0)+,d1
-	move.w  (a0)+,d2
-	jsr loadFont(pc)
-	bra.s   loc_5FCC
+	bsr.s sub_6018
+	bsr.s sub_6018
+
+	@loc_5FCC:
+		move.l (a0)+, d0
+		beq.s  @loc_5FDC
+
+		movea.l (a0)+, a1
+		move.l  (a0)+, d1
+		move.w  (a0)+, d2
+		jsr loadFont(pc)
+
+		bra.s @loc_5FCC
 ; ---------------------------------------------------------------------------
 
-loc_5FDC:               ; CODE XREF: sub_5FBE+10j
-	movea.w (a0)+,a2
+@loc_5FDC:               ; CODE XREF: sub_5FBE+10j
+	movea.w (a0)+, a2
 
-loc_5FDE:               ; CODE XREF: sub_5FBE+2Aj
-	move.w  (a0)+,d0
-	beq.s   loc_5FEA
-	movea.l (a0)+,a1
-	jsr decompressEnigma(pc)
-	bra.s   loc_5FDE
+	@loc_5FDE:
+		move.w  (a0)+, d0
+		beq.s   @loc_5FEA
+
+		movea.l (a0)+, a1
+		jsr decompressEnigma(pc)
+
+		bra.s @loc_5FDE
 ; ---------------------------------------------------------------------------
 
-loc_5FEA:               ; CODE XREF: sub_5FBE+22j
+@loc_5FEA:               ; CODE XREF: sub_5FBE+22j
 	m_loadVramWriteAddress $F060, d0
-	move.l  #$11188188,d1
-	moveq   #$19,d7
-	lea (word_15108).l,a1
+	move.l #$11188188, d1
+	moveq  #$19, d7
+	lea (word_15108).l, a1
 
-loc_5FFE:               ; CODE XREF: sub_5FBE+48j
-	bsr.s   sub_6010
-	addi.l  #$800000,d0
-	dbf d7,loc_5FFE
-	lea (word_15070).l,a1
+	@loc_5FFE:
+		bsr.s sub_6010
+
+		addi.l #$800000, d0
+		dbf d7, @loc_5FFE
+
+	lea (word_15070).l, a1
 ; End of function sub_5FBE
 
 
@@ -9478,7 +9554,7 @@ loc_5FFE:               ; CODE XREF: sub_5FBE+48j
 
 
 sub_6010:               ; CODE XREF: sub_5FBE:loc_5FFEp
-	moveq   #1,d2
+	moveq #1, d2
 	jsr loadFont(pc)
 	rts
 ; End of function sub_6010
@@ -9488,17 +9564,19 @@ sub_6010:               ; CODE XREF: sub_5FBE:loc_5FFEp
 
 
 sub_6018:               ; CODE XREF: sub_5FBE+Ap sub_5FBE+Cp
-	move.l  (a0)+,(VDP_CONTROL).l
+	move.l (a0)+, (VDP_CONTROL).l
 
-loc_601E:               ; CODE XREF: sub_6018+10j
-	move.l  (a0)+,d0
-	beq.s   locret_602A
-	movea.l d0,a1
-	jsr decompressNemesis(pc)
-	bra.s   loc_601E
+	@loc_601E:
+		move.l (a0)+, d0
+		beq.s  @locret_602A
+
+		movea.l d0, a1
+		jsr decompressNemesis(pc)
+
+		bra.s @loc_601E
 ; ---------------------------------------------------------------------------
 
-locret_602A:                ; CODE XREF: sub_6018+8j
+@locret_602A:
 	rts
 ; End of function sub_6018
 
@@ -9506,21 +9584,21 @@ locret_602A:                ; CODE XREF: sub_6018+8j
 off_602C:       ; DATA XREF: sub_5FBEo
 	dc.l palette_60AE
 
-	dc.l $44200002
+	dc.l $44200002      ; VRAM $8420
 	dc.l $10890
 	dc.l $12626
 	dc.l 0
 
-	dc.l $7DE00003
+	dc.l $7DE00003      ; VRAM $FDE0
 	dc.l $10800
 	dc.l 0
 
-	dc.l $5DE00003
+	dc.l $5DE00003      ; VRAM $DDE0
 	dc.l $12674
 	dc.l $11188188
 	dc.w $11
 
-	dc.l $7EA00003
+	dc.l $7EA00003      ; VRAM $FEA0
 	dc.l $12BE0
 	dc.l $000BB0BB
 	dc.w $3
@@ -9561,6 +9639,7 @@ off_602C:       ; DATA XREF: sub_5FBEo
 
 	dc.w 0
 
+locret_60AC:
 	rts
 
 palette_60AE:
@@ -9638,7 +9717,7 @@ palette_60AE:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6130:               ; CODE XREF: sub_3040+40p
+sub_6130:               ; CODE XREF: state_3040+40p
 	lea (unk_FFFFD05E).w,a0
 	btst    #0,(a0)
 	bne.s   loc_6184
@@ -9816,7 +9895,7 @@ sub_62C8:               ; CODE XREF: sub_30C2+4Ep sub_62C8+8j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_62E4:               ; CODE XREF: sub_3040+Cp sub_62E4+8j
+sub_62E4:               ; CODE XREF: state_3040+Cp sub_62E4+8j
 	m_waitForWordRam0
 	m_saveStatusRegister
 	m_disableInterrupts
@@ -9845,17 +9924,17 @@ sub_62E4:               ; CODE XREF: sub_3040+Cp sub_62E4+8j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6342:               ; CODE XREF: sub_3040+56p sub_30C2+52p ...
+sub_6342:               ; CODE XREF: state_3040+56p sub_30C2+52p ...
 	m_waitForWordRam0
 	m_saveStatusRegister
 	m_disableInterrupts
 
 	lea (WordRAM_Bank0).l, a1
 
-	move.w (word_FFFFD020).w, $400(a1)
-	move.w (byte_FFFFD008).w, $42C(a1)
-	move.l (byte_FFFFD00E).w, $42E(a1)
-	move.w (word_FFFFD012).w, $432(a1)
+	move.w (word_FFFFD020).w,  $400(a1)
+	move.w (byte_FFFFD008).w,  $42C(a1)
+	move.l (byte_FFFFD00E).w,  $42E(a1)
+	move.w (word_FFFFD012).w,  $432(a1)
 	move.l (dword_FFFFD014).w, $434(a1)
 	move.l (dword_FFFFD018).w, $438(a1)
 	move.l (dword_FFFFD01C).w, $43C(a1)
@@ -9866,7 +9945,7 @@ sub_6342:               ; CODE XREF: sub_3040+56p sub_30C2+52p ...
 	; Copy 208 bytes
 	moveq #51,d0
 	@loc_638C:
-		move.l  (a2)+, (a1)+
+		move.l (a2)+, (a1)+
 		dbf d0, @loc_638C
 
 	m_restoreStatusRegister
@@ -9895,13 +9974,13 @@ sub_6396:               ; CODE XREF: sub_4400+C6p
 
 
 sub_63AC:               ; CODE XREF: sub_30C2+A8p
-	clr.b  (byte_FFFFD003).w
+	clr.b (byte_FFFFD003).w
 
 	m_loadVramWriteAddress $20
 
 	moveq #7, d0
 	@loc_63BC:
-		move.l  #$FFFFFFFF, (VDP_DATA).l
+		move.l #$FFFFFFFF, (VDP_DATA).l
 		dbf d0, @loc_63BC
 
 	bsr.w sub_67DC
@@ -10523,11 +10602,11 @@ sub_681C:               ; CODE XREF: sub_63AC+22p
 	movem.l d4-d6/a5, -(sp)
 
 	m_loadVramWriteAddress $E000, d0
-	moveq   #38,        d1
-	moveq   #26,        d2
-	move.w  #$6003,     d3
+	moveq  #38, d1
+	moveq  #26, d2
+	move.w #$6003, d3
 
-	jsr sub_199C(pc)
+	jsr writeTransposedTilemapToVram(pc)
 
 	movem.l (sp)+, d4-d6/a5
 	rts
@@ -10579,7 +10658,7 @@ loadPrgFromWordRam:         ; CODE XREF: ROM:000005E2j
 		dbf d0, @loc_688A
 
 	moveq #$FFFFFFFF, d1
-	bsr.w sub_183A
+	bsr.w setDiscType
 
 	lea (sub_68AE).l, a1
 	jsr setVblankHandler
@@ -11863,7 +11942,7 @@ loc_78F4:               ; CODE XREF: sub_78D8+16j
 
 sub_790A:               ; CODE XREF: sub_77A0p sub_7F66p
 	pea (a0)
-	cmpi.b  #JOYTYPE_TYPE7,(joy1Type).w
+	cmpi.b  #JOYTYPE_MULTITAP,(joy1Type).w
 	beq.s   loc_791E
 	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
 	beq.s   loc_7940
@@ -11876,7 +11955,7 @@ loc_791E:               ; CODE XREF: sub_790A+8j
 	add.w   d0,d0
 	move.w  word_7988(pc,d0.w),d0
 	add.w   d0,(word_FFFFFF0A).w
-	lea (unk_FFFFFE1A).w,a0
+	lea (multitapControllerTypes).w,a0
 	moveq   #3,d0
 
 loc_7934:               ; CODE XREF: sub_790A+2Ej
@@ -11934,7 +12013,7 @@ word_7988:  dc.w 0
 
 sub_7990:               ; CODE XREF: sub_7C0A+4p
 	pea (a0)
-	cmpi.b  #JOYTYPE_TYPE7,(joy1Type).w
+	cmpi.b  #JOYTYPE_MULTITAP,(joy1Type).w
 	beq.s   loc_79A4
 	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
 	beq.s   loc_79C6
@@ -11947,7 +12026,7 @@ loc_79A4:               ; CODE XREF: sub_7990+8j
 	lsr.w   #1,d0
 	move.w  unk_7A0E(pc,d0.w),d0
 	add.w   d0,(word_FFFFFF0A).w
-	lea (unk_FFFFFE1A).w,a0
+	lea (multitapControllerTypes).w,a0
 	moveq   #3,d0
 
 loc_79BA:               ; CODE XREF: sub_7990+2Ej
@@ -13540,11 +13619,11 @@ sub_86A6:               ; DATA XREF: sub_873A+20o
 @loc_86E2:
 	moveq #0, d0
 	lea   (word_FFFFFF08).w, a1
-	jsr   sub_18CE
+	jsr   handleDpadRepeat
 
 	moveq #1, d0
 	lea   (byte_FFFFFF09).w, a1
-	jsr   sub_18CE
+	jsr   handleDpadRepeat
 
 	lea   (joy1MouseData).w, a0
 	bsr.s sub_8704
@@ -13633,7 +13712,7 @@ sub_873A:               ; CODE XREF: sub_7374p
 	lea palette_881E(pc),a1
 	bsr.w   loadPalettesToBuffer
 
-	bsr.w   sub_1098
+	bsr.w   sendE3ToZ80
 
 	lea (word_FFFFFF00).w,a0
 	moveq   #0,d0
