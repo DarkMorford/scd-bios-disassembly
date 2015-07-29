@@ -460,31 +460,31 @@ InitData:
 	dc.l $40000080
 
 	; Z80 init program
-	dc.b $AF
-	dc.b $01, $D9, $1F
-	dc.b $11, $27, $00
-	dc.b $21, $26, $00
-	dc.b $F9
-	dc.b $77
-	dc.b $ED, $B0
-	dc.b $DD, $E1
-	dc.b $FD, $E1
-	dc.b $ED, $47
-	dc.b $ED, $4F
-	dc.b $D1
-	dc.b $E1
-	dc.b $F1
-	dc.b $08
-	dc.b $D9
-	dc.b $C1
-	dc.b $D1
-	dc.b $E1
-	dc.b $F1
-	dc.b $F9
-	dc.b $F3
-	dc.b $ED, $56
-	dc.b $36, $E9
-	dc.b $E9
+	dc.b $AF                ; xor a
+	dc.b $01, $D9, $1F      ; ld bc, 1FD9h
+	dc.b $11, $27, $00      ; ld de, 0027h
+	dc.b $21, $26, $00      ; ld hl, 0026h
+	dc.b $F9                ; ld sp, hl
+	dc.b $77                ; ld (hl), a
+	dc.b $ED, $B0           ; ldir
+	dc.b $DD, $E1           ; pop ix
+	dc.b $FD, $E1           ; pop iy
+	dc.b $ED, $47           ; ld i, a
+	dc.b $ED, $4F           ; ld r, a
+	dc.b $D1                ; pop de
+	dc.b $E1                ; pop hl
+	dc.b $F1                ; pop af
+	dc.b $08                ; ex af, af'
+	dc.b $D9                ; exx
+	dc.b $C1                ; pop bc
+	dc.b $D1                ; pop de
+	dc.b $E1                ; pop hl
+	dc.b $F1                ; pop af
+	dc.b $F9                ; ld sp, hl
+	dc.b $F3                ; di
+	dc.b $ED, $56           ; im 1
+	dc.b $36, $E9           ; ld (hl), 00E9h
+	dc.b $E9                ; jp (hl)
 
 	; VDP
 	dc.w $8104
