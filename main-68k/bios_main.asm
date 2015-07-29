@@ -162,9 +162,9 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   dmaTransferPalettes
 ; ---------------------------------------------------------------------------
-	bra.w   NemDec
+	bra.w   decompressNemesis
 ; ---------------------------------------------------------------------------
-	bra.w   NemDecToRam
+	bra.w   decompressNemesisToRam
 ; ---------------------------------------------------------------------------
 	bra.w   updateObjects
 ; ---------------------------------------------------------------------------
@@ -196,7 +196,7 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   sub_18CE
 ; ---------------------------------------------------------------------------
-	bra.w   EniDec
+	bra.w   decompressEnigma
 ; ---------------------------------------------------------------------------
 	bra.w   sub_199C
 ; ---------------------------------------------------------------------------
@@ -9443,7 +9443,7 @@ loc_5FDE:               ; CODE XREF: sub_5FBE+2Aj
 	move.w  (a0)+,d0
 	beq.s   loc_5FEA
 	movea.l (a0)+,a1
-	jsr EniDec(pc)
+	jsr decompressEnigma(pc)
 	bra.s   loc_5FDE
 ; ---------------------------------------------------------------------------
 
@@ -9481,7 +9481,7 @@ loc_601E:               ; CODE XREF: sub_6018+10j
 	move.l  (a0)+,d0
 	beq.s   locret_602A
 	movea.l d0,a1
-	jsr NemDec(pc)
+	jsr decompressNemesis(pc)
 	bra.s   loc_601E
 ; ---------------------------------------------------------------------------
 
@@ -10641,25 +10641,25 @@ playSegaAnimation:               ; CODE XREF: ROM:00000364j
 	jsr loadPalettesNoUpdate
 
 	m_loadVramWriteAddress $20
-	jsr NemDec
+	jsr decompressNemesis
 
 	movea.l (sp)+, a1
 
 	jsr loadPalettesToBuffer(pc)
 
 	m_loadVramWriteAddress $2000
-	jsr NemDec
+	jsr decompressNemesis
 
 	adda.w #$1D0, a1
-	jsr NemDec
+	jsr decompressNemesis
 
 	adda.w #$206, a1
 	move.w #$6100, d0
 	lea (decompScratch).w, a2
-	jsr EniDec
+	jsr decompressEnigma
 
 	move.w #$613F, d0
-	jsr EniDec
+	jsr decompressEnigma
 
 	subq.w #1, a1
 	m_loadVramWriteAddress $CB0C, d0
@@ -13604,11 +13604,11 @@ sub_873A:               ; CODE XREF: sub_7374p
 
 	m_loadVramWriteAddress $2000
 	lea (unk_15300).l,a1
-	jsr NemDec(pc)
+	jsr decompressNemesis(pc)
 
 	m_loadVramWriteAddress $21C0
 	lea (unk_1546E).l,a1
-	jsr NemDec(pc)
+	jsr decompressNemesis(pc)
 
 	m_loadVramWriteAddress $400, d0
 	move.w  #0,(fontTileOffset).w

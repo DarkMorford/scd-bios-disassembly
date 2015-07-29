@@ -2,7 +2,7 @@
 ;       Nemesis decompression routine
 ;   ======================================================================
 
-NemDec:
+decompressNemesis:
 
 		movem.l	d0-d7/a1-a5,-(sp)
 		lea	sub_F0A(pc),a3
@@ -10,7 +10,7 @@ NemDec:
 		bra.s	loc_E9C
 ; ---------------------------------------------------------------------------
 
-NemDecToRam:
+decompressNemesisToRam:
 		movem.l	d0-d7/a1-a5,-(sp)
 		lea	loc_F20(pc),a3
 
@@ -73,7 +73,7 @@ loc_EFC:
 		moveq	#7,d0
 		bsr.w	sub_FAC
 		bra.s	loc_EDC
-; End of function NemDec
+; End of function decompressNemesis
 
 
 ; =============== S U B	R O U T	I N E =======================================

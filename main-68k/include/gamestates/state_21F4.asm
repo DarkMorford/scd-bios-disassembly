@@ -32,12 +32,12 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 
 	m_loadVramWriteAddress $A660
 	lea (unk_9C00).l, a1
-	jsr NemDec
+	jsr decompressNemesis
 
 	move.w #$2533, d0
 	lea    (unk_B9DA).l, a1
 	lea    (decompScratch).w, a2
-	bsr.w  EniDec
+	bsr.w  decompressEnigma
 
 	moveq #$27, d1
 	moveq #$15, d2
@@ -47,12 +47,12 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 
 	m_loadVramWriteAddress $D0C0
 	lea (unk_BAAE).l, a1
-	jsr NemDec
+	jsr decompressNemesis
 
 	move.w #$4686, d0
 	lea    (unk_BAC8).l, a1
 	lea    (decompScratch).w, a2
-	bsr.w  EniDec
+	bsr.w  decompressEnigma
 
 	moveq #$1C, d1
 	moveq #2, d2
@@ -63,7 +63,7 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 	move.w #$4686 ,d0
 	lea    (unk_BAEC).l, a1
 	lea    (decompScratch).w, a2
-	bsr.w  EniDec
+	bsr.w  decompressEnigma
 
 	moveq #$C, d1
 	moveq #3, d2
@@ -74,7 +74,7 @@ sub_1CFA:               ; CODE XREF: sub_21F4p
 	move.w #$4686, d0
 	lea    (unk_BB06).l, a1
 	lea    (decompScratch).w, a2
-	bsr.w  EniDec
+	bsr.w  decompressEnigma
 
 	moveq #$C, d1
 	moveq #$A, d2
@@ -660,7 +660,7 @@ sub_2354:               ; CODE XREF: sub_238C+18p sub_238C+32p ...
 sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 	lea   (decompScratch).w, a2
 	lea   (unk_E6A6).l, a1
-	bsr.w NemDecToRam
+	bsr.w decompressNemesisToRam
 
 	moveq #$F, d1
 	lea   (decompScratch).w, a0
@@ -669,7 +669,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 
 	lea   (decompScratch).w, a2
 	lea   (unk_E7A8).l, a1
-	bsr.w NemDecToRam
+	bsr.w decompressNemesisToRam
 
 	moveq #$D, d1
 	lea   (decompScratch).w, a0
@@ -678,7 +678,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 
 	lea   (decompScratch).w, a2
 	lea   (unk_E882).l, a1
-	bsr.w NemDecToRam
+	bsr.w decompressNemesisToRam
 
 	moveq #$1A, d1
 	lea   (decompScratch).w, a0
@@ -687,7 +687,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 
 	lea   (decompScratch).w, a2
 	lea   (unk_E9F2).l, a1
-	bsr.w NemDecToRam
+	bsr.w decompressNemesisToRam
 
 	moveq #$14, d1
 	lea   (decompScratch).w, a0

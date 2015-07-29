@@ -2,7 +2,7 @@
 ;       Enigma decompression routine
 ;   ======================================================================
 
-EniDec:
+decompressEnigma:
 
 		movem.l	d0-d7/a3-a6,-(sp)
 		movea.w	d0,a3
@@ -43,7 +43,7 @@ loc_1AE2:
 		lsr.w	#4,d1
 		add.w	d1,d1
 		jmp	loc_1B3E(pc,d1.w)
-; End of function EniDec
+; End of function decompressEnigma
 
 
 ; =============== S U B	R O U T	I N E =======================================
