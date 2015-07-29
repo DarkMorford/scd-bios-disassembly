@@ -242,9 +242,9 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   fadeOutColors
 ; ---------------------------------------------------------------------------
-	bra.w   sub_E20
+	bra.w   fadeInColors
 ; ---------------------------------------------------------------------------
-	bra.w   sub_E0C
+	bra.w   setFadeInTargetPalette
 ; ---------------------------------------------------------------------------
 	bra.w   sub_1A28
 ; ---------------------------------------------------------------------------
@@ -511,7 +511,7 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 	btst  #JOYCTRL_PC6, (JOYCTRL3).l
 	beq.s loc_598
 
-	movea.l (InitialSSP).w, sp ; Warm boot
+	movea.l (InitialSSP).w, sp  ; Warm boot
 
 	; Wait for DMA to finish
 	@loc_558:
@@ -523,7 +523,7 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 
 	movem.l d0-d1, -(sp)
 	bsr.w   testCartBootBlock
-	bne.w   sub_640     ; Boot block didn't match, bail out
+	bne.w   sub_640             ; Boot block didn't match, bail out
 
 	move.l  (_EXCPT+2).w, d0
 	bcs.w   loc_5AC
@@ -559,7 +559,7 @@ loc_5AC:                ; CODE XREF: ROM:00000578j sub_640+38j
 	moveq #STATE_21F4, d0
 	bsr.w setNextState
 
-mainLoop:               ; CODE XREF: ROM:000005D4j
+mainLoop:
 	lea (nextState).w, a0
 
 	move.w (a0), d0
@@ -882,7 +882,8 @@ _nullrte:                ; DATA XREF: installErrorVectors+18o
 
 vblankHandler:
 	movem.l d0-a6, -(sp)
-	bsr.w   sub_15EE
+
+	bsr.w sub_15EE
 
 	tst.b (byte_FFFFFE28).w
 	bne.s @loc_926
@@ -896,11 +897,12 @@ vblankHandler:
 	addq.b #1, (byte_FFFFFE27).w
 
 @loc_926:
-	bsr.w   sub_118C
-	bsr.w   sub_11D8
-	clr.b   (vblankCode).w
-	bsr.w   sub_1658
-	bsr.w   sub_1818
+	bsr.w sub_118C
+	bsr.w sub_11D8
+	clr.b (vblankCode).w
+	bsr.w sub_1658
+	bsr.w sub_1818
+
 	movem.l (sp)+, d0-a6
 	rte
 ; End of function vblankHandler
@@ -911,7 +913,8 @@ vblankHandler:
 
 altVblankHandler:           ; CODE XREF: ROM:00000290j
 	movem.l d0-a6, -(sp)
-	bsr.w   sub_15EE
+
+	bsr.w sub_15EE
 
 	tst.b (byte_FFFFFE28).w
 	bne.s @loc_962
@@ -925,8 +928,9 @@ altVblankHandler:           ; CODE XREF: ROM:00000290j
 	addq.b  #1, (byte_FFFFFE27).w
 
 @loc_962:
-	bsr.w   readJoypads
-	clr.b   (vblankCode).w
+	bsr.w readJoypads
+	clr.b (vblankCode).w
+
 	movem.l (sp)+, d0-a6
 	rte
 ; End of function altVblankHandler
@@ -1070,11 +1074,11 @@ clearVdpPatternTables:          ; CODE XREF: ROM:000002A4j
 
 ; Clear VRAM dword at $BC00
 
-sub_A4E:
+clearHScrollTable:
 	m_loadVramWriteAddress $BC00
 	move.l #0, (VDP_DATA).l
 	rts
-; End of function sub_A4E
+; End of function clearHScrollTable
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1263,8 +1267,10 @@ dmaTransferToVramWithRewrite:       ; CODE XREF: ROM:000002D4j sub_1A28+8p ...
 
 	lea (VDP_CONTROL).l, a6
 
+	; Set auto-increment to 2
 	move.w  #$8F02, (a6)
 
+	; Enable DMA operation
 	move.w  (vdpRegCache+2).w, d3
 	bset    #4, d3
 	move.w  d3, (a6)
@@ -1299,13 +1305,16 @@ dmaTransferToVramWithRewrite:       ; CODE XREF: ROM:000002D4j sub_1A28+8p ...
 	move.w  d0, -(sp)
 	move.w  (sp)+, (a6)
 
+	; Disable DMA operation
 	move.w  (vdpRegCache+2).w, (a6)
 
+	; Rewrite the first dword (I don't know why)
 	andi.w  #$FF7F, d0
 	move.l  d0, (a6)
 
 	move.l  (a1), -4(a6)
 
+	; Reset previous auto-increment
 	move.w  (vdpRegCache+$1E).w, (a6)
 
 	movea.l (sp)+, a1
@@ -1709,34 +1718,34 @@ fadeOutColors:                  ; CODE XREF: ROM:00000388j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_E0C:                ; CODE XREF: ROM:00000390j
-	move.b (a1)+, (byte_FFFFFE46).w
-	move.b (a1)+, (byte_FFFFFE47).w
+setFadeInTargetPalette:                ; CODE XREF: ROM:00000390j
+	move.b (a1)+, (paletteFadeInOffset).w
+	move.b (a1)+, (paletteFadeInCount).w
 
-	move.l a1, (dword_FFFFFE4A).w
+	move.l a1, (paletteFadeInTarget).w
 
-	move.w #$E, (word_FFFFFE48).w
+	move.w #$E, (paletteFadeInIncrement).w
 	rts
-; End of function sub_E0C
+; End of function setFadeInTargetPalette
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_E20:                ; CODE XREF: ROM:0000038Cj
+fadeInColors:                ; CODE XREF: ROM:0000038Cj
 	movem.l d0-d4/a0-a1, -(sp)
 
 	moveq  #0, d0
-	move.b (byte_FFFFFE46).w, d0
+	move.b (paletteFadeInOffset).w, d0
 
 	lea     (paletteBuffer0).w, a1
 	adda.w  d0, a1
 
-	move.b  (byte_FFFFFE47).w,  d0
-	movea.l (dword_FFFFFE4A).w, a0
+	move.b  (paletteFadeInCount).w,  d0
+	movea.l (paletteFadeInTarget).w, a0
 
 	@loc_E38:
-		move.w (word_FFFFFE48).w, d1
+		move.w (paletteFadeInIncrement).w, d1
 
 		move.w (a0)+, d2
 		move.w d2, d3
@@ -1775,16 +1784,18 @@ sub_E20:                ; CODE XREF: ROM:0000038Cj
 
 		dbf d0, @loc_E38
 
-	tst.w  (word_FFFFFE48).w
+	tst.w  (paletteFadeInIncrement).w
 	beq.s  @loc_E78
 
-	subq.w #2, (word_FFFFFE48).w
+	subq.w #2, (paletteFadeInIncrement).w
 
 @loc_E78:
-	bset    #0, (vdpUpdateFlags).w
+	; Signal palette update needed
+	bset #0, (vdpUpdateFlags).w
+
 	movem.l (sp)+, d0-d4/a0-a1
 	rts
-; End of function sub_E20
+; End of function fadeInColors
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2556,6 +2567,8 @@ updateObjects:               ; CODE XREF: ROM:000002F4j
 
 	; Game state 1 ($21F4)
 	include "gamestates\state_21F4.asm"
+	
+	; Game state 2 ($3040)
 
 ; =============== S U B R O U T I N E =======================================
 

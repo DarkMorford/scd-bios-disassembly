@@ -36,8 +36,8 @@ byte_FFFFFE28 equ $FFFFFE28
 byte_FFFFFE3A equ $FFFFFE3A
 byte_FFFFFE42 equ $FFFFFE42
 byte_FFFFFE43 equ $FFFFFE43
-byte_FFFFFE46 equ $FFFFFE46
-byte_FFFFFE47 equ $FFFFFE47
+paletteFadeInOffset equ $FFFFFE46
+paletteFadeInCount equ $FFFFFE47
 byte_FFFFFE54 equ $FFFFFE54
 byte_FFFFFF06 equ $FFFFFF06
 byte_FFFFFF09 equ $FFFFFF09
@@ -60,7 +60,7 @@ dword_FFFFD33E equ $FFFFD33E
 dword_FFFFD700 equ $FFFFD700
 spriteTableAddress equ $FFFFFE30
 dword_FFFFFE34 equ $FFFFFE34
-dword_FFFFFE4A equ $FFFFFE4A
+paletteFadeInTarget equ $FFFFFE4A
 spriteObjectBase equ $FFFFC000
 unk_FFFFC13A equ $FFFFC13A
 unk_FFFFC83A equ $FFFFC83A
@@ -145,7 +145,7 @@ word_FFFFE172 equ $FFFFE172
 nextSpriteIndex equ $FFFFFE38
 word_FFFFFE40 equ $FFFFFE40
 word_FFFFFE44 equ $FFFFFE44
-word_FFFFFE48 equ $FFFFFE48
+paletteFadeInIncrement equ $FFFFFE48
 word_FFFFFF00 equ $FFFFFF00
 word_FFFFFF02 equ $FFFFFF02
 word_FFFFFF04 equ $FFFFFF04
