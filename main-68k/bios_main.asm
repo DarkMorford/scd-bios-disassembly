@@ -434,10 +434,10 @@ InitData:
 	; VDP
 	dc.b   4
 	dc.b $14
-	dc.b $30
-	dc.b $3C
-	dc.b   7
-	dc.b $6C
+	dc.b ($C000 >> 10)
+	dc.b ($F000 >> 10)
+	dc.b ($E000 >> 13)
+	dc.b ($D800 >>  9)
 	dc.b   0
 	dc.b   0
 	dc.b   0
@@ -445,7 +445,7 @@ InitData:
 	dc.b $FF
 	dc.b   0
 	dc.b $81
-	dc.b $37
+	dc.b ($DC00 >> 10)
 	dc.b   0
 	dc.b   1
 	dc.b   1
