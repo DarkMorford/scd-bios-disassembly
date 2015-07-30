@@ -3062,19 +3062,19 @@ loc_1AFE:               ; CODE XREF: sub_3728+12p
 
 
 resetCdc:               ; CODE XREF: initCdc+Cp _cdcstart+48p
-	move.b  #CDC_WRITE_RESET,(a2)
-	move.b  #0,(a3)
+	move.b #CDC_WRITE_RESET, (a2)
+	move.b #0, (a3)
 
-	move.b  #CDC_WRITE_IFCTRL,(a2)
-	move.b  #$3A,(a3)
+	move.b #CDC_WRITE_IFCTRL, (a2)
+	move.b #$3A, (a3)
 
-	move.b  #CDC_WRITE_WAL,(a2)
-	move.b  #0,(a3)
-	move.b  #0,(a3)
+	move.b #CDC_WRITE_WAL,( a2)
+	move.b #0, (a3)
+	move.b #0, (a3)
 
-	move.b  #CDC_WRITE_PTL,(a2)
-	move.b  #0,(a3)
-	move.b  #0,(a3)
+	move.b #CDC_WRITE_PTL, (a2)
+	move.b #0, (a3)
+	move.b #0, (a3)
 	rts
 ; End of function resetCdc
 
@@ -3084,9 +3084,9 @@ resetCdc:               ; CODE XREF: initCdc+Cp _cdcstart+48p
 
 sub_1CE6:               ; CODE XREF: _cdcstart+5Cp
 					; _cdcstart:loc_1C66p
-	move.b  #CDC_WRITE_CTRL0, (a2)
-	move.b  #$A0, (a3)
-	move.b  #$F8, (a3)
+	move.b #CDC_WRITE_CTRL0, (a2)
+	move.b #$A0, (a3)
+	move.b #$F8, (a3)
 	rts
 ; End of function sub_1CE6
 
@@ -4217,6 +4217,7 @@ sub_23A6:               ; CODE XREF: _scdinit+1Ap
 	lea dword_5A9C(a5), a0
 	moveq #0, d0
 
+	; Clear RAM from $5A9C-$5AB6
 	moveq #5, d1
 	@loc_23AE:
 		move.l  d0, (a0)+
@@ -4865,7 +4866,7 @@ _wonderchk:
 
 ; ---------------------------------------------------------------------------
 word_2924:          ; DATA XREF: installJumpTable+62o
-	dc.w 4
+	dc.w (_cdbios - word_2924)
 	dc.w 0
 
 ; =============== S U B R O U T I N E =======================================
@@ -6917,7 +6918,7 @@ dword_4432:        ; DATA XREF: sub_447Er sub_448E+6r ...
 	dc.l $FE0000
 
 word_4436:      ; DATA XREF: installJumpTable+3Eo
-	dc.w 4
+	dc.w (_buram - word_4436)
     dc.w 0
 
 ; =============== S U B R O U T I N E =======================================
@@ -7135,7 +7136,7 @@ loc_45E6:               ; CODE XREF: BIOS:000045DAj
 
 loc_45F6:               ; CODE XREF: BIOS:0000459Cj
 	move.w  #$B,d1
-	bsr.w   sub_53D6
+	bsr.w   validateString
 	bcs.s   loc_45E6
 	move.l  dword_5B84(a5),d0
 	asr.l   #8,d0
@@ -8882,45 +8883,52 @@ loc_53D0:               ; CODE XREF: sub_53A0+18j sub_53A0+22j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_53D6:               ; CODE XREF: BIOS:000045FAp
-		movem.l d0-d2/a0-a1,-(sp)
-		subq.w  #1,d1
+validateString:               ; CODE XREF: BIOS:000045FAp
+	movem.l d0-d2/a0-a1, -(sp)
 
-loc_53DC:               ; CODE XREF: sub_53D6:loc_53F2j
-		move.b  (a1)+,d2
-		lea word_5406(pc),a0
-		move.w  (a0)+,d0
+	subq.w #1, d1
 
-loc_53E4:               ; CODE XREF: sub_53D6+16j
-		cmp.b   (a0)+,d2
-		bcs.s   loc_5400
-		cmp.b   (a0)+,d2
-		bls.s   loc_53F2
-		dbf d0,loc_53E4
-		bra.s   loc_5400
+@loc_53DC:
+	move.b (a1)+, d2
+	lea word_5406(pc), a0
+
+	move.w (a0)+, d0
+	@loc_53E4:
+		cmp.b (a0)+, d2
+		bcs.s @loc_5400
+
+		cmp.b (a0)+, d2
+		bls.s @loc_53F2
+
+		dbf d0, @loc_53E4
+
+	bra.s @loc_5400
 ; ---------------------------------------------------------------------------
 
-loc_53F2:               ; CODE XREF: sub_53D6+14j
-		dbf d1,loc_53DC
-		move    #0,ccr
+@loc_53F2:
+	dbf d1, @loc_53DC
 
-loc_53FA:               ; CODE XREF: sub_53D6+2Ej
-		movem.l (sp)+,d0-d2/a0-a1
-		rts
+	move #0, ccr
+
+@loc_53FA:
+	movem.l (sp)+, d0-d2/a0-a1
+	rts
 ; ---------------------------------------------------------------------------
 
-loc_5400:               ; CODE XREF: sub_53D6+10j sub_53D6+1Aj
-		m_setErrorFlag
-		bra.s   loc_53FA
-; End of function sub_53D6
+@loc_5400:
+	m_setErrorFlag
+	bra.s @loc_53FA
+; End of function validateString
 
 ; ---------------------------------------------------------------------------
-word_5406:  dc.w 2          ; DATA XREF: sub_53D6+8o
-		dc.w $3039
-		dc.w $415A
-		dc.w $5F5F
+word_5406:
+	dc.w 2
+
+	dc.b '0', '9'
+	dc.b 'A', 'Z'
+	dc.b '_', '_'
 
 fill_540E:
-		dcb.b 1010, 0
+	dcb.b 1010, 0
 
 	END
