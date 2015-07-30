@@ -11966,7 +11966,7 @@ loc_7934:               ; CODE XREF: sub_790A+2Ej
 ; ---------------------------------------------------------------------------
 
 loc_7940:               ; CODE XREF: sub_790A+10j
-	move.w  (word_FFFFFE08).w,d0
+	move.w  (mouse1DeltaY).w,d0
 	bsr.w   sub_7A16
 	add.l   d0,(word_FFFFFF0A).w
 	bra.s   loc_795E
@@ -11984,7 +11984,7 @@ loc_795E:               ; CODE XREF: sub_790A+42j
 	bne.s   loc_7974
 
 loc_7966:               ; CODE XREF: sub_790A+32j
-	move.w  (dword_FFFFFE12+2).w,d0
+	move.w  (mouse2DeltaY).w,d0
 	bsr.w   sub_7A16
 	add.l   d0,(word_FFFFFF0A).w
 	bra.s   loc_7984
@@ -12037,7 +12037,7 @@ loc_79BA:               ; CODE XREF: sub_7990+2Ej
 ; ---------------------------------------------------------------------------
 
 loc_79C6:               ; CODE XREF: sub_7990+10j
-	move.w  (word_FFFFFE06).w,d0
+	move.w  (mouse1DeltaX).w,d0
 	bsr.w   sub_7A16
 	add.l   d0,(word_FFFFFF0A).w
 	bra.s   loc_79E4
@@ -12055,7 +12055,7 @@ loc_79E4:               ; CODE XREF: sub_7990+42j
 	bne.s   loc_79FA
 
 loc_79EC:               ; CODE XREF: sub_7990+32j
-	move.w  (dword_FFFFFE12).w,d0
+	move.w  (mouse2DeltaX).w,d0
 	bsr.w   sub_7A16
 	add.l   d0,(word_FFFFFF0A).w
 	bra.s   loc_7A0A
@@ -13721,8 +13721,8 @@ loc_87D6:               ; CODE XREF: sub_873A+9Ej
 	move.l  d0,(a0)+
 	dbf d1,loc_87D6
 
-	clr.w   (unk_FFFFFE0A).w
-	clr.w   (unk_FFFFFE16).w
+	clr.w   (byte_FFFFFE0A).w
+	clr.w   (byte_FFFFFE16).w
 	clr.b   (byte_FFFFFE28).w
 	bra.w   displayOn
 ; End of function sub_873A

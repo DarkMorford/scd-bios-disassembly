@@ -433,9 +433,10 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 
 	lea (multitapControllerTypes).w, a1
 
+	; Look for a mouse on the multitap
 	moveq #3, d1
 	@loc_221A:
-		cmpi.b #2, (a1)+
+		cmpi.b #MULTI_MOUSE, (a1)+
 		dbeq   d1, @loc_221A
 
 	beq.s @loc_222C

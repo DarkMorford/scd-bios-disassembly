@@ -14,6 +14,11 @@ JOYBIT_UP       equ 0
 JOYTYPE_MEGAMOUSE   equ 3
 JOYTYPE_MULTITAP    equ 7
 
+MULTI_3BUTTON   equ  0
+MULTI_6BUTTON   equ  1
+MULTI_MOUSE     equ  2
+MULTI_NONE      equ $F
+
 ; =============== S U B R O U T I N E =======================================
 
 
@@ -230,7 +235,7 @@ loc_11F8:
 	; Check if multitap has a mouse
 	moveq #3, d0
 	@loc_11FE:
-		cmpi.b #2, (a3)+
+		cmpi.b #MULTI_MOUSE, (a3)+
 		dbeq   d0, @loc_11FE
 
 	; Skip to controller port 2 if no mouse
@@ -784,8 +789,8 @@ sub_157C:               ; CODE XREF: sub_1522+1Aj
 ; ---------------------------------------------------------------------------
 
 	@loc_15A0:
-		bsr.w   readNextControllerData
-		bcs.w   joypadTransferFailed
+		bsr.w readNextControllerData
+		bcs.w joypadTransferFailed
 
 		dbf d1, @loc_15A0
 
