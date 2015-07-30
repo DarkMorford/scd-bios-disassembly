@@ -508,10 +508,12 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 	bsr.w setDiscType
 
 	clr.b (byte_FFFFFE54).w
+
 	btst  #JOYCTRL_PC6, (JOYCTRL3).l
 	beq.s loc_598
 
-	movea.l (InitialSSP).w, sp  ; Warm boot
+	; Warm boot
+	movea.l (InitialSSP).w, sp
 
 	; Wait for DMA to finish
 	@loc_558:
@@ -519,7 +521,7 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 		btst   #VDP_DMA, d3
 		bne.s  @loc_558
 
-	bsr.w   checkRegion
+	bsr.w checkRegion
 
 	movem.l d0-d1, -(sp)
 	bsr.w   testCartBootBlock
@@ -538,9 +540,12 @@ bootCartridge:
 ; ---------------------------------------------------------------------------
 
 loc_598:                ; CODE XREF: ROM:00000552j
+	; Cold boot
 	jsr   (loadDefaultVdpRegs).w
 	jsr   (clearAllVram).w
+
 	bsr.w checkRegion
+
 	bsr.w clearSubCpuPrg
 	bsr.w clearWordRam2M
 
@@ -665,7 +670,7 @@ loc_684:                ; CODE XREF: ROM:00000288j
 	jsr   installErrorVectors(pc)
 	bsr.w setupJoypads
 	jsr   (loadZ80Prg).w
-	bsr.w sub_118C
+	bsr.w detectControllerChange
 	bsr.w loadSubCpuPrg
 
 	jsr (waitForVblank).w
@@ -897,9 +902,11 @@ vblankHandler:
 	addq.b #1, (byte_FFFFFE27).w
 
 @loc_926:
-	bsr.w sub_118C
-	bsr.w sub_11D8
+	bsr.w detectControllerChange
+	bsr.w readAllControllers
+
 	clr.b (vblankCode).w
+
 	bsr.w sub_1658
 	bsr.w checkDiscReady
 
@@ -3407,12 +3414,15 @@ sub_36CA:               ; CODE XREF: sub_3654:loc_366Ap
 ; End of function sub_36CA
 
 ; ---------------------------------------------------------------------------
-word_36E8:  dc.w $11E
-		dc.w $12E
-		dc.w $13E
-word_36EE:  dc.w $D4
-		dc.w $10C
-		dc.w $144
+word_36E8:
+	dc.w $11E
+	dc.w $12E
+	dc.w $13E
+
+word_36EE:
+	dc.w  $D4
+	dc.w $10C
+	dc.w $144
 
 ; =============== S U B R O U T I N E =======================================
 

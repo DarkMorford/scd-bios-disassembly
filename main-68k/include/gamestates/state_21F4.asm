@@ -487,7 +487,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	bne.w  @loc_22D4
 
 	move.b (joy1Triggered).w, d0
-	
+
 	; Check START button
 	bmi.s  @loc_228E
 
@@ -512,7 +512,7 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	bne.s  @loc_22BC
 
 	move.b (joy1Triggered).w, d0
-	
+
 	; Check START button
 	bmi.s  @loc_22AE
 
@@ -627,7 +627,7 @@ sub_2336:               ; CODE XREF: sub_2310+10p
 ; Inputs:
 ;   a0: Data source
 ;   a1: Data destination
-;   d1:
+;   d1: Number of tiles
 
 sub_2354:               ; CODE XREF: sub_238C+18p sub_238C+32p ...
 	movea.l a1, a2
@@ -675,7 +675,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 	lea   (unk_E6A6).l, a1
 	bsr.w decompressNemesisToRam
 
-	moveq #$F, d1
+	moveq #15, d1
 	lea   (decompScratch).w, a0
 	lea   (unk_FFFFC13A).w, a1
 	bsr.s sub_2354
@@ -684,7 +684,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 	lea   (unk_E7A8).l, a1
 	bsr.w decompressNemesisToRam
 
-	moveq #$D, d1
+	moveq #13, d1
 	lea   (decompScratch).w, a0
 	lea   (unk_FFFFC83A).w, a1
 	bsr.s sub_2354
@@ -693,7 +693,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 	lea   (unk_E882).l, a1
 	bsr.w decompressNemesisToRam
 
-	moveq #$1A, d1
+	moveq #26, d1
 	lea   (decompScratch).w, a0
 	lea   (unk_FFFFCF3A).w, a1
 	bsr.w sub_2354
@@ -702,13 +702,13 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 	lea   (unk_E9F2).l, a1
 	bsr.w decompressNemesisToRam
 
-	moveq #$14, d1
+	moveq #20, d1
 	lea   (decompScratch).w, a0
 	lea   (unk_FFFFD63A).w, a1
 	bsr.w sub_2354
 
 	moveq  #1, d6
-	move.w #$E723, d0
+	move.w #$E723, d0                   ; Pri 1, Pal 3, No flip, Pattern $723
 	m_loadVramWriteAddress $DE8C, d1
 
 	@loc_2404:
@@ -797,6 +797,7 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	lea (word_FFFFC10E).w, a0
 	lea (word_219C02).l, a1
 
+	; Copy $FFC10E-$FFC12E to Word RAM $219C02-$219C22
 	@loc_24CC:
 		move.w (a0)+, (a1)+
 		dbf d7, @loc_24CC

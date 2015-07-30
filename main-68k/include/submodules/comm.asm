@@ -52,44 +52,44 @@ sub_15EE:               ; CODE XREF: ROM:00000344j
 	; Return if sub-CPU is in RESET
 	lea (GA_RESET_HALT).l, a5
 	btst  #GA_SRES, (a5)
-	beq.s locret_1656
+	beq.s @locret_1656
 
 	; Return if we're holding the sub-CPU bus
 	btst  #GA_SBRQ, (a5)
-	bne.s locret_1656
+	bne.s @locret_1656
 
 	addq.w #1, a4
 	btst   #GA_SUBFLAG0, (a4)
-	beq.s  loc_1648
+	beq.s  @loc_1648
 
 	bset  #GA_MAINFLAG1, (a6)
 	bchg  #GA_MAINFLAG0, (a6)+
-	beq.s loc_162C
+	beq.s @loc_162C
 
 	; Wait for sub-CPU to clear flag 1
-	loc_1624:
+	@loc_1624:
 		btst  #GA_SUBFLAG1, (a4)
-		bne.s loc_1624
+		bne.s @loc_1624
 
-	bra.s   loc_1632
+	bra.s   @loc_1632
 ; ---------------------------------------------------------------------------
 
 	; Wait for sub-CPU to set bit 1
-	loc_162C:
+	@loc_162C:
 		btst  #GA_SUBFLAG1, (a4)
-		beq.s loc_162C
+		beq.s @loc_162C
 
-loc_1632:
+@loc_1632:
 	; Copy sub comm flags from registers to cache
 	move.b (a4), (a6)+
 	addq.w #1, a4
 
 	; Copy main comm data from buffer to registers
-	moveq  #3, d0
-	loc_1638:
+	moveq #3, d0
+	@loc_1638:
 		move.l (a6), (a4)+
 		clr.l  (a6)+
-		dbf d0, loc_1638
+		dbf d0, @loc_1638
 
 	; Copy sub comm data from registers to cache
 	move.l (a4)+, (a6)+
@@ -97,13 +97,13 @@ loc_1632:
 	move.l (a4)+, (a6)+
 	move.l (a4)+, (a6)+
 
-loc_1648:
+@loc_1648:
 	; Send INT2 to sub-CPU
 	bset #GA_IFL2, -1(a5)
 
 	bset #GA_MAINFLAG1, (GA_COMM_MAINFLAGS).l
 
-locret_1656:
+@locret_1656:
 	rts
 ; End of function sub_15EE
 
@@ -197,7 +197,7 @@ sub_16D2:               ; CODE XREF: ROM:0000034Cj sub_16D2+8j ...
 sub_16E6:               ; CODE XREF: loadPrgFromWordRam+24p
 	bclr #0, (byte_FFFFFDDD).w
 	bset #GA_MAINFLAG7, (GA_COMM_MAINFLAGS).l
-	
+
 	; Give Word RAM to sub-CPU
 	bset #GA_DMNA, (GA_MEM_MODE).l
 	rts
@@ -271,6 +271,7 @@ sub_1730:               ; CODE XREF: ROM:00000378j
 
 	lsr.l  #4, d0
 	or.w   d0, d1
+
 	andi.w #$FF0, d2
 	lsl.w  #4, d2
 	or.w   d2, d3

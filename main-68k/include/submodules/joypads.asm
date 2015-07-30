@@ -92,7 +92,7 @@ setupJoypads:
 ; Input parameters:
 ; a6 - JOYDATAn
 
-detectControllerType:               ; CODE XREF: ROM:0000029Cj sub_118C+6p ...
+detectControllerType:               ; CODE XREF: ROM:0000029Cj detectControllerChange+6p ...
 	movem.l d1-d3, -(sp)
 
 	m_saveStatusRegister
@@ -151,7 +151,7 @@ sub_1174:               ; CODE XREF: detectControllerType+26p detectControllerT
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_118C:               ; CODE XREF: ROM:0000069Cp
+detectControllerChange:               ; CODE XREF: ROM:0000069Cp
 	; Detect controller #1
 	lea (JOYDATA1).l, a6
 	bsr.s detectControllerType
@@ -185,6 +185,7 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 	move.b d7, (joy2Type).w
 
 	moveq  #1, d1
+
 	cmpi.b #JOYTYPE_MULTITAP, d7
 	beq.s  @loc_11CC
 
@@ -203,13 +204,13 @@ sub_118C:               ; CODE XREF: ROM:0000069Cp
 
 @locret_11D6:
 	rts
-; End of function sub_118C
+; End of function detectControllerChange
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_11D8:               ; CODE XREF: vblankHandler+26p
+readAllControllers:               ; CODE XREF: vblankHandler+26p
 	cmpi.b #JOYTYPE_MULTITAP, (joy1Type).w
 	bne.s  loc_1218
 
@@ -247,7 +248,7 @@ loc_11F8:
 	bra.w loc_12BA
 ; ---------------------------------------------------------------------------
 
-loc_1218:               ; CODE XREF: sub_11D8+6j
+loc_1218:               ; CODE XREF: readAllControllers+6j
 	cmpi.b #JOYTYPE_MEGAMOUSE, (joy1Type).w
 	beq.s  loc_1250
 
@@ -266,7 +267,7 @@ loc_1218:               ; CODE XREF: sub_11D8+6j
 	bra.s loc_1264
 ; ---------------------------------------------------------------------------
 
-loc_1250:               ; CODE XREF: sub_11D8+46j
+loc_1250:               ; CODE XREF: readAllControllers+46j
 	; Port 1 has Mega Mouse
 	lea (joy1MouseData).w, a5
 
@@ -279,7 +280,7 @@ loc_1250:               ; CODE XREF: sub_11D8+46j
 	lea   (joy1Down).w, a0
 	bsr.s readMouseButtons
 
-loc_1264:               ; CODE XREF: sub_11D8+2Ej sub_11D8+76j
+loc_1264:               ; CODE XREF: readAllControllers+2Ej readAllControllers+76j
 	cmpi.b #JOYTYPE_MEGAMOUSE, (joy2Type).w
 	beq.s  loc_12A6
 
@@ -290,7 +291,7 @@ loc_1264:               ; CODE XREF: sub_11D8+2Ej sub_11D8+76j
 	bra.s  loc_12BA
 ; ---------------------------------------------------------------------------
 
-loc_1276:               ; CODE XREF: sub_11D8+9Aj
+loc_1276:               ; CODE XREF: readAllControllers+9Aj
 	; Port 2 has standard controller
 	lea (joy2Down).w, a5
 	lea (JOYDATA2).l, a6
@@ -306,7 +307,7 @@ loc_1276:               ; CODE XREF: sub_11D8+9Aj
 	bra.s loc_12BA
 ; ---------------------------------------------------------------------------
 
-loc_12A6:               ; CODE XREF: sub_11D8+92j
+loc_12A6:               ; CODE XREF: readAllControllers+92j
 	; Port 2 has Mega Mouse
 	lea (joy2MouseData).w, a5
 
@@ -319,28 +320,28 @@ loc_12A6:               ; CODE XREF: sub_11D8+92j
 	lea   (joy2Down).w, a0
 	bsr.s readMouseButtons
 
-loc_12BA:               ; CODE XREF: sub_11D8+3Cj sub_11D8+9Cj ...
+loc_12BA:               ; CODE XREF: readAllControllers+3Cj readAllControllers+9Cj ...
 	m_z80ReleaseBus
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_12C4:               ; CODE XREF: sub_11D8+84j
+loc_12C4:               ; CODE XREF: readAllControllers+84j
 	moveq   #0, d1
 	bra.s   locret_12CA
 ; ---------------------------------------------------------------------------
 
-loc_12C8:               ; CODE XREF: sub_11D8+DAj
+loc_12C8:               ; CODE XREF: readAllControllers+DAj
 	moveq   #1, d1
 
-locret_12CA:                ; CODE XREF: sub_11D8+EEj
+locret_12CA:                ; CODE XREF: readAllControllers+EEj
 	rts
-; End of function sub_11D8
+; End of function readAllControllers
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-readMouseButtons:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
+readMouseButtons:               ; CODE XREF: readAllControllers+38p readAllControllers+8Ap ...
 	move.b 1(a5), d0
 	andi.w #3, d0
 
@@ -371,7 +372,7 @@ readMouseButtons:               ; CODE XREF: sub_11D8+38p sub_11D8+8Ap ...
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_12F4:               ; CODE XREF: loc_11CC+2p sub_11D8+80p ...
+sub_12F4:               ; CODE XREF: loc_11CC+2p readAllControllers+80p ...
 	movem.l d1-a6, -(sp)
 	add.w   d1, d1
 
@@ -391,15 +392,15 @@ sub_12F4:               ; CODE XREF: loc_11CC+2p sub_11D8+80p ...
 
 ; ---------------------------------------------------------------------------
 word_1318:
-	dc.w (sub_1320 - word_1318)
-	dc.w (readMegaMouse - word_1318)
-	dc.w $166   ; $147E     ; bchg d0, -(a6)
-	dc.w $166   ; $147E     ; bchg d0, -(a6)
+	dc.w (resetController  - word_1318)
+	dc.w (readMegaMouse    - word_1318)
+	dc.w (joypadReadFailed - word_1318)     ; bchg d0, -(a6)
+	dc.w (joypadReadFailed - word_1318)     ; bchg d0, -(a6)
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1320:
+resetController:
 	move.w #$FF, d7
 
 	m_z80RequestBus
@@ -419,9 +420,9 @@ sub_1320:
 
 @loc_1356:
 	m_z80ReleaseBus
-	ori #1,ccr
+	ori #1, ccr
 	rts
-; End of function sub_1320
+; End of function resetController
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -606,7 +607,7 @@ joypadReadFailed:
 ; =============== S U B R O U T I N E =======================================
 
 
-readMultitap:               ; CODE XREF: sub_11D8+14p
+readMultitap:               ; CODE XREF: readAllControllers+14p
 	movem.l d1-a0/a3-a6, -(sp)
 
 	lea (multitapControllerTypes).w, a0
@@ -662,10 +663,10 @@ readMultitap:               ; CODE XREF: sub_11D8+14p
 	andi.l #$0F0F0F0F, -(a0)
 
 	; Read each attached controller (gamepad/mouse)
-	bsr.s sub_1522
-	bsr.s sub_1522
-	bsr.s sub_1522
-	bsr.s sub_1522
+	bsr.s readMultitapDevice
+	bsr.s readMultitapDevice
+	bsr.s readMultitapDevice
+	bsr.s readMultitapDevice
 
 	; Set TH high (reset transfer)
 	move.b #$60, (a6)
@@ -688,7 +689,7 @@ joypadTransferFailed:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1522:               ; CODE XREF: readMultitap+6Ep readMultitap+70p ...
+readMultitapDevice:               ; CODE XREF: readMultitap+6Ep readMultitap+70p ...
 	moveq  #0,    d0
 	move.b (a0)+, d0
 
@@ -712,7 +713,7 @@ sub_1522:               ; CODE XREF: readMultitap+6Ep readMultitap+70p ...
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_1542:               ; CODE XREF: sub_1522+16j
+loc_1542:               ; CODE XREF: readMultitapDevice+16j
 	; Read 3-button data
 	bsr.s sub_154C
 
@@ -720,13 +721,13 @@ loc_1542:               ; CODE XREF: sub_1522+16j
 	bsr.w readNextControllerData
 	bcs.s joypadTransferFailed
 	rts
-; End of function sub_1522
+; End of function readMultitapDevice
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_154C:               ; CODE XREF: sub_1522:loc_1534j
+sub_154C:               ; CODE XREF: readMultitapDevice:loc_1534j
 	; Read D-pad
 	bsr.w  readNextControllerData
 	bcs.s  joypadTransferFailed
@@ -764,7 +765,7 @@ sub_154C:               ; CODE XREF: sub_1522:loc_1534j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_157C:               ; CODE XREF: sub_1522+1Aj
+sub_157C:               ; CODE XREF: readMultitapDevice+1Aj
 	moveq #5, d1
 
 	; Throw out data if multiple mice
@@ -810,7 +811,7 @@ sub_15AE:
 ; =============== S U B R O U T I N E =======================================
 
 
-readNextControllerData:     ; CODE XREF: sub_1522+22p sub_154Cp ...
+readNextControllerData:     ; CODE XREF: readMultitapDevice+22p sub_154Cp ...
 	bchg  #JOYDATA_TR, d6
 	beq.w readControllerDataHigh
 	bra.w readControllerDataLow
