@@ -1,0 +1,26 @@
+Psylink version 2.74  Copyright (c) 1990-1996 S.N. Systems Software Limited
+All rights reserved
+
+USAGE : psylink /options source(s),output,symbol,map,libraries
+
+Options : /c              case sensitive link
+          /e symb=value{;symb=value}   equate symbol(s)
+          /gp gpbase      set gp base address (MIPS only)
+                          gpbase is a section name optionally +/- a constant
+          /l path         specify path to search for library files
+          /m              list external symbols in map file
+          /n value        specify maximum number of object modules
+          /o value        org output to value
+          /p              produce pure binary output file
+          /ps             produce binary output in s-record format
+          /rmips=file     generate mips relocation info to specified file
+          /s              all sections must be in defined groups
+          /u unit         set target unit number
+          /v              enable automatic overlay recognition by debugger
+          /we             treat warnings as errors
+          /wl             warn of multiple definitions in libraries
+          /wm             warn of multiple declarations of the same C variable
+          /x address      set execution address
+          /z              fill bss sections with zero
+
+
