@@ -348,64 +348,64 @@ palette_218A:
 	dc.b 51
 
 palette_218C:
-	dc.w $000
-	dc.w $0EE
-	dc.w $0AE
-	dc.w $06E
-	dc.w $00E
-	dc.w $E0C
-	dc.w $E60
-	dc.w $CE0
-	dc.w $0E0
-	dc.w $000
-	dc.w $EEC
-	dc.w $C00
-	dc.w $C20
-	dc.w $C40
-	dc.w $C60
-	dc.w $C80
+	dc.w $000   ; #000000
+	dc.w $0EE   ; #FFFF00
+	dc.w $0AE   ; #FFB600
+	dc.w $06E   ; #FF6D00
+	dc.w $00E   ; #FF0000
+	dc.w $E0C   ; #DB00FF
+	dc.w $E60   ; #006DFF
+	dc.w $CE0   ; #00FFDB
+	dc.w $0E0   ; #00FF00
+	dc.w $000   ; #000000
+	dc.w $EEC   ; #DBFFFF
+	dc.w $C00   ; #0000DB
+	dc.w $C20   ; #0024DB
+	dc.w $C40   ; #0049DB
+	dc.w $C60   ; #006DDB
+	dc.w $C80   ; #0092DB
 
 palette_21AC:
-	dc.w $000
-	dc.w $000
-	dc.w $8AA
-	dc.w $246
-	dc.w $864
-	dc.w $ACC
-	dc.w $224
-	dc.w $466
-	dc.w $444
-	dc.w $666
-	dc.w $888
-	dc.w $68A
-	dc.w $268
-	dc.w $AAA
-	dc.w $442
-	dc.w $000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $8AA   ; #B6B692
+	dc.w $246   ; #6D4924
+	dc.w $864   ; #496D92
+	dc.w $ACC   ; #DBDBB6
+	dc.w $224   ; #492424
+	dc.w $466   ; #6D6D49
+	dc.w $444   ; #494949
+	dc.w $666   ; #6D6D6D
+	dc.w $888   ; #929292
+	dc.w $68A   ; #B6926D
+	dc.w $268   ; #926D24
+	dc.w $AAA   ; #B6B6B6
+	dc.w $442   ; #244949
+	dc.w $000   ; #000000
 
 palette_21CC:
-	dc.w $000
-	dc.w $000
-	dc.w $000
-	dc.w $246
-	dc.w $864
-	dc.w $ACC
-	dc.w $000
-	dc.w $000
-	dc.w $000
-	dc.w $000
-	dc.w $888
-	dc.w $000
-	dc.w $000
-	dc.w $000
-	dc.w $000
-	dc.w $000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $246   ; #6D4924
+	dc.w $864   ; #496D92
+	dc.w $ACC   ; #DBDBB6
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $888   ; #929292
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
+	dc.w $000   ; #000000
 
 palette_21EC:
-	dc.w $000
-	dc.w $EEE
-	dc.w $888
-	dc.w $000
+	dc.w $000   ; #000000
+	dc.w $EEE   ; #FFFFFF
+	dc.w $888   ; #929292
+	dc.w $000   ; #000000
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -905,6 +905,7 @@ sub_2564:               ; CODE XREF: sub_2CDC+12p sub_2E0E+12p ...
 
 loc_2568:               ; CODE XREF: sub_2802+8p sub_2834+8p ...
 	move.l d6, -(sp)
+
 	andi.w #$1FF, d7
 	move.w d7, d6
 
@@ -925,6 +926,7 @@ loc_2568:               ; CODE XREF: sub_2802+8p sub_2834+8p ...
 
 @loc_258A:
 	move.w d6, d7
+
 	move.l (sp)+, d6
 	rts
 ; End of function sub_2564
@@ -1301,17 +1303,21 @@ sub_27D2:               ; CODE XREF: ROM:loc_278Aj
 
 
 sub_27DE:               ; CODE XREF: ROM:00002792j
-	addq.w  #1,(dword_FFFFC12A).w
-	move.w  (dword_FFFFC12A).w,d0
-	lsr.w   #2,d0
-	add.w   d0,(word_FFFFC11E).w
-	cmpi.w  #$100,(dword_FFFFC12A).w
-	bne.s   locret_2800
-	addq.w  #1,(word_FFFFC134).w
-	clr.w   (dword_FFFFC12A).w
-	clr.w   (word_FFFFC11E).w
+	addq.w #1, (dword_FFFFC12A).w
 
-locret_2800:                ; CODE XREF: sub_27DE+14j
+	move.w (dword_FFFFC12A).w, d0
+	lsr.w  #2, d0
+	add.w  d0, (word_FFFFC11E).w
+
+	cmpi.w #$100, (dword_FFFFC12A).w
+	bne.s  @locret_2800
+
+	addq.w #1, (word_FFFFC134).w
+
+	clr.w  (dword_FFFFC12A).w
+	clr.w  (word_FFFFC11E).w
+
+@locret_2800:
 	rts
 ; End of function sub_27DE
 
@@ -1320,20 +1326,27 @@ locret_2800:                ; CODE XREF: sub_27DE+14j
 
 
 sub_2802:               ; CODE XREF: ROM:00002796j
-	addq.w  #4,(dword_FFFFC12A).w
-	move.w  (dword_FFFFC12A).w,d7
-	bsr.w   loc_2568
-	lsr.w   #2,d7
-	neg.w   d7
-	move.w  d7,(word_FFFFC11A).w
-	move.w  (dword_FFFFC12A).w,(word_FFFFC11C).w
-	addi.w  #$10,(word_FFFFC11E).w
-	cmpi.w  #$100,(dword_FFFFC12A).w
-	bne.s   locret_2832
-	addq.w  #1,(word_FFFFC134).w
-	clr.w   (dword_FFFFC12A).w
+	addq.w #4, (dword_FFFFC12A).w
 
-locret_2832:                ; CODE XREF: sub_2802+26j
+	move.w (dword_FFFFC12A).w, d7
+	bsr.w  loc_2568
+
+	lsr.w  #2, d7
+	neg.w  d7
+	move.w d7, (word_FFFFC11A).w
+
+	move.w (dword_FFFFC12A).w, (word_FFFFC11C).w
+
+	addi.w #$10, (word_FFFFC11E).w
+
+	cmpi.w #$100, (dword_FFFFC12A).w
+	bne.s  @locret_2832
+
+	addq.w #1, (word_FFFFC134).w
+
+	clr.w  (dword_FFFFC12A).w
+
+@locret_2832:
 	rts
 ; End of function sub_2802
 
@@ -1342,21 +1355,28 @@ locret_2832:                ; CODE XREF: sub_2802+26j
 
 
 sub_2834:               ; CODE XREF: ROM:0000279Aj
-	addq.w  #4,(dword_FFFFC12A).w
-	move.w  (dword_FFFFC12A).w,d7
-	bsr.w   loc_2568
-	lsr.w   #2,d7
-	move.w  d7,(word_FFFFC11A).w
-	move.w  #$100,d0
-	sub.w   (dword_FFFFC12A).w,d0
-	move.w  d0,(word_FFFFC11C).w
-	addi.w  #$10,(word_FFFFC11E).w
-	cmpi.w  #$100,(dword_FFFFC12A).w
-	bne.s   locret_2868
-	addq.w  #1,(word_FFFFC134).w
-	clr.w   (dword_FFFFC12A).w
+	addq.w #4, (dword_FFFFC12A).w
 
-locret_2868:                ; CODE XREF: sub_2834+2Aj
+	move.w (dword_FFFFC12A).w, d7
+	bsr.w  loc_2568
+
+	lsr.w  #2, d7
+	move.w d7, (word_FFFFC11A).w
+
+	move.w #$100, d0
+	sub.w  (dword_FFFFC12A).w, d0
+	move.w d0, (word_FFFFC11C).w
+
+	addi.w #$10, (word_FFFFC11E).w
+
+	cmpi.w #$100, (dword_FFFFC12A).w
+	bne.s  @locret_2868
+
+	addq.w #1, (word_FFFFC134).w
+
+	clr.w  (dword_FFFFC12A).w
+
+@locret_2868:
 	rts
 ; End of function sub_2834
 
@@ -1365,9 +1385,11 @@ locret_2868:                ; CODE XREF: sub_2834+2Aj
 
 
 sub_286A:               ; CODE XREF: ROM:0000279Ej
-	bsr.w   sub_26BC
-	addq.w  #1,(word_FFFFC136).w
-	clr.b   (byte_FFFFC10C).w
+	bsr.w  sub_26BC
+
+	addq.w #1, (word_FFFFC136).w
+
+	clr.b  (byte_FFFFC10C).w
 	rts
 ; End of function sub_286A
 
@@ -1376,80 +1398,87 @@ sub_286A:               ; CODE XREF: ROM:0000279Ej
 
 
 sub_2878:               ; CODE XREF: ROM:00002716j
-	move.w  (word_FFFFC132).w,d0
-	lsl.w   #2,d0
-	jsr loc_2884(pc,d0.w)
+	move.w (word_FFFFC132).w, d0
+	lsl.w  #2, d0
+
+	jsr loc_2884(pc, d0.w)
 	rts
 ; End of function sub_2878
 
 ; ---------------------------------------------------------------------------
 
 loc_2884:
-	bra.w   sub_28D4
+	bra.w sub_28D4
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2902
+	bra.w sub_2902
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2916
+	bra.w sub_2916
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2934
+	bra.w sub_2934
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2948
+	bra.w sub_2948
 ; ---------------------------------------------------------------------------
-	bra.w   sub_295C
+	bra.w sub_295C
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2978
+	bra.w sub_2978
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2994
+	bra.w sub_2994
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_28A4:               ; CODE XREF: ROM:00002732j
-	move.w  (word_FFFFC134).w,d0
-	lsl.w   #2,d0
-	jsr loc_28B0(pc,d0.w)
+	move.w (word_FFFFC134).w, d0
+	lsl.w  #2, d0
+
+	jsr loc_28B0(pc, d0.w)
 	rts
 ; End of function sub_28A4
 
 ; ---------------------------------------------------------------------------
 
 loc_28B0:
-	bra.w   sub_299A
+	bra.w sub_299A
 ; ---------------------------------------------------------------------------
-	bra.w   sub_29C6
+	bra.w sub_29C6
 ; ---------------------------------------------------------------------------
-	bra.w   sub_29F4
+	bra.w sub_29F4
 ; ---------------------------------------------------------------------------
-	bra.w   sub_274A
+	bra.w sub_274A
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2A22
+	bra.w sub_2A22
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2A36
+	bra.w sub_2A36
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2A4A
+	bra.w sub_2A4A
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2A66
+	bra.w sub_2A66
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2A82
+	bra.w sub_2A82
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_28D4:               ; CODE XREF: ROM:loc_2884j
-	addq.w  #4,(dword_FFFFC122).w
-	subq.w  #5,(word_FFFFC10E).w
-	addq.w  #2,(word_FFFFC110).w
-	move.w  (dword_FFFFC122).w,d7
-	bsr.w   loc_2568
-	lsr.w   #2,d7
-	neg.w   d7
-	move.w  d7,(word_FFFFC112).w
-	cmpi.w  #$100,(dword_FFFFC122).w
-	bne.s   locret_2900
-	addq.w  #1,(word_FFFFC132).w
-	clr.w   (dword_FFFFC122).w
+	addq.w #4, (dword_FFFFC122).w
+	subq.w #5, (word_FFFFC10E).w
+	addq.w #2, (word_FFFFC110).w
 
-locret_2900:                ; CODE XREF: sub_28D4+22j
+	move.w (dword_FFFFC122).w, d7
+	bsr.w  loc_2568
+
+	lsr.w  #2, d7
+	neg.w  d7
+	move.w d7, (word_FFFFC112).w
+
+	cmpi.w #$100, (dword_FFFFC122).w
+	bne.s  @locret_2900
+
+	addq.w #1, (word_FFFFC132).w
+
+	clr.w  (dword_FFFFC122).w
+
+@locret_2900:
 	rts
 ; End of function sub_28D4
 
@@ -1458,13 +1487,14 @@ locret_2900:                ; CODE XREF: sub_28D4+22j
 
 
 sub_2902:               ; CODE XREF: ROM:00002888j
-	addq.w  #8,(word_FFFFC112).w
-	subq.w  #2,(word_FFFFC110).w
-	addq.w  #5,(word_FFFFC10E).w
-	bne.s   locret_2914
-	addq.w  #1,(word_FFFFC132).w
+	addq.w #8, (word_FFFFC112).w
+	subq.w #2, (word_FFFFC110).w
+	addq.w #5, (word_FFFFC10E).w
+	bne.s  @locret_2914
 
-locret_2914:                ; CODE XREF: sub_2902+Cj
+	addq.w #1,(word_FFFFC132).w
+
+@locret_2914:
 	rts
 ; End of function sub_2902
 
@@ -1473,14 +1503,17 @@ locret_2914:                ; CODE XREF: sub_2902+Cj
 
 
 sub_2916:               ; CODE XREF: ROM:0000288Cj
-	addi.w  #$20,(word_FFFFC116).w ; ' '
-	andi.w  #$1FF,(word_FFFFC116).w
-	subi.w  #$10,(word_FFFFC112).w
-	bne.s   locret_2932
-	addq.w  #1,(word_FFFFC132).w
-	clr.b   (byte_FFFFC10C).w
+	addi.w #$20, (word_FFFFC116).w
+	andi.w #$1FF, (word_FFFFC116).w
 
-locret_2932:                ; CODE XREF: sub_2916+12j
+	subi.w #$10, (word_FFFFC112).w
+	bne.s  @locret_2932
+
+	addq.w #1, (word_FFFFC132).w
+
+	clr.b  (byte_FFFFC10C).w
+
+@locret_2932:
 	rts
 ; End of function sub_2916
 
@@ -1489,12 +1522,13 @@ locret_2932:                ; CODE XREF: sub_2916+12j
 
 
 sub_2934:               ; CODE XREF: ROM:00002890j
-	addi.w  #$10,(word_FFFFC116).w
-	andi.w  #$1FF,(word_FFFFC116).w
-	bne.s   locret_2946
-	addq.w  #1,(word_FFFFC132).w
+	addi.w #$10, (word_FFFFC116).w
+	andi.w #$1FF, (word_FFFFC116).w
+	bne.s  @locret_2946
 
-locret_2946:                ; CODE XREF: sub_2934+Cj
+	addq.w #1, (word_FFFFC132).w
+
+@locret_2946:
 	rts
 ; End of function sub_2934
 
@@ -1503,12 +1537,13 @@ locret_2946:                ; CODE XREF: sub_2934+Cj
 
 
 sub_2948:               ; CODE XREF: ROM:00002894j
-	subi.w  #$10,(word_FFFFC116).w
-	andi.w  #$1FF,(word_FFFFC116).w
-	bne.s   locret_295A
-	addq.w  #1,(word_FFFFC132).w
+	subi.w #$10, (word_FFFFC116).w
+	andi.w #$1FF, (word_FFFFC116).w
+	bne.s  @locret_295A
 
-locret_295A:                ; CODE XREF: sub_2948+Cj
+	addq.w #1, (word_FFFFC132).w
+
+@locret_295A:
 	rts
 ; End of function sub_2948
 
@@ -1517,14 +1552,16 @@ locret_295A:                ; CODE XREF: sub_2948+Cj
 
 
 sub_295C:               ; CODE XREF: ROM:00002898j
-	addq.w  #8,(word_FFFFC114).w
-	andi.w  #$1FF,(word_FFFFC114).w
-	addq.w  #8,(word_FFFFC116).w
-	andi.w  #$1FF,(word_FFFFC116).w
-	bne.s   locret_2976
-	addq.w  #1,(word_FFFFC132).w
+	addq.w #8, (word_FFFFC114).w
+	andi.w #$1FF, (word_FFFFC114).w
 
-locret_2976:                ; CODE XREF: sub_295C+14j
+	addq.w #8, (word_FFFFC116).w
+	andi.w #$1FF, (word_FFFFC116).w
+	bne.s  @locret_2976
+
+	addq.w #1, (word_FFFFC132).w
+
+@locret_2976:
 	rts
 ; End of function sub_295C
 
@@ -1533,14 +1570,16 @@ locret_2976:                ; CODE XREF: sub_295C+14j
 
 
 sub_2978:               ; CODE XREF: ROM:0000289Cj
-	subq.w  #8,(word_FFFFC114).w
-	andi.w  #$1FF,(word_FFFFC114).w
-	subq.w  #8,(word_FFFFC116).w
-	andi.w  #$1FF,(word_FFFFC116).w
-	bne.s   locret_2992
-	addq.w  #1,(word_FFFFC132).w
+	subq.w #8, (word_FFFFC114).w
+	andi.w #$1FF, (word_FFFFC114).w
 
-locret_2992:                ; CODE XREF: sub_2978+14j
+	subq.w #8, (word_FFFFC116).w
+	andi.w #$1FF, (word_FFFFC116).w
+	bne.s  @locret_2992
+
+	addq.w #1, (word_FFFFC132).w
+
+@locret_2992:
 	rts
 ; End of function sub_2978
 
@@ -1549,7 +1588,7 @@ locret_2992:                ; CODE XREF: sub_2978+14j
 
 
 sub_2994:               ; CODE XREF: ROM:000028A0j
-	bsr.w   sub_2690
+	bsr.w sub_2690
 	rts
 ; End of function sub_2994
 
@@ -1558,17 +1597,21 @@ sub_2994:               ; CODE XREF: ROM:000028A0j
 
 
 sub_299A:               ; CODE XREF: ROM:loc_28B0j
-	addq.w  #1,(dword_FFFFC12A).w
-	addi.w  #$10,(word_FFFFC11C).w
-	addq.w  #8,(word_FFFFC118).w
-	addi.w  #$20,(word_FFFFC120).w ; ' '
-	andi.w  #$1FF,(word_FFFFC120).w
-	cmpi.w  #$200,(word_FFFFC11C).w
-	bne.s   locret_29C4
-	addq.w  #1,(word_FFFFC134).w
-	clr.w   (dword_FFFFC12A).w
+	addq.w #1, (dword_FFFFC12A).w
+	addi.w #$10, (word_FFFFC11C).w
+	addq.w #8, (word_FFFFC118).w
 
-locret_29C4:                ; CODE XREF: sub_299A+20j
+	addi.w #$20, (word_FFFFC120).w
+	andi.w #$1FF, (word_FFFFC120).w
+
+	cmpi.w #$200, (word_FFFFC11C).w
+	bne.s  @locret_29C4
+
+	addq.w #1, (word_FFFFC134).w
+
+	clr.w  (dword_FFFFC12A).w
+
+@locret_29C4:
 	rts
 ; End of function sub_299A
 
@@ -1577,19 +1620,25 @@ locret_29C4:                ; CODE XREF: sub_299A+20j
 
 
 sub_29C6:               ; CODE XREF: ROM:000028B4j
-	addq.w  #8,(dword_FFFFC12A).w
-	move.w  (dword_FFFFC12A).w,d7
-	lsr.w   #1,d7
-	bsr.w   loc_2568
-	move.w  d7,(word_FFFFC11C).w
-	addi.w  #$200,(word_FFFFC11C).w
-	addq.w  #8,(word_FFFFC118).w
-	cmpi.w  #$200,(dword_FFFFC12A).w
-	bne.s   locret_29F2
-	addq.w  #1,(word_FFFFC134).w
-	clr.w   (dword_FFFFC12A).w
+	addq.w #8, (dword_FFFFC12A).w
 
-locret_29F2:                ; CODE XREF: sub_29C6+22j
+	move.w (dword_FFFFC12A).w, d7
+	lsr.w  #1, d7
+	bsr.w  loc_2568
+
+	move.w d7, (word_FFFFC11C).w
+	addi.w #$200, (word_FFFFC11C).w
+
+	addq.w #8, (word_FFFFC118).w
+
+	cmpi.w #$200, (dword_FFFFC12A).w
+	bne.s  @locret_29F2
+
+	addq.w #1, (word_FFFFC134).w
+
+	clr.w  (dword_FFFFC12A).w
+
+@locret_29F2:
 	rts
 ; End of function sub_29C6
 
@@ -1598,17 +1647,22 @@ locret_29F2:                ; CODE XREF: sub_29C6+22j
 
 
 sub_29F4:               ; CODE XREF: ROM:000028B8j
-	addq.w  #1,(dword_FFFFC12A).w
-	subi.w  #$10,(word_FFFFC11C).w
-	subi.w  #$18,(word_FFFFC118).w
-	addi.w  #$20,(word_FFFFC120).w ; ' '
-	andi.w  #$1FF,(word_FFFFC120).w
-	tst.w   (word_FFFFC11C).w
-	bne.s   locret_2A20
-	addq.w  #1,(word_FFFFC134).w
-	move.w  #$20,(dword_FFFFC12A).w ; ' '
+	addq.w #1,(dword_FFFFC12A).w
 
-locret_2A20:                ; CODE XREF: sub_29F4+20j
+	subi.w #$10,(word_FFFFC11C).w
+	subi.w #$18,(word_FFFFC118).w
+
+	addi.w #$20,(word_FFFFC120).w
+	andi.w #$1FF,(word_FFFFC120).w
+
+	tst.w  (word_FFFFC11C).w
+	bne.s  @locret_2A20
+
+	addq.w #1,(word_FFFFC134).w
+
+	move.w #$20,(dword_FFFFC12A).w
+
+@locret_2A20:
 	rts
 ; End of function sub_29F4
 
@@ -1617,12 +1671,13 @@ locret_2A20:                ; CODE XREF: sub_29F4+20j
 
 
 sub_2A22:               ; CODE XREF: ROM:000028C0j
-	subi.w  #$10,(word_FFFFC120).w
-	andi.w  #$1FF,(word_FFFFC120).w
-	bne.s   locret_2A34
-	addq.w  #1,(word_FFFFC134).w
+	subi.w #$10, (word_FFFFC120).w
+	andi.w #$1FF, (word_FFFFC120).w
+	bne.s  @locret_2A34
 
-locret_2A34:                ; CODE XREF: sub_2A22+Cj
+	addq.w #1, (word_FFFFC134).w
+
+@locret_2A34:
 	rts
 ; End of function sub_2A22
 
@@ -1631,12 +1686,13 @@ locret_2A34:                ; CODE XREF: sub_2A22+Cj
 
 
 sub_2A36:               ; CODE XREF: ROM:000028C4j
-	addi.w  #$10,(word_FFFFC120).w
-	andi.w  #$1FF,(word_FFFFC120).w
-	bne.s   locret_2A48
-	addq.w  #1,(word_FFFFC134).w
+	addi.w #$10, (word_FFFFC120).w
+	andi.w #$1FF, (word_FFFFC120).w
+	bne.s  @locret_2A48
 
-locret_2A48:                ; CODE XREF: sub_2A36+Cj
+	addq.w #1, (word_FFFFC134).w
+
+@locret_2A48:
 	rts
 ; End of function sub_2A36
 
@@ -1645,14 +1701,16 @@ locret_2A48:                ; CODE XREF: sub_2A36+Cj
 
 
 sub_2A4A:               ; CODE XREF: ROM:000028C8j
-	subq.w  #8,(word_FFFFC11E).w
-	andi.w  #$1FF,(word_FFFFC11E).w
-	subq.w  #8,(word_FFFFC120).w
-	andi.w  #$1FF,(word_FFFFC120).w
-	bne.s   locret_2A64
-	addq.w  #1,(word_FFFFC134).w
+	subq.w #8, (word_FFFFC11E).w
+	andi.w #$1FF, (word_FFFFC11E).w
 
-locret_2A64:                ; CODE XREF: sub_2A4A+14j
+	subq.w #8, (word_FFFFC120).w
+	andi.w #$1FF, (word_FFFFC120).w
+	bne.s  @locret_2A64
+
+	addq.w #1, (word_FFFFC134).w
+
+@locret_2A64:
 	rts
 ; End of function sub_2A4A
 
@@ -1661,14 +1719,16 @@ locret_2A64:                ; CODE XREF: sub_2A4A+14j
 
 
 sub_2A66:               ; CODE XREF: ROM:000028CCj
-	addq.w  #8,(word_FFFFC11E).w
-	andi.w  #$1FF,(word_FFFFC11E).w
-	addq.w  #8,(word_FFFFC120).w
-	andi.w  #$1FF,(word_FFFFC120).w
-	bne.s   locret_2A80
-	addq.w  #1,(word_FFFFC134).w
+	addq.w #8, (word_FFFFC11E).w
+	andi.w #$1FF, (word_FFFFC11E).w
 
-locret_2A80:                ; CODE XREF: sub_2A66+14j
+	addq.w #8, (word_FFFFC120).w
+	andi.w #$1FF, (word_FFFFC120).w
+	bne.s  @locret_2A80
+
+	addq.w #1, (word_FFFFC134).w
+
+@locret_2A80:
 	rts
 ; End of function sub_2A66
 
@@ -1677,9 +1737,11 @@ locret_2A80:                ; CODE XREF: sub_2A66+14j
 
 
 sub_2A82:               ; CODE XREF: ROM:000028D0j
-	bsr.w   sub_26BC
-	addq.w  #1,(word_FFFFC136).w
-	clr.b   (byte_FFFFC10C).w
+	bsr.w  sub_26BC
+
+	addq.w #1, (word_FFFFC136).w
+
+	clr.b  (byte_FFFFC10C).w
 	rts
 ; End of function sub_2A82
 
@@ -1688,36 +1750,37 @@ sub_2A82:               ; CODE XREF: ROM:000028D0j
 
 
 sub_2A90:               ; CODE XREF: ROM:0000271Aj
-	move.w  (word_FFFFC132).w,d0
-	lsl.w   #2,d0
-	jsr loc_2A9C(pc,d0.w)
+	move.w (word_FFFFC132).w, d0
+	lsl.w  #2, d0
+
+	jsr loc_2A9C(pc, d0.w)
 	rts
 ; End of function sub_2A90
 
 ; ---------------------------------------------------------------------------
 
 loc_2A9C:
-	bra.w   sub_2AF0
+	bra.w sub_2AF0
 ; ---------------------------------------------------------------------------
-	bra.w   sub_273E
+	bra.w sub_273E
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2AFC
+	bra.w sub_2AFC
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2B08
+	bra.w sub_2B08
 ; ---------------------------------------------------------------------------
-	bra.w   sub_273E
+	bra.w sub_273E
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2B2C
+	bra.w sub_2B2C
 ; ---------------------------------------------------------------------------
-	bra.w   sub_273E
+	bra.w sub_273E
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2B56
+	bra.w sub_2B56
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2B84
+	bra.w sub_2B84
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2BB6
+	bra.w sub_2BB6
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2BE4
+	bra.w sub_2BE4
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -1725,32 +1788,34 @@ loc_2A9C:
 sub_2AC8:               ; CODE XREF: ROM:00002736j
 	move.w (word_FFFFC134).w, d0
 	lsl.w  #2, d0
-	jsr    loc_2AD4(pc, d0.w)
+
+	jsr loc_2AD4(pc, d0.w)
 	rts
 ; End of function sub_2AC8
 
 ; ---------------------------------------------------------------------------
 
 loc_2AD4:
-	bra.w   sub_2BEA
+	bra.w sub_2BEA
 ; ---------------------------------------------------------------------------
-	bra.w   sub_274A
+	bra.w sub_274A
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2C10
+	bra.w sub_2C10
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2C1C
+	bra.w sub_2C1C
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2C36
+	bra.w sub_2C36
 ; ---------------------------------------------------------------------------
-	bra.w   sub_274A
+	bra.w sub_274A
 ; ---------------------------------------------------------------------------
-	bra.w   sub_2C52
+	bra.w sub_2C52
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_2AF0:               ; CODE XREF: ROM:loc_2A9Cj
 	move.w #$3F, (dword_FFFFC122).w
+
 	addq.w #1,   (word_FFFFC132).w
 	rts
 ; End of function sub_2AF0
@@ -1761,6 +1826,7 @@ sub_2AF0:               ; CODE XREF: ROM:loc_2A9Cj
 
 sub_2AFC:               ; CODE XREF: ROM:00002AA4j
 	move.b #2, (byte_FFFFC138).w
+
 	addq.w #1, (word_FFFFC132).w
 	rts
 ; End of function sub_2AFC
@@ -2436,22 +2502,22 @@ rotatePalette0:               ; CODE XREF: sub_2424+50p
 
 ; ---------------------------------------------------------------------------
 palette_2F8C:
-	dc.w $0EE
-	dc.w $0AE
-	dc.w $06E
-	dc.w $00E
-	dc.w $E0C
-	dc.w $E60
-	dc.w $CE0
-	dc.w $0E0
-	dc.w $0EE
-	dc.w $0AE
-	dc.w $06E
-	dc.w $00E
-	dc.w $E0C
-	dc.w $E60
-	dc.w $CE0
-	dc.w $0E0
+	dc.w $0EE   ; #FFFF00
+	dc.w $0AE   ; #FFB600
+	dc.w $06E   ; #FF6D00
+	dc.w $00E   ; #FF0000
+	dc.w $E0C   ; #DB00FF
+	dc.w $E60   ; #006DFF
+	dc.w $CE0   ; #00FFDB
+	dc.w $0E0   ; #00FF00
+	dc.w $0EE   ; #FFFF00
+	dc.w $0AE   ; #FFB600
+	dc.w $06E   ; #FF6D00
+	dc.w $00E   ; #FF0000
+	dc.w $E0C   ; #DB00FF
+	dc.w $E60   ; #006DFF
+	dc.w $CE0   ; #00FFDB
+	dc.w $0E0   ; #00FF00
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -2481,55 +2547,55 @@ rotatePalette2:               ; CODE XREF: sub_2424:loc_2470p
 
 ; ---------------------------------------------------------------------------
 palette_2FE0:
-	dc.w $ACC
-	dc.w $8AA
-	dc.w $688
-	dc.w $466
-	dc.w $244
-	dc.w $466
-	dc.w $688
-	dc.w $8AA
-	dc.w $ACC
-	dc.w $8AA
-	dc.w $688
-	dc.w $466
-	dc.w $244
-	dc.w $466
-	dc.w $688
-	dc.w $8AA
+	dc.w $ACC   ; #DBDBB6
+	dc.w $8AA   ; #B6B692
+	dc.w $688   ; #92926D
+	dc.w $466   ; #6D6D49
+	dc.w $244   ; #494924
+	dc.w $466   ; #6D6D49
+	dc.w $688   ; #9292D6
+	dc.w $8AA   ; #B6B692
+	dc.w $ACC   ; #DBDBB6
+	dc.w $8AA   ; #B6B692
+	dc.w $688   ; #92926D
+	dc.w $466   ; #6D6D49
+	dc.w $244   ; #494924
+	dc.w $466   ; #6D6D49
+	dc.w $688   ; #9292D6
+	dc.w $8AA   ; #B6B692
 
 palette_3000:
-	dc.w $688
-	dc.w $466
-	dc.w $244
-	dc.w $466
-	dc.w $688
-	dc.w $8AA
-	dc.w $ACC
-	dc.w $8AA
-	dc.w $688
-	dc.w $466
-	dc.w $244
-	dc.w $466
-	dc.w $688
-	dc.w $8AA
-	dc.w $ACC
-	dc.w $8AA
+	dc.w $688   ; #92926D
+	dc.w $466   ; #6D6D49
+	dc.w $244   ; #494924
+	dc.w $466   ; #6D6D49
+	dc.w $688   ; #9292D6
+	dc.w $8AA   ; #B6B692
+	dc.w $ACC   ; #DBDBB6
+	dc.w $8AA   ; #B6B692
+	dc.w $688   ; #92926D
+	dc.w $466   ; #6D6D49
+	dc.w $244   ; #494924
+	dc.w $466   ; #6D6D49
+	dc.w $688   ; #9292D6
+	dc.w $8AA   ; #B6B692
+	dc.w $ACC   ; #DBDBB6
+	dc.w $8AA   ; #B6B692
 
 palette_3020:
-	dc.w $466
-	dc.w $244
-	dc.w $466
-	dc.w $688
-	dc.w $8AA
-	dc.w $ACC
-	dc.w $8AA
-	dc.w $688
-	dc.w $466
-	dc.w $244
-	dc.w $466
-	dc.w $688
-	dc.w $8AA
-	dc.w $ACC
-	dc.w $8AA
-	dc.w $688
+	dc.w $466   ; #6D6D49
+	dc.w $244   ; #494924
+	dc.w $466   ; #6D6D49
+	dc.w $688   ; #9292D6
+	dc.w $8AA   ; #B6B692
+	dc.w $ACC   ; #DBDBB6
+	dc.w $8AA   ; #B6B692
+	dc.w $688   ; #92926D
+	dc.w $466   ; #6D6D49
+	dc.w $244   ; #494924
+	dc.w $466   ; #6D6D49
+	dc.w $688   ; #9292D6
+	dc.w $8AA   ; #B6B692
+	dc.w $ACC   ; #DBDBB6
+	dc.w $8AA   ; #B6B692
+	dc.w $688   ; #92926D
