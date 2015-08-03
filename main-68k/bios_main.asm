@@ -585,7 +585,7 @@ mainJumpTable:
 ; ---------------------------------------------------------------------------
 	bra.w loadPrgFromWordRam
 ; ---------------------------------------------------------------------------
-	bra.w sub_7374
+	bra.w state_7374
 ; ---------------------------------------------------------------------------
 	jmp workRamStart
 
@@ -2875,23 +2875,30 @@ sub_329A:               ; CODE XREF: sub_30C2+70p
 loc_32DC:
 	bsr.w sub_40AE
 	bsr.w sub_42B8
+
 	lea   $44(a0), a1
 	moveq #0, d0
 	bsr.w handleDpadRepeat
+
 	btst  #3, (byte_FFFFD008).w
 	beq.s loc_32F8
+
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_32F8:               ; CODE XREF: sub_329A+5Aj
 	btst    #JOYBIT_START, (joy1Down).w
 	bne.s   loc_3342
+
 	tst.b   (byte_FFFFD003).w
 	beq.s   loc_331A
+
 	btst    #JOYBIT_BTNB, (joy1Triggered).w
 	bne.w   loc_34A2
+
 	btst    #1, 2(a0)
 	beq.s   loc_331A
+
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -11160,7 +11167,7 @@ regionBootBlock:        ; DATA XREF: testCartBootBlock+10o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_7374:               ; CODE XREF: ROM:000005E6j
+state_7374:               ; CODE XREF: ROM:000005E6j
 	bsr.w sub_873A
 
 	bsr.s sub_738A
@@ -11172,13 +11179,13 @@ sub_7374:               ; CODE XREF: ROM:000005E6j
 	moveq #STATE_3040, d0
 	bsr.w setNextState
 	rts
-; End of function sub_7374
+; End of function state_7374
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_738A:               ; CODE XREF: sub_7374+4p sub_738A+Ej
+sub_738A:               ; CODE XREF: state_7374+4p sub_738A+Ej
 	moveq #$3C, d0
 	and.w (word_FFFFFF00).w, d0
 
@@ -11815,19 +11822,20 @@ sub_7824:               ; CODE XREF: sub_77FA+24p
 
 
 sub_783E:               ; CODE XREF: sub_7594+36p sub_760C+48p ...
-	lea (WordRAM_Bank1).l,a1
-	adda.w  d0,a1
+	lea (WordRAM_Bank1).l, a1
+	adda.w  d0, a1
 
-loc_7846:               ; CODE XREF: sub_783E+12j sub_844C+58p
-	moveq   #0,d0
-	move.b  (a0)+,d0
-	beq.s   locret_7852
-	add.w   d1,d0
-	move.w  d0,(a1)+
-	bra.s   loc_7846
+	loc_7846:               ; CODE XREF: sub_783E+12j sub_844C+58p
+		moveq  #0, d0
+		move.b (a0)+, d0
+		beq.s  @locret_7852
+
+		add.w  d1, d0
+		move.w d0, (a1)+
+		bra.s  loc_7846
 ; ---------------------------------------------------------------------------
 
-locret_7852:                ; CODE XREF: sub_783E+Cj
+@locret_7852:                ; CODE XREF: sub_783E+Cj
 	rts
 ; End of function sub_783E
 
@@ -11837,17 +11845,19 @@ locret_7852:                ; CODE XREF: sub_783E+Cj
 
 sub_7854:               ; CODE XREF: sub_873A+84p
 	m_loadVramWriteAddress $200
-	lea (VDP_DATA).l,a0
-	moveq   #$FFFFFFFF,d0
-	moveq   #7,d1
 
-loc_7868:               ; CODE XREF: sub_7854+1Cj
-	moveq   #7,d3
+	lea (VDP_DATA).l, a0
+	moveq #$FFFFFFFF, d0
 
-loc_786A:               ; CODE XREF: sub_7854+18j
-	move.l  d0,(a0)
-	dbf d3,loc_786A
-	dbf d1,loc_7868
+	moveq #7, d1
+	@loc_7868:
+		moveq #7, d3
+		@loc_786A:
+			move.l d0, (a0)
+			dbf d3, @loc_786A
+
+		dbf d1, @loc_7868
+
 	rts
 ; End of function sub_7854
 
@@ -11856,18 +11866,19 @@ loc_786A:               ; CODE XREF: sub_7854+18j
 
 
 sub_7876:               ; CODE XREF: sub_754Ep sub_76D8p ...
-	lea (dword_220E00).l,a0
-	move.w  #$DF,d4 ; '├ƒ'
+	lea (dword_220E00).l, a0
+	move.w #$DF, d4
 
 loc_7880:               ; CODE XREF: sub_7B4A+18p sub_800C+18p ...
-	moveq   #0,d0
-	moveq   #0,d1
-	moveq   #0,d2
-	moveq   #0,d3
+	moveq #0, d0
+	moveq #0, d1
+	moveq #0, d2
+	moveq #0, d3
 
-loc_7888:               ; CODE XREF: sub_7876+16j
-	movem.l d0-d3,-(a0)
-	dbf d4,loc_7888
+	@loc_7888:
+		movem.l d0-d3, -(a0)
+		dbf d4, @loc_7888
+
 	rts
 ; End of function sub_7876
 
@@ -11877,33 +11888,39 @@ loc_7888:               ; CODE XREF: sub_7876+16j
 
 sub_7892:               ; CODE XREF: sub_78D8+8p sub_7EA8+52p ...
 	pea (a0)
-	andi.l  #$FFFF,d0
-	divu.w  #$2710,d0
-	bsr.s   sub_78CC
-	divu.w  #$3E8,d0
-	bsr.s   sub_78CC
-	divu.w  #$64,d0 ; 'd'
-	bsr.s   sub_78CC
-	divu.w  #$A,d0
-	bsr.s   sub_78CC
-	move.w  d0,(a0)
 
-	movea.l (sp)+,a0
+	andi.l  #$FFFF, d0
 
-	moveq   #4,d0
+	divu.w  #10000, d0
+	bsr.s   sub_78CC
+
+	divu.w  #1000, d0
+	bsr.s   sub_78CC
+
+	divu.w  #100, d0
+	bsr.s   sub_78CC
+
+	divu.w  #10, d0
+	bsr.s   sub_78CC
+
+	move.w  d0, (a0)
+
+	movea.l (sp)+, a0
+
+	moveq #4, d0
 	@loc_78B8:
-		tst.w   (a0)+
-		dbne    d0,@loc_78B8
+		tst.w (a0)+
+		dbne d0, @loc_78B8
 
 	bne.s   loc_78C2
-	addq.w  #1,d0
+	addq.w  #1, d0
 
 loc_78C2:               ; CODE XREF: sub_7892+2Cj
-	subq.w  #2,a0
+	subq.w  #2, a0
 
-loc_78C4:               ; CODE XREF: sub_7892+34j
-	add.w   d1,(a0)+
-	dbf d0,loc_78C4
+@loc_78C4:
+	add.w   d1, (a0)+
+	dbf d0, @loc_78C4
 	rts
 ; End of function sub_7892
 
@@ -11912,9 +11929,9 @@ loc_78C4:               ; CODE XREF: sub_7892+34j
 
 
 sub_78CC:               ; CODE XREF: sub_7892+Cp sub_7892+12p ...
-	move.w  d0,(a0)+
-	swap    d0
-	andi.l  #$FFFF,d0
+	move.w d0, (a0)+
+	swap   d0
+	andi.l #$FFFF, d0
 	rts
 ; End of function sub_78CC
 
@@ -11952,11 +11969,14 @@ loc_78F4:               ; CODE XREF: sub_78D8+16j
 
 sub_790A:               ; CODE XREF: sub_77A0p sub_7F66p
 	pea (a0)
-	cmpi.b  #JOYTYPE_MULTITAP,(joy1Type).w
-	beq.s   loc_791E
-	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
-	beq.s   loc_7940
-	bra.s   loc_794E
+
+	cmpi.b #JOYTYPE_MULTITAP, (joy1Type).w
+	beq.s  loc_791E
+
+	cmpi.b #JOYTYPE_MEGAMOUSE, (joy1Type).w
+	beq.s  loc_7940
+
+	bra.s  loc_794E
 ; ---------------------------------------------------------------------------
 
 loc_791E:               ; CODE XREF: sub_790A+8j
@@ -11969,7 +11989,7 @@ loc_791E:               ; CODE XREF: sub_790A+8j
 	moveq   #3,d0
 
 loc_7934:               ; CODE XREF: sub_790A+2Ej
-	cmpi.b  #2,(a0)+
+	cmpi.b  #MULTI_MOUSE,(a0)+
 	dbeq    d0,loc_7934
 	beq.s   loc_7966
 	bra.s   loc_794E
@@ -12023,11 +12043,14 @@ word_7988:  dc.w 0
 
 sub_7990:               ; CODE XREF: sub_7C0A+4p
 	pea (a0)
-	cmpi.b  #JOYTYPE_MULTITAP,(joy1Type).w
-	beq.s   loc_79A4
-	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
-	beq.s   loc_79C6
-	bra.s   loc_79D4
+
+	cmpi.b #JOYTYPE_MULTITAP,(joy1Type).w
+	beq.s  loc_79A4
+
+	cmpi.b #JOYTYPE_MEGAMOUSE,(joy1Type).w
+	beq.s  loc_79C6
+
+	bra.s  loc_79D4
 ; ---------------------------------------------------------------------------
 
 loc_79A4:               ; CODE XREF: sub_7990+8j
@@ -12040,7 +12063,7 @@ loc_79A4:               ; CODE XREF: sub_7990+8j
 	moveq   #3,d0
 
 loc_79BA:               ; CODE XREF: sub_7990+2Ej
-	cmpi.b  #2,(a0)+
+	cmpi.b  #MULTI_MOUSE,(a0)+
 	dbeq    d0,loc_79BA
 	beq.s   loc_79EC
 	bra.s   loc_79D4
@@ -12353,6 +12376,7 @@ loc_7C24:               ; CODE XREF: sub_7C0A+10j sub_7C0A+16j
 	move.w  d1,(word_FFFFFF0A).w
 	cmp.w   d1,d2
 	beq.s   locret_7C32
+
 	moveq   #Z80CMD_FF90,d7
 	bsr.w   sendCommandToZ80
 
@@ -12921,16 +12945,20 @@ sub_80AA:               ; CODE XREF: ROM:00007D9Ej
 	lea (dword_220E00).l,a0
 	move.w  #$BF,d4 ; '┬┐'
 	bsr.w   loc_7880
+
 	movem.w word_80EE(pc),d0-d2
 	bsr.w   sub_77FA
+
 	movem.w word_80F4(pc),d0-d2
 	bsr.w   sub_77FA
 
 loc_80DA:               ; CODE XREF: sub_80AA+6j
 	bsr.w   sub_7A1E
 	beq.s   locret_80EC
+
 	moveq   #Z80CMD_FF91,d7
 	bsr.w   sendCommandToZ80
+
 	move.w  #$14,(word_FFFFFF04).w
 
 locret_80EC:                ; CODE XREF: sub_80AA+34j
@@ -13681,7 +13709,7 @@ sub_8704:               ; CODE XREF: sub_86A6+54p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_873A:               ; CODE XREF: sub_7374p
+sub_873A:               ; CODE XREF: state_7374p
 	st  (byte_FFFFFE28).w
 	bsr.w   displayOff
 

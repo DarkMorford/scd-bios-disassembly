@@ -5678,8 +5678,8 @@ loc_2E90:               ; CODE XREF: BIOS:00002EA2j
 
 loc_2EAA:               ; CODE XREF: BIOS:00002E34j
 					; BIOS:00002E5Ej ...
-	move.w  #$4000,cdbControlStatus(a5)
-	bsr.w   cdbSusp endExecution
+	move.w  #$4000, cdbControlStatus(a5)
+	bsr.w   cdbSuspendExecution
 
 	cmpi.w  #$8010, cdbCommand(a5)
 	beq.w   cdbPrepareCommand
