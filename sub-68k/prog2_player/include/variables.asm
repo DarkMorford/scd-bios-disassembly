@@ -14,3 +14,5 @@ vblankCounter equ 6
 byte_9 equ 9
 long_A equ $A
 long_10 equ $10
+byte_14 equ $14
+byte_17 equ $17
