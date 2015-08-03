@@ -83,7 +83,6 @@ sub_18948:              ; CODE XREF: playerVblank+20p
 	lea $500(a5), a3
 	move.b  #$80, $E(a5)
 
-
 	moveq #7, d7
 	@loc_1896E:
 		tst.b (a3)
@@ -109,11 +108,11 @@ sub_18980:              ; CODE XREF: sub_18948+12p
 
 	bclr #4, (a3)
 
-	jsr  sub_189A2(pc)
-	jsr  sub_18A98(pc)
-	jsr  sub_18A66(pc)
+	jsr sub_189A2(pc)
+	jsr sub_18A98(pc)
+	jsr sub_18A66(pc)
 
-	bra.w loc_18EF8
+	bra.w sub_18EF8
 ; ---------------------------------------------------------------------------
 
 @loc_1899A:              ; CODE XREF: sub_18980+4j
@@ -152,12 +151,12 @@ sub_189A2:              ; CODE XREF: sub_18980+Ap
 	bpl.s   @loc_189CC
 
 	subq.w  #1, a2
-	bra.w   loc_189F2
+	bra.w   sub_189F2
 ; ---------------------------------------------------------------------------
 
 @loc_189CC:
 	jsr   sub_18A3A(pc)
-	bra.w loc_189F2
+	bra.w sub_189F2
 ; End of function sub_189A2
 
 
@@ -177,32 +176,37 @@ sub_189D4:              ; CODE XREF: sub_189A2+1Cp
 	rts
 ; End of function sub_189D4
 
-; ---------------------------------------------------------------------------
 
-loc_189F2:              ; CODE XREF: sub_189A2+26j
+; =============== S U B R O U T I N E =======================================
+
+
+sub_189F2:              ; CODE XREF: sub_189A2+26j
 					; sub_189A2+2Ej
-	move.l  a2,4(a3)
-	move.b  $C(a3),$B(a3)
-	btst    #4,(a3)
+	move.l  a2, 4(a3)
+	move.b  $C(a3), $B(a3)
+
+	btst    #4, (a3)
 	bne.s   @locret_18A38
 
 	jsr sub_18EE8(pc)
 
-	move.b  $E(a3),$D(a3)
-	move.l  $28(a3),$24(a3)
-	move.l  $1C(a3),$20(a3)
-	move.b  $30(a3),$31(a3)
+	move.b  $E(a3), $D(a3)
+	move.l  $28(a3), $24(a3)
+	move.l  $1C(a3), $20(a3)
+	move.b  $30(a3), $31(a3)
 
-	move.l  #PCM_DATA,$18(a3)
+	move.l  #PCM_DATA, $18(a3)
 
 	clr.w   $14(a3)
 	clr.w   $16(a3)
 	clr.b   $12(a3)
 
-	move.b  #7,$13(a3)
+	move.b  #7, $13(a3)
 
 @locret_18A38:
 	rts
+; End of function sub_189F2
+
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -248,25 +252,31 @@ sub_18A52:              ; CODE XREF: sub_18980+1Ej
 
 
 sub_18A66:              ; CODE XREF: sub_18980+12p
-	btst    #1,0(a3)
+	btst    #1, PCMCMD.byte0(a3)
 	bne.s   @loc_18A94
 
-	move.w  $10(a3),d5
-	move.b  $F(a3),d0
+	move.w  PCMCMD.word10(a3), d5
+
+	move.b  PCMCMD.byteF(a3), d0
 	ext.w   d0
-	add.w   d0,d5
-	move.w  d5,d1
-	move.b  1(a3),d0
-	ori.b   #$C0,d0
-	move.b  d0,$F(a4)
-	move.b  d1,5(a4)
-	lsr.w   #8,d1
-	move.b  d1,7(a4)
+	add.w   d0, d5
+
+	move.w  d5, d1
+
+	move.b  PCMCMD.channel(a3), d0
+	ori.b   #$C0, d0
+	move.b  d0, PCM_CTRL(a4)
+
+	move.b  d1, PCM_FDL(a4)
+
+	lsr.w   #8, d1
+	move.b  d1, PCM_FDH(a4)
+
 	rts
 ; ---------------------------------------------------------------------------
 
 @loc_18A94:
-	addq.w  #4,sp
+	addq.w #4, sp
 	rts
 ; End of function sub_18A66
 
@@ -275,13 +285,13 @@ sub_18A66:              ; CODE XREF: sub_18980+12p
 
 
 sub_18A98:              ; CODE XREF: sub_18980+Ep
-	tst.b   $32(a3)
-	bne.s   @locret_18AAA
+	tst.b $32(a3)
+	bne.s @locret_18AAA
 
-	btst    #1,0(a3)
-	bne.s   @locret_18AAA
+	btst  #1, 0(a3)
+	bne.s @locret_18AAA
 
-	bra.w   loc_18B0C
+	bra.w loc_18B0C
 ; ---------------------------------------------------------------------------
 
 @locret_18AAA:
@@ -294,17 +304,17 @@ sub_18A98:              ; CODE XREF: sub_18980+Ep
 
 sub_18AAC:              ; CODE XREF: sub_18980:loc_1899Ap
 	tst.b   $31(a3)
-	beq.s   loc_18ABA
+	beq.s   @loc_18ABA
 
 	subq.b  #1,$31(a3)
 	beq.w   sub_18ED8
 
-loc_18ABA:              ; CODE XREF: sub_18AAC+4j
+@loc_18ABA:
 	tst.b   $32(a3)
-	bne.w   locret_18B0A
+	bne.w   @locret_18B0A
 
 	btst    #1,0(a3)
-	bne.w   locret_18B0A
+	bne.w   @locret_18B0A
 
 	lea (pcm_FF0020).l,a0
 	moveq   #0,d0
@@ -319,19 +329,18 @@ loc_18ABA:              ; CODE XREF: sub_18AAC+4j
 	move.w  $14(a3),d1
 	move.w  d0,$14(a3)
 	cmp.w   d1,d0
-	bcc.s   loc_18AFA
+	bcc.s   @loc_18AFA
 
 	subi.w  #$1E00,$16(a3)
 
-loc_18AFA:              ; CODE XREF: sub_18AAC+46j
+@loc_18AFA:
 	andi.w  #$1FFF,d0
 	addi.w  #$1000,d0
 	move.w  $16(a3),d1
 	cmp.w   d1,d0
 	bhi.s   loc_18B0C
 
-locret_18B0A:               ; CODE XREF: sub_18AAC+12j
-					; sub_18AAC+1Cj
+@locret_18B0A:
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -345,7 +354,7 @@ loc_18B0C:              ; CODE XREF: sub_18A98+Ej
 	lsl.b   #1,d1
 	add.b   $12(a3),d1
 	ori.b   #$80,d1
-	move.b  d1,$F(a4)
+	move.b  d1,PCM_CTRL(a4)
 	move.l  #$200,d0
 	move.l  d0,d1
 
@@ -359,10 +368,11 @@ loc_18B3E:              ; CODE XREF: sub_18AAC+8Ej
 	sub.l   d0,d1
 	subq.l  #1,d0
 
-loc_18B44:              ; CODE XREF: sub_18AAC+9Cj
-	move.b  (a2)+,(a0)+
-	addq.w  #1,a0
-	dbf d0,loc_18B44
+	@loc_18B44:
+		move.b (a2)+, (a0)+
+		addq.w #1, a0
+		dbf d0, @loc_18B44
+
 	tst.l   d1
 	beq.s   loc_18B62
 	moveq   #0,d0
@@ -572,11 +582,12 @@ loc_18C9A:              ; CODE XREF: sub_18C26+3Ej
 sub_18CA4:              ; CODE XREF: playerVblank+10p
 	moveq   #0, d7
 
-	move.b  9(a5), d7
+	move.b  byte_9(a5), d7
 	beq.w   playerMain
 	bpl.w   loc_18F7C
 
-	move.b  #$80, 9(a5)
+	move.b  #$80, byte_9(a5)
+
 	cmpi.b  #$81, d7
 	bcs.s   @locret_18CE2
 
@@ -601,51 +612,66 @@ sub_18CA4:              ; CODE XREF: playerVblank+10p
 
 loc_18CE4:              ; CODE XREF: sub_18CA4+1Ej
 	jsr sub_18F54(pc)
-	lea off_19300(pc),a2
-	subi.b  #$81,d7
-	andi.w  #$7F,d7 ; ''
-	lsl.w   #2,d7
-	movea.l (a2,d7.w),a2
-	adda.l  $10(a5),a2
-	movea.l a2,a0
-	moveq   #0,d7
-	move.b  2(a2),d7
-	move.b  4(a2),d1
-	move.b  5(a2),0(a5)
-	move.b  5(a2),1(a5)
-	addq.w  #6,a2
-	lea $80(a5),a3
-	lea unk_18D86(pc),a1
-	move.b  #$80,d2
-	subq.w  #1,d7
 
-loc_18D26:              ; CODE XREF: sub_18CA4+D2j
-	moveq   #0,d0
-	move.w  (a2)+,d0
-	add.l   a0,d0
-	move.l  d0,4(a3)
-	move.w  (a2)+,8(a3)
-	move.b  (a1)+,d0
-	move.b  d0,1(a3)
-	ori.b   #$C0,d0
-	move.b  d0,$F(a4)
-	lsl.b   #5,d0
-	move.b  d0,$D(a4)
-	move.b  d0,$B(a4)
-	move.b  #0,9(a4)
-	move.b  #$FF,3(a4)
-	move.b  9(a3),1(a4)
-	move.b  d1,2(a3)
-	move.b  d2,$A(a3)
-	move.b  #$80,0(a3)
-	move.b  #1,$B(a3)
-	adda.w  #$80,a3 ; '€'
-	dbf d7,loc_18D26
+	lea off_19300(pc), a2
+
+	subi.b  #$81, d7
+	andi.w  #$7F, d7
+	lsl.w   #2, d7
+	movea.l (a2, d7.w), a2
+	adda.l  $10(a5), a2
+	movea.l a2, a0
+
+	moveq   #0, d7
+	move.b  2(a2), d7
+	move.b  4(a2), d1
+	move.b  5(a2), 0(a5)
+	move.b  5(a2), 1(a5)
+	addq.w  #6, a2
+
+	lea $80(a5), a3
+	lea unk_18D86(pc), a1
+	move.b  #$80, d2
+	subq.w  #1, d7
+
+	@loc_18D26:
+		moveq   #0, d0
+		move.w  (a2)+, d0
+		add.l   a0, d0
+		move.l  d0, PCMCMD.long4(a3)
+
+		move.w  (a2)+, PCMCMD.byte8(a3)
+
+		move.b  (a1)+, d0
+		move.b  d0, PCMCMD.channel(a3)
+		ori.b   #$C0, d0
+		move.b  d0, PCM_CTRL(a4)
+
+		lsl.b   #5, d0
+		move.b  d0, PCM_ST(a4)
+
+		move.b  d0, PCM_LSH(a4)
+
+		move.b  #0, PCM_LSL(a4)
+
+		move.b  #$FF, PCM_PAN(a4)
+
+		move.b  PCMCMD.volume(a3), PCM_ENV(a4)
+
+		move.b  d1,   PCMCMD.byte2(a3)
+		move.b  d2,   PCMCMD.byteA(a3)
+		move.b  #$80, PCMCMD.byte0(a3)
+		move.b  #1,   PCMCMD.byteB(a3)
+
+		adda.w  #$80, a3
+		dbf d7, @loc_18D26
+
 	clr.b   $80(a5)
 	move.b  #$FF,2(a5)
 	rts
 ; ---------------------------------------------------------------------------
-unk_18D86:  dc.b   7        ; DATA XREF: sub_18CA4+78o
+unk_18D86:        ; DATA XREF: sub_18CA4+78o
+	dc.b   7
 	dc.b   0
 	dc.b   1
 	dc.b   2
@@ -658,53 +684,67 @@ unk_18D86:  dc.b   7        ; DATA XREF: sub_18CA4+78o
 ; ---------------------------------------------------------------------------
 
 loc_18D90:              ; CODE XREF: sub_18CA4+2Cj
-	lea unk_192F8(pc),a2
-	subi.b  #$B0,d7
-	andi.w  #$7F,d7 ; ''
-	lsl.w   #2,d7
-	movea.l (a2,d7.w),a2
-	adda.l  $10(a5),a2
-	movea.l a2,a0
-	moveq   #0,d7
-	move.b  3(a2),d7
-	move.b  2(a2),d1
-	addq.w  #4,a2
-	move.b  #$80,d2
-	subq.w  #1,d7
+	lea unk_192F8(pc), a2
 
-loc_18DBA:              ; CODE XREF: sub_18CA4+182j
-	lea $500(a5),a3
-	moveq   #0,d0
-	move.b  1(a2),d0
-	lsl.w   #7,d0
-	adda.w  d0,a3
-	movea.l a3,a1
-	move.w  #$1F,d0
+	subi.b  #$B0, d7
+	andi.w  #$7F, d7
+	lsl.w   #2, d7
+	movea.l (a2, d7.w), a2
 
-loc_18DCE:              ; CODE XREF: sub_18CA4+12Cj
-	clr.l   (a1)+
-	dbf d0,loc_18DCE
-	move.w  (a2)+,(a3)
-	moveq   #0,d0
-	move.w  (a2)+,d0
-	add.l   a0,d0
-	move.l  d0,4(a3)
-	move.w  (a2)+,8(a3)
-	move.b  1(a3),d0
-	ori.b   #$C0,d0
-	move.b  d0,$F(a4)
-	lsl.b   #5,d0
-	move.b  d0,$D(a4)
-	move.b  d0,$B(a4)
-	move.b  #0,9(a4)
-	move.b  #$FF,3(a4)
-	move.b  9(a3),1(a4)
-	move.b  d1,2(a3)
-	move.b  d2,$A(a3)
-	move.b  #1,$B(a3)
-	move.b  #0,$E(a3)
-	move.b  #0,$F(a3)
-	dbf d7,loc_18DBA
+	adda.l  $10(a5), a2
+	movea.l a2, a0
+
+	moveq   #0, d7
+	move.b  3(a2), d7
+	move.b  2(a2), d1
+	addq.w  #4, a2
+	move.b  #$80, d2
+	subq.w  #1, d7
+
+@loc_18DBA:
+	lea $500(a5), a3
+	moveq   #0, d0
+	move.b  1(a2), d0
+	lsl.w   #7, d0
+	adda.w  d0, a3
+	movea.l a3, a1
+
+	move.w #$1F, d0
+	@loc_18DCE:
+		clr.l (a1)+
+		dbf d0, @loc_18DCE
+
+	move.w  (a2)+, (a3)
+
+	moveq   #0, d0
+	move.w  (a2)+, d0
+	add.l   a0, d0
+	move.l  d0, PCMCMD.long4(a3)
+
+	move.w  (a2)+, PCMCMD.byte8(a3)
+
+	move.b  PCMCMD.channel(a3), d0
+	ori.b   #$C0, d0
+	move.b  d0, PCM_CTRL(a4)
+
+	lsl.b   #5, d0
+	move.b  d0, PCM_ST(a4)
+
+	move.b  d0, PCM_LSH(a4)
+
+	move.b  #0, PCM_LSL(a4)
+
+	move.b  #$FF, PCM_PAN(a4)
+
+	move.b  PCMCMD.volume(a3), PCM_ENV(a4)
+
+	move.b  d1, PCMCMD.byte2(a3)
+	move.b  d2, PCMCMD.byteA(a3)
+	move.b  #1, PCMCMD.byteB(a3)
+	move.b  #0, PCMCMD.byteE(a3)
+	move.b  #0, PCMCMD.byteF(a3)
+	dbf d7, @loc_18DBA
+
 	rts
 ; End of function sub_18CA4
 
@@ -731,29 +771,31 @@ sub_18E2C:              ; CODE XREF: playerVblank+1Cp
 	subq.b #1, byte_14(a5)
 	beq.w  sub_18F54
 
-	move.b $16(a5), byte_17(a5)
+	move.b byte_16(a5), byte_17(a5)
 
-	lea $80(a5), a3
+	lea off_80(a5), a3
 
 	moveq  #8, d7
-	move.b $15(a5), d6
-	add.b  d6, $18(a5)
+
+	move.b byte_15(a5), d6
+	add.b  d6, byte_18(a5)
 
 	@loc_18E5C:
 		tst.b (a3)
 		bpl.s @loc_18E80
 
-		sub.b d6, 9(a3)
+		sub.b d6, PCMCMD.volume(a3)
 		bcc.s @loc_18E6E
 
-		clr.b 9(a3)
+		clr.b PCMCMD.volume(a3)
 		bclr  #7, (a3)
 
 	@loc_18E6E:
-		move.b 1(a3), d0
+		move.b PCMCMD.channel(a3), d0
 		ori.b  #$C0, d0
-		move.b d0, $F(a4)
-		move.b 9(a3), 1(a4)
+		move.b d0, PCM_CTRL(a4)
+
+		move.b PCMCMD.volume(a3), PCM_ENV(a4)
 
 	@loc_18E80:
 		adda.w #$80, a3
@@ -767,15 +809,17 @@ sub_18E2C:              ; CODE XREF: playerVblank+1Cp
 
 
 sub_18E8A:              ; CODE XREF: playerVblank+14p
-	tst.b  $F(a5)
+	tst.b  byte_F(a5)
 	beq.s  @locret_18EA8
 	bmi.s  @loc_18EAA
 
-	cmpi.b #2, $F(a5)
+	cmpi.b #2, byte_F(a5)
 	beq.s  @loc_18EA6
 
+	; Enable all PCM channels
 	move.b #$FF, PCM_CHAN(a4)
-	move.b #2, $F(a5)
+
+	move.b #2, byte_F(a5)
 
 @loc_18EA6:
 	addq.w #4, sp
@@ -785,7 +829,7 @@ sub_18E8A:              ; CODE XREF: playerVblank+14p
 ; ---------------------------------------------------------------------------
 
 @loc_18EAA:
-	clr.b $F(a5)
+	clr.b byte_F(a5)
 	rts
 ; End of function sub_18E8A
 
@@ -794,15 +838,15 @@ sub_18E8A:              ; CODE XREF: playerVblank+14p
 
 
 sub_18EB0:              ; CODE XREF: playerVblank+18p
-	tst.b  0(a5)
+	tst.b  byte_0(a5)
 	beq.s  @locret_18ED6
 
-	subq.b #1, 1(a5)
+	subq.b #1, byte_1(a5)
 	bne.s  @locret_18ED6
 
-	move.b 0(a5), 1(a5)
+	move.b byte_0(a5), byte_1(a5)
 
-	lea $80(a5), a0
+	lea off_80(a5), a0
 	move.w #$80, d1
 
 	moveq #8, d0
@@ -820,7 +864,7 @@ sub_18EB0:              ; CODE XREF: playerVblank+18p
 
 
 sub_18ED8:              ; CODE XREF: sub_189D4+4j sub_18A52+Cp ...
-	move.b 1(a3), d0
+	move.b PCMCMD.channel(a3), d0
 	bset   d0, 2(a5)
 	bset   #1, 0(a3)
 	rts
@@ -831,23 +875,27 @@ sub_18ED8:              ; CODE XREF: sub_189D4+4j sub_18A52+Cp ...
 
 
 sub_18EE8:              ; CODE XREF: PLAYER:00018A02p
-	move.b 1(a3), d0
+	move.b PCMCMD.channel(a3), d0
 	bset   d0, 2(a5)
 	move.b 2(a5), PCM_CHAN(a4)
 	rts
 ; End of function sub_18EE8
 
-; ---------------------------------------------------------------------------
 
-loc_18EF8:              ; CODE XREF: sub_18980+16j
+; =============== S U B R O U T I N E =======================================
+
+
+sub_18EF8:              ; CODE XREF: sub_18980+16j
 	btst   #4, (a3)
 	bne.s  @locret_18F06
 
-	move.b 1(a3), d0
+	move.b PCMCMD.channel(a3), d0
 	bclr   d0, 2(a5)
 
 @locret_18F06:
 	rts
+; End of function sub_18EF8
+
 ; ---------------------------------------------------------------------------
 
 loc_18F08:              ; CODE XREF: sub_18CA4+3Aj
@@ -896,17 +944,20 @@ loc_18F4C:              ; CODE XREF: PLAYER:00018F24j
 
 sub_18F54:              ; CODE XREF: sub_18CA4:loc_18CE4p
 					; sub_18E2C+18j ...
-	move.b  #$FF,PCM_CHAN(a4)
-	move.l  $10(a5),d1
-	movea.l a5,a0
-	move.w  #$23F,d0
+	move.b  #$FF, PCM_CHAN(a4)
 
-loc_18F64:              ; CODE XREF: sub_18F54+12j
-	clr.l   (a0)+
-	dbf d0,loc_18F64
-	move.l  d1,$10(a5)
-	move.b  #$FF,2(a5)
-	move.b  #$80,9(a5)
+	move.l  long_10(a5), d1
+	movea.l a5, a0
+
+	; Clear 2304 ($900) bytes
+	move.w #$23F, d0
+	@loc_18F64:
+		clr.l (a0)+
+		dbf d0, @loc_18F64
+
+	move.l  d1, long_10(a5)
+	move.b  #$FF, byte_2(a5)
+	move.b  #$80, byte_9(a5)
 	rts
 ; End of function sub_18F54
 
@@ -916,7 +967,8 @@ loc_18F7C:              ; CODE XREF: sub_18CA4+Aj
 					; PLAYER:00018F18j
 	jsr sub_18F54(pc)
 	jsr sub_18F88(pc)
-	bra.w   sub_18BB0
+
+	bra.w sub_18BB0
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -950,6 +1002,7 @@ playerMain:              ; CODE XREF: sub_18004j
 					; PLAYER:00018014j ...
 	jsr initAddressRegs(pc)
 
+	; All channels on
 	move.b #$FF, PCM_CHAN(a4)
 	move.b #$80, PCM_CTRL(a4)
 
@@ -1155,16 +1208,18 @@ locret_19134:               ; CODE XREF: PLAYER:000190C8j
 ; ---------------------------------------------------------------------------
 
 loc_19136:              ; CODE XREF: PLAYER:loc_190B8j
-	move.b  1(a3), d0
+	move.b  PCMCMD.channel(a3), d0
 	ori.b   #$C0, d0
 	move.b  d0, PCM_CTRL(a4)
-	move.b  (a2), 3(a3)
+
+	move.b  (a2), PCMCMD.byte3(a3)
+
 	move.b  (a2)+, PCM_PAN(a4)
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_1914C:              ; CODE XREF: PLAYER:000190BCj
-	move.b  (a2)+, $F(a3)
+	move.b  (a2)+, PCMCMD.byteF(a3)
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -1179,22 +1234,25 @@ loc_19158:              ; CODE XREF: PLAYER:000190C4j
 ; ---------------------------------------------------------------------------
 
 loc_19160:              ; CODE XREF: PLAYER:000190D0j
-	move.b  1(a3), d0
+	move.b  PCMCMD.channel(a3), d0
 	ori.b   #$C0, d0
 	move.b  d0, PCM_CTRL(a4)
+
 	move.b  (a2)+, d0
 	bmi.s   loc_1917A
-	add.b   d0, 9(a3)
+
+	add.b   d0, PCMCMD.volume(a3)
 	bcs.s   loc_19188
+
 	bra.w   loc_19180
 ; ---------------------------------------------------------------------------
 
 loc_1917A:              ; CODE XREF: PLAYER:0001916Ej
-	add.b   d0, 9(a3)
+	add.b   d0, PCMCMD.volume(a3)
 	bcc.s   loc_19188
 
 loc_19180:              ; CODE XREF: PLAYER:00019176j
-	move.b  9(a3), PCM_ENV(a4)
+	move.b  PCMCMD.volume(a3), PCM_ENV(a4)
 
 locret_19186:               ; CODE XREF: PLAYER:0001918Cj
 	rts
@@ -1204,6 +1262,7 @@ loc_19188:              ; CODE XREF: PLAYER:00019174j
 					; PLAYER:0001917Ej
 	tst.b   $14(a5)
 	beq.s   locret_19186
+
 	bclr    #7, (a3)
 	move.b  #0, PCM_ENV(a4)
 	rts
@@ -1257,7 +1316,7 @@ loc_191BA:              ; CODE XREF: PLAYER:000190F4j
 ; ---------------------------------------------------------------------------
 
 loc_19218:              ; CODE XREF: PLAYER:000191E0j
-	move.b  1(a3), d0
+	move.b  PCMCMD.channel(a3), d0
 	ori.b   #$C0, d0
 	move.b  d0, PCM_CTRL(a4)
 
@@ -1282,8 +1341,10 @@ loc_19242:              ; CODE XREF: PLAYER:000190F8j
 	bclr    #7,(a3)
 	bclr    #4,(a3)
 	jsr sub_18ED8
+
 	tst.b   $E(a5)
 	beq.w   loc_1925A
+
 	clr.b   3(a5)
 
 loc_1925A:              ; CODE XREF: PLAYER:00019252j
@@ -1305,13 +1366,16 @@ loc_1926A:              ; CODE XREF: PLAYER:00019114j
 	moveq   #0,d0
 	move.b  (a2)+,d0
 	move.b  (a2)+,d1
+
 	tst.b   $40(a3,d0.w)
 	bne.s   loc_1927A
+
 	move.b  d1,$40(a3,d0.w)
 
 loc_1927A:              ; CODE XREF: PLAYER:00019274j
 	subq.b  #1,$40(a3,d0.w)
 	bne.s   loc_1925E
+
 	addq.w  #2,a2
 	rts
 ; ---------------------------------------------------------------------------
@@ -1347,15 +1411,16 @@ loc_192B0:              ; CODE XREF: PLAYER:00019124j
 ; ---------------------------------------------------------------------------
 
 loc_192B8:              ; CODE XREF: PLAYER:00019128j
-	lea $80(a5),a0
-	move.b  (a2)+,d0
-	move.w  #$80,d1 ; '€'
-	moveq   #8,d2
+	lea $80(a5), a0
+	move.b (a2)+, d0
+	move.w #$80, d1
 
-loc_192C4:              ; CODE XREF: PLAYER:000192CAj
-	move.b  d0,2(a0)
-	adda.w  d1,a0
-	dbf d2,loc_192C4
+	moveq #8, d2
+	@loc_192C4:
+		move.b d0, 2(a0)
+		adda.w d1, a0
+		dbf d2, @loc_192C4
+
 	rts
 ; ---------------------------------------------------------------------------
 unk_192D0:      ; CODE XREF: PLAYER:00019130j
