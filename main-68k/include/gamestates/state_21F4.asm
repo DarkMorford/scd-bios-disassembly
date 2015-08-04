@@ -19,7 +19,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 	m_loadVramWriteAddress 0, d0
 	bsr.w clearVramSegment
 
-	clr.l (dword_FFFFC106).w
+	clr.l (word_FFFFC106).w
 
 	; Clear comm flags 5/6 in memory buffer
 	bsr.w sub_16C4
@@ -29,123 +29,138 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	m_disableInterrupts
 
+	; Load palettes for transfer
 	lea   (palette_218A).l, a1
 	bsr.w loadPalettesToBuffer
 
+	; Load planetscape tileset
 	m_loadVramWriteAddress $A660    ; Pattern $533
 	lea (planet_tiles).l, a1
 	jsr decompressNemesis
 
+	; Load planetscape tilemap
 	move.w #$2533, d0               ; Pri. 0, pal. 1, no flip, pattern $533
 	lea    (planet_tilemap).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
+	; Copy tilemap to VRAM
 	moveq #39, d1
-	moveq #21, d2
-	m_loadVramWriteAddress $D380, d0    ; Scroll plane B (0, 39)
+	moveq #21, d2                       ; Coordinates given as (row, col)
+	m_loadVramWriteAddress $D380, d0    ; Scroll plane B (39, 0)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
+	; Load starfield tileset
 	m_loadVramWriteAddress $D0C0    ; Pattern $686
-	lea (unk_BAAE).l, a1
+	lea (stars_tiles).l, a1
 	jsr decompressNemesis
 
+	; Load starfield tilemap 0
 	move.w #$4686, d0               ; Pri. 0, pal. 2, no flip, pattern $686
-	lea    (unk_BAC8).l, a1
+	lea    (stars_tilemap0).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
 	moveq #28, d1
 	moveq #2, d2
-	m_loadVramWriteAddress $D492, d0    ; Scroll plane B (9, 41)
+	m_loadVramWriteAddress $D492, d0    ; Scroll plane B (41, 9)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
+	; Load starfield tilemap 1
 	move.w #$4686, d0               ; Pri. 0, pal. 2, no flip, pattern $686
-	lea    (unk_BAEC).l, a1
+	lea    (stars_tilemap1).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
 	moveq #12, d1
 	moveq #3, d2
-	m_loadVramWriteAddress $D614, d0    ; Scroll plane B (10, 44)
+	m_loadVramWriteAddress $D614, d0    ; Scroll plane B (44, 10)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
+	; Load starfield tilemap 2
 	move.w #$4686, d0               ; Pri. 0, pal. 2, no flip, pattern $686
-	lea    (unk_BB06).l, a1
+	lea    (stars_tilemap2).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
 	moveq #12, d1
 	moveq #10, d2
-	m_loadVramWriteAddress $D802, d0    ; Scroll plane B (1, 48)
+	m_loadVramWriteAddress $D802, d0    ; Scroll plane B (48, 1)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
+	; Generate solid-color tile
 	moveq #15, d7
-	m_loadVramWriteAddress $E1E0
+	m_loadVramWriteAddress $E1E0        ; Pattern $70F
 	@loc_1DFA:
 		move.w #$3333, (VDP_DATA).l
 		dbf d7, @loc_1DFA
 
-	moveq #$27, d1
+	; Fill sections of scroll plane A with solid block
+	moveq #39, d1
 	moveq #2, d2
-	m_loadVramWriteAddress $E400, d0
-	move.w #$670F, d3
+	m_loadVramWriteAddress $E400, d0    ; Scroll plane A (8, 0)
+	move.w #$670F, d3               ; Pri. 0, pal. 3, no flip, pattern $70F
 	jsr    fillVramTilemap
 
-	moveq #$27, d1
+	moveq #39, d1
 	moveq #2, d2
-	m_loadVramWriteAddress $F080, d0
-	move.w #$670F, d3
+	m_loadVramWriteAddress $F080, d0    ; Scroll plane A (33, 0)
+	move.w #$670F, d3               ; Pri. 0, pal. 3, no flip, pattern $70F
 	jsr    fillVramTilemap
 
-	moveq #$27, d1
+	moveq #39, d1
 	moveq #2, d2
-	m_loadVramWriteAddress $F200, d0
-	move.w #$670F, d3
+	m_loadVramWriteAddress $F200, d0    ; Scroll plane A (36, 0)
+	move.w #$670F, d3               ; Pri. 0, pal. 3, no flip, pattern $70F
 	jsr    fillVramTilemap
 
-	moveq #$27, d1
+	moveq #39, d1
 	moveq #2, d2
-	m_loadVramWriteAddress $FE80, d0
-	move.w #$670F, d3
+	m_loadVramWriteAddress $FE80, d0    ; Scroll plane A (61, 0)
+	move.w #$670F, d3               ; Pri. 0, pal. 3, no flip, pattern $70F
 	jsr    fillVramTilemap
 
-	m_loadVramWriteAddress $E000
+	; Load "(C) 1993 SEGA" tiles
+	m_loadVramWriteAddress $E000        ; Pattern $700
 	lea    (word_EB12).l, a0
 	move.w #175, d6
 	@loc_1E62:
 		move.w (a0)+, (VDP_DATA).l
 		dbf d6, @loc_1E62
 
-	move.w #$E700, d0
+	; Write copyright to scroll plane
+	move.w #$E700, d0               ; Pri. 1, pal. 3, no flip, pattern $700
 	moveq  #10, d7
-	m_loadVramWriteAddress $D328
+	m_loadVramWriteAddress $D328        ; Scroll plane B (38, 20)
 	@loc_1E7C:
 		move.w d0, (VDP_DATA).l
 		addq.w #1, d0
 		dbf d7, @loc_1E7C
 
-	m_loadVramWriteAddress $E160
+	; Load "Ver. 2." tiles
+	m_loadVramWriteAddress $E160        ; Pattern $70B
 	lea    (dword_EC72).l, a0
 	move.w #31, d7
 	@loc_1E9C:
 		move.l (a0)+, (VDP_DATA).l
 		dbf d7, @loc_1E9C
 
-	move.w #$E70B, d0
+	; Write to scroll plane
+	move.w #$E70B, d0               ; Pri. 1, pal. 3, no flip, pattern $70B
 	moveq #3, d7
-	m_loadVramWriteAddress $D340
+	m_loadVramWriteAddress $D340        ; Scroll plane B (38, 32)
 	@loc_1EB6:
 		move.w d0, (VDP_DATA).l
 		addq.w #1, d0
 		dbf d7, @loc_1EB6
 
+	; Load numeric tiles
 	moveq #9, d7
-	m_loadVramWriteAddress $D260, d0
+	m_loadVramWriteAddress $D260, d0    ; Pattern $693, $697, $69B, etc.
 	lea (word_ECF2).l, a0
 	@loc_1ED0:
 		move.l d0, (VDP_CONTROL).l
@@ -158,17 +173,18 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 		addi.l #$800000, d0
 		dbf d7, @loc_1ED0
 
-	m_loadVramWriteAddress $D348
-	move.w #$E693, d0
+	; Write version number
+	m_loadVramWriteAddress $D348        ; Scroll plane B (38, 36)
+	move.w #$E693, d0               ; Pri. 1, pal. 3, no flip, pattern $693
 	move.w d0, (VDP_DATA).l
 
-	m_loadVramWriteAddress $D34A
-	move.w #$E693, d0
+	m_loadVramWriteAddress $D34A        ; Scroll plane B (38, 37)
+	move.w #$E693, d0               ; Pri. 1, pal. 3, no flip, pattern $693
 	move.w d0, (VDP_DATA).l
 
-	bsr.w sub_238C
+	bsr.w loadMessageText
 
-	clr.b (byte_FFFFC0FF).w
+	clr.b (bootMode).w
 	clr.b (unk_FFFFFE53).w
 
 	m_waitForWordRam2M
@@ -183,16 +199,16 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 		clr.l (a0)+
 		dbf d7, @loc_1F44
 
-	; Copy $BB46-$D0C6 to $200080-$201600
-	lea    (dword_BB46).l, a0
+	; Copy "SEGA" tiles ($BB46-$D0C6) to Word RAM ($200080-$201600)
+	lea    (segaLogoTiles).l, a0
 	lea    (unk_200080).l, a1
 	move.w #1375, d7
 	@loc_1F5A:
 		move.l (a0)+, (a1)+
 		dbf d7, @loc_1F5A
 
-	; Copy $D09E-$E69E to $201880-$202E80
-	lea    (dword_D09E).l, a0
+	; Copy "SEGA CD" tiles ($D09E-$E69E) to Word RAM ($201880-$202E80)
+	lea    (segaCdLogoTiles).l, a0
 	lea    (unk_201880).l, a1
 	move.w #1407, d7
 	@loc_1F70:
@@ -201,14 +217,14 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	lea    (dword_D046).l, a0
 	lea    (unk_220C02).l, a1
-	moveq  #$A,   d0
+	moveq  #10,   d0
 	moveq  #3,    d1
 	move.w #$200, d2
 	bsr.w  multipartCopy
 
 	lea    (dword_E61E).l, a0
 	lea    (unk_23F002).l, a1
-	moveq  #$10,  d0
+	moveq  #16,   d0
 	moveq  #3,    d1
 	move.w #$200, d2
 	bsr.w  multipartCopy
@@ -266,59 +282,60 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	m_enableInterrupts
 
-	m_loadVramWriteAddress $E602, d0
-	move.w #$25, d1
+	m_loadVramWriteAddress $E602, d0    ; Scroll plane A (12, 1)
+	move.w #37,  d1
 	move.w #4,   d2
 	move.w #1,   d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $E882, d0
-	move.w #$25, d1
+	m_loadVramWriteAddress $E882, d0    ; Scroll plane A (17, 1)
+	move.w #37,  d1
 	move.w #4,   d2
 	move.w #$BF, d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $EB02, d0
-	move.w #$25,  d1
+	m_loadVramWriteAddress $EB02, d0    ; Scroll plane A (22, 1)
+	move.w #37,   d1
 	move.w #4,    d2
 	move.w #$17D, d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $ED82, d0
-	move.w #$25,  d1
+	m_loadVramWriteAddress $ED82, d0    ; Scroll plane A (27, 1)
+	move.w #37,   d1
 	move.w #4,    d2
 	move.w #$475, d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $F402, d0
-	move.w #$25,  d1
+	m_loadVramWriteAddress $F402, d0    ; Scroll plane A (40, 1)
+	move.w #37,   d1
 	move.w #4,    d2
 	move.w #$23B, d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $F682, d0
-	move.w #$25,  d1
+	m_loadVramWriteAddress $F682, d0    ; Scroll plane A (45, 1)
+	move.w #37,   d1
 	move.w #4,    d2
 	move.w #$2F9, d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $F902, d0
-	move.w #$25,  d1
+	m_loadVramWriteAddress $F902, d0    ; Scroll plane A (50, 1)
+	move.w #37,   d1
 	move.w #4,    d2
 	move.w #$3B7, d3
 	jsr writeTransposedTilemapToVram
 
-	m_loadVramWriteAddress $FB82, d0
-	move.w #$25,  d1
+	m_loadVramWriteAddress $FB82, d0    ; Scroll plane A (55, 1)
+	move.w #37,   d1
 	move.w #4,    d2
 	move.w #$475, d3
 	jsr writeTransposedTilemapToVram
 
+	; Set vertical scroll for both planes
 	m_loadVsramWriteAddress 0
-	move.w #$120, (VDP_DATA).l
+	move.w #(36 * 8), (VDP_DATA).l
 
 	m_loadVsramWriteAddress 2
-	move.w #$120, (VDP_DATA).l
+	move.w #(36 * 8), (VDP_DATA).l
 
 	jsr displayOn
 
@@ -418,7 +435,7 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 
 @loc_21F8:
 	; Set a countdown for 600 frames (10 seconds)
-	move.w #600, (word_FFFFC100).w
+	move.w #600, (cdInitTimer).w
 
 @loc_21FE:
 	bsr.w sub_26E8
@@ -466,13 +483,13 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 
 	movem.l (sp)+, d0-d1/a1
 
-	jsr   sub_1856
+	jsr   checkDiscTrayClosed
 	bcc.s @loc_2264
 
-	moveq #3, d2
-	bsr.w sub_2310
+	moveq #MSG_CLOSECDDOOR, d2
+	bsr.w setMessageText
 
-	clr.b (byte_FFFFC0FF).w
+	clr.b (bootMode).w
 	bra.s @loc_21F8
 ; ---------------------------------------------------------------------------
 
@@ -482,10 +499,10 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 	tst.b  d0
 	bmi.s  @loc_2298    ; CD drive not ready
 
-	tst.b  (byte_FFFFFE3A).w
+	tst.b  (cdBiosStatus).w
 	bmi.s  @loc_21FE
 
-	tst.b  (byte_FFFFC0FF).w
+	tst.b  (bootMode).w
 	bne.w  @loc_22D4
 
 	move.b (joy1Triggered).w, d0
@@ -497,20 +514,24 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 	andi.b #$70, d0
 	beq.s  @loc_2294
 
-	move.b #2, (byte_FFFFC0FF).w
+	; One (or more) of ABC pressed
+	move.b #2, (bootMode).w
 	bra.s  @loc_2294
 ; ---------------------------------------------------------------------------
 
 @loc_228E:
-	move.b #1, (byte_FFFFC0FF).w
+	; START pressed
+	move.b #1, (bootMode).w
 
 @loc_2294:
-	moveq #2, d2
+	moveq #MSG_PRESSSTART, d2
 	bra.s @loc_22BE
 ; ---------------------------------------------------------------------------
 
 @loc_2298:
-	tst.b  (byte_FFFFC0FF).w
+	; CD drive is not yet ready
+
+	tst.b  (bootMode).w
 	bne.s  @loc_22BC
 
 	move.b (joy1Triggered).w, d0
@@ -522,34 +543,36 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 	andi.b #$70, d0
 	bne.s  @loc_22B6
 
-	moveq  #0, d2
+	moveq  #MSG_CHECKINGDISC, d2
 	bra.s  @loc_22BE
 ; ---------------------------------------------------------------------------
 
 @loc_22AE:
-	move.b #1, (byte_FFFFC0FF).w
+	; START pressed
+	move.b #1, (bootMode).w
 	bra.s  @loc_22BC
 ; ---------------------------------------------------------------------------
 
 @loc_22B6:
-	move.b #2, (byte_FFFFC0FF).w
+	; One (or more) of ABC pressed
+	move.b #2, (bootMode).w
 
 @loc_22BC:
-	moveq #1, d2
+	moveq #MSG_PLEASEWAIT, d2
 
 @loc_22BE:
-	bsr.w  sub_2310
+	bsr.w  setMessageText
 
-	tst.w  (word_FFFFC100).w
+	tst.w  (cdInitTimer).w
 	beq.w  @loc_21FE
 
-	subq.w #1, (word_FFFFC100).w
+	subq.w #1, (cdInitTimer).w
 	beq.s  @loc_2306
 	bra.w  @loc_21FE
 ; ---------------------------------------------------------------------------
 
 @loc_22D4:
-	cmpi.b #2, (byte_FFFFC0FF).w
+	cmpi.b #2, (bootMode).w
 	beq.s  @loc_22E2
 
 	bsr.w  checkDiscBootable
@@ -586,31 +609,32 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2310:               ; CODE XREF: state_21F4+66p
+setMessageText:         ; CODE XREF: state_21F4+66p
 					; state_21F4:loc_22BEp
 	lsl.w #2, d2
 
-	movea.l off_2326(pc, d2.w), a0
-	m_loadVramWriteAddress $E460, d1
+	movea.l @messageTable(pc, d2.w), a0
+	m_loadVramWriteAddress $E460, d1        ; Pattern $723
 	move.w #55, d6
 	bsr.w  sub_2336
 
 	rts
-; End of function sub_2310
+; End of function setMessageText
 
 ; ---------------------------------------------------------------------------
-off_2326:
-	dc.l unk_FFFFC13A   ; No buttons pressed
-	dc.l unk_FFFFC83A   ; At least one of SABC pressed
-	dc.l unk_FFFFCF3A
-	dc.l unk_FFFFD63A
+@messageTable:
+	dc.l text_CheckingDisc
+	dc.l text_PleaseWait
+	dc.l text_PressStart
+	dc.l text_CloseDoor
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2336:               ; CODE XREF: sub_2310+10p
+sub_2336:               ; CODE XREF: setMessageText+10p
 	move.l d1, (VDP_CONTROL).l
 
+	; Copy one tile (32 bytes)
 	moveq #15, d7
 	@loc_233E:
 		move.w (a0)+, (VDP_DATA).l
@@ -631,7 +655,7 @@ sub_2336:               ; CODE XREF: sub_2310+10p
 ;   a1: Data destination
 ;   d1: Number of tiles
 
-sub_2354:               ; CODE XREF: sub_238C+18p sub_238C+32p ...
+sub_2354:               ; CODE XREF: loadMessageText+18p loadMessageText+32p ...
 	movea.l a1, a2
 
 	; Clear $700 bytes
@@ -672,46 +696,50 @@ sub_2354:               ; CODE XREF: sub_238C+18p sub_238C+32p ...
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_238C:               ; CODE XREF: sub_1CFA+21Ap
+loadMessageText:               ; CODE XREF: sub_1CFA+21Ap
+	; Load "CHECKING DISC" text
 	lea   (decompScratch).w, a2
 	lea   (unk_E6A6).l, a1
 	bsr.w decompressNemesisToRam
 
 	moveq #15, d1
 	lea   (decompScratch).w, a0
-	lea   (unk_FFFFC13A).w, a1
+	lea   (text_CheckingDisc).w, a1
 	bsr.s sub_2354
 
+	; Load "PLEASE WAIT" text
 	lea   (decompScratch).w, a2
 	lea   (unk_E7A8).l, a1
 	bsr.w decompressNemesisToRam
 
 	moveq #13, d1
 	lea   (decompScratch).w, a0
-	lea   (unk_FFFFC83A).w, a1
+	lea   (text_PleaseWait).w, a1
 	bsr.s sub_2354
 
+	; Load "PRESS THE START BUTTON" text
 	lea   (decompScratch).w, a2
 	lea   (unk_E882).l, a1
 	bsr.w decompressNemesisToRam
 
 	moveq #26, d1
 	lea   (decompScratch).w, a0
-	lea   (unk_FFFFCF3A).w, a1
+	lea   (text_PressStart).w, a1
 	bsr.w sub_2354
 
+	; Load "CLOSE THE CD DOOR" text
 	lea   (decompScratch).w, a2
 	lea   (unk_E9F2).l, a1
 	bsr.w decompressNemesisToRam
 
 	moveq #20, d1
 	lea   (decompScratch).w, a0
-	lea   (unk_FFFFD63A).w, a1
+	lea   (text_CloseDoor).w, a1
 	bsr.w sub_2354
 
 	moveq  #1, d6
 	move.w #$E723, d0                   ; Pri 1, Pal 3, No flip, Pattern $723
-	m_loadVramWriteAddress $DE8C, d1
+	m_loadVramWriteAddress $DE8C, d1    ; Scroll plane B (61, 6)
 
 	@loc_2404:
 		moveq #27, d7
@@ -726,7 +754,7 @@ sub_238C:               ; CODE XREF: sub_1CFA+21Ap
 		dbf d6, @loc_2404
 
 	rts
-; End of function sub_238C
+; End of function loadMessageText
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -747,7 +775,7 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	bne.s  @loc_2458
 
 	m_loadVsramWriteAddress 0
-	move.w #$40, (VDP_DATA).l
+	move.w #(8 * 8), (VDP_DATA).l
 
 	bra.s  @loc_2470
 ; ---------------------------------------------------------------------------
@@ -757,10 +785,13 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	bne.s  @loc_2478
 
 	m_loadVsramWriteAddress 0
-	move.w #$120, (VDP_DATA).l
+	move.w #(36 * 8), (VDP_DATA).l
 
 @loc_2470:
+	; Shift palette 2 to make stars blink
 	bsr.w rotatePalette2
+
+	; Shift palette 0 for cool color effect
 	bsr.w rotatePalette0
 
 @loc_2478:
@@ -813,24 +844,24 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 
 ; ---------------------------------------------------------------------------
 word_24E2:
-	dc.w $0020
-	dc.w $17E0
-	dc.w $2FA0
-	dc.w $8EA0
-	dc.w $4760
-	dc.w $5F20
-	dc.w $76E0
-	dc.w $8EA0
+	dc.w $0020      ; Pattern 1
+	dc.w $17E0      ; Pattern $BF
+	dc.w $2FA0      ; Pattern $17D
+	dc.w $8EA0      ; Pattern $475
+	dc.w $4760      ; Pattern $23B
+	dc.w $5F20      ; Pattern $2F9
+	dc.w $76E0      ; Pattern $3B7
+	dc.w $8EA0      ; Pattern $475
 
 word_24F2:
-	dc.w $BE0
-	dc.w $BE0
-	dc.w $BE0
-	dc.w $BE0
-	dc.w $BE0
-	dc.w $BE0
-	dc.w $BE0
-	dc.w $BE0
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
+	dc.w $BE0       ; 190 tiles (38 cols x 5 rows)
 
 off_2502:
 	dc.l unk_21A000
@@ -2475,7 +2506,7 @@ sub_2F4A:               ; CODE XREF: ROM:00002CC0j
 
 
 rotatePalette0:               ; CODE XREF: sub_2424+50p
-	move.w (dword_FFFFC106+2).w, d0
+	move.w (palette0Rotation).w, d0
 	lsl.w  #1, d0
 
 	lea    palette_2F8C(pc), a0
@@ -2488,13 +2519,13 @@ rotatePalette0:               ; CODE XREF: sub_2424+50p
 		move.w (a0)+, (a1)+
 		dbf d7, @loc_2F6A
 
-	clr.w  (dword_FFFFC106).w
+	clr.w  (word_FFFFC106).w
 
-	addq.w #1, (dword_FFFFC106+2).w
-	cmpi.w #8, (dword_FFFFC106+2).w
+	addq.w #1, (palette0Rotation).w
+	cmpi.w #8, (palette0Rotation).w
 	bne.s  @loc_2F84
 
-	clr.w (dword_FFFFC106+2).w
+	clr.w (palette0Rotation).w
 
 @loc_2F84:
 	; Signal palette update

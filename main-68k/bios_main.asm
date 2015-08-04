@@ -2961,7 +2961,7 @@ loc_3342:               ; CODE XREF: sub_329A+64j
 
 @loc_338E:
 	bsr.w   sub_3AE4
-	bsr.w   sub_1856
+	bsr.w   checkDiscTrayClosed
 	bcs.s   loc_33A6
 
 	btst    #0,(byte_FFFFD008).w
@@ -2979,7 +2979,7 @@ loc_33AA:               ; CODE XREF: sub_329A+10Aj
 ; ---------------------------------------------------------------------------
 
 loc_33AE:               ; CODE XREF: sub_329A+B0j
-	bsr.w   sub_1856
+	bsr.w   checkDiscTrayClosed
 	bcs.s   loc_33F0
 
 	btst    #0,(byte_FFFFD008).w
@@ -3114,7 +3114,7 @@ loc_34CC:               ; CODE XREF: sub_329A+22Cj
 loc_34DA:               ; CODE XREF: sub_329A+1C0j
 					; sub_329A+1F2j
 	move.b  (joy1Triggered).w,d1
-	bsr.w   sub_1856
+	bsr.w   checkDiscTrayClosed
 	bcs.s   loc_34F2
 	btst    #0,(byte_FFFFD008).w
 	bne.s   loc_34F2
@@ -4119,7 +4119,7 @@ loc_3BBC:               ; CODE XREF: ROM:00003B86j
 
 sub_3BD8:               ; CODE XREF: sub_329A+1BCj
 					; sub_329A+1EEj
-	bsr.w sub_1856
+	bsr.w checkDiscTrayClosed
 	bcs.s @loc_3BEC
 
 	btst  #0, (byte_FFFFD008).w
@@ -16450,25 +16450,25 @@ planet_tiles:
 planet_tilemap:
 	incbin "tilemaps\enigma_planetscape.bin"
 
-unk_BAAE:
-	incbin "misc\nemesis_BAAE.bin"
+stars_tiles:
+	incbin "tilesets\nemesis_starfield.bin"
 
-unk_BAC8:
-	incbin "misc\enigma_BAC8.bin"
+stars_tilemap0:
+	incbin "tilemaps\enigma_starfield0.bin"
 
-unk_BAEC:
-	incbin "misc\enigma_BAEC.bin"
+stars_tilemap1:
+	incbin "tilemaps\enigma_starfield1.bin"
 
-unk_BB06:
-	incbin "misc\enigma_BB06.bin"
+stars_tilemap2:
+	incbin "tilemaps\enigma_starfield2.bin"
 
-dword_BB46:
+segaLogoTiles:
 	incbin "tilesets\tileset_BB46.bin"
 
 dword_D046:
 	incbin "tilesets\tileset_D046.bin"
 
-dword_D09E:
+segaCdLogoTiles:
 	incbin "tilesets\tileset_D09E.bin"
 	incbin "tilesets\tileset_D0C6.bin"
 
@@ -16477,16 +16477,16 @@ dword_E61E:
 	incbin "tilesets\tileset_E69E.bin"
 
 unk_E6A6:
-	incbin "misc\nemesis_E6A6.bin"
+	incbin "text\nemesis_CheckingDisc.bin"
 
 unk_E7A8:
-	incbin "misc\nemesis_E7A8.bin"
+	incbin "text\nemesis_PleaseWait.bin"
 
 unk_E882:
-	incbin "misc\nemesis_E882.bin"
+	incbin "text\nemesis_PressTheStartButton.bin"
 
 unk_E9F2:
-	incbin "misc\nemesis_E9F2.bin"
+	incbin "text\nemesis_CloseTheCdDoor.bin"
 
 word_EB12:
 	incbin "misc\unk_EB12.bin"

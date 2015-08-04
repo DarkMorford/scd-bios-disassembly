@@ -16,7 +16,7 @@
 
 	; Color-related constants
 	include "constants\colors.asm"
-	
+
 	; CD module contants
 	include "constants\cd.asm"
 
@@ -27,6 +27,12 @@ STATE_3040   equ 8
 STATE_LOAD   equ $C
 STATE_7374   equ $10
 STATE_LAUNCH equ $14
+
+;   Message text
+MSG_CHECKINGDISC    equ 0
+MSG_PLEASEWAIT      equ 1
+MSG_PRESSSTART      equ 2
+MSG_CLOSECDDOOR     equ 3
 
 ;   Common instructions
 INST_JMP    equ $4EF9

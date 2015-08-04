@@ -128,7 +128,7 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 	lea  (subCommData+4).w, a0
 
 	move.w (a0)+, d0
-	move.w d0, (byte_FFFFFE3A).w
+	move.w d0, (cdBiosStatus).w
 
 	andi.w #$A000, d0
 	bne.s  @locret_16C2
@@ -491,8 +491,8 @@ checkDiscBootable:               ; CODE XREF: sub_21F4+E8p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1856:               ; CODE XREF: sub_21F4+5Ep sub_329A+F8p ...
-	cmpi.b #$40, (byte_FFFFFE3A).w
+checkDiscTrayClosed:               ; CODE XREF: sub_21F4+5Ep sub_329A+F8p ...
+	cmpi.b #$40, (cdBiosStatus).w
 	beq.s  @loc_1862
 
 	tst.w d0
@@ -502,4 +502,4 @@ sub_1856:               ; CODE XREF: sub_21F4+5Ep sub_329A+F8p ...
 @loc_1862:
 	ori #1, ccr
 	rts
-; End of function sub_1856
+; End of function checkDiscTrayClosed

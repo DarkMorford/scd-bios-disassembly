@@ -1,4 +1,4 @@
-byte_FFFFC0FF equ $FFFFC0FF
+bootMode equ $FFFFC0FF
 byte_FFFFC10C equ $FFFFC10C
 byte_FFFFC138 equ $FFFFC138
 byte_FFFFD002 equ $FFFFD002
@@ -33,7 +33,7 @@ insertedDiscType equ $FFFFFDDC
 byte_FFFFFDDD equ $FFFFFDDD
 byte_FFFFFE27 equ $FFFFFE27
 byte_FFFFFE28 equ $FFFFFE28
-byte_FFFFFE3A equ $FFFFFE3A
+cdBiosStatus equ $FFFFFE3A
 byte_FFFFFE42 equ $FFFFFE42
 byte_FFFFFE43 equ $FFFFFE43
 paletteFadeInOffset equ $FFFFFE46
@@ -41,7 +41,8 @@ paletteFadeInCount equ $FFFFFE47
 byte_FFFFFE54 equ $FFFFFE54
 byte_FFFFFF06 equ $FFFFFF06
 byte_FFFFFF09 equ $FFFFFF09
-dword_FFFFC106 equ $FFFFC106
+word_FFFFC106 equ $FFFFC106
+palette0Rotation equ $FFFFC108
 dword_FFFFC122 equ $FFFFC122
 dword_FFFFC126 equ $FFFFC126
 dword_FFFFC12A equ $FFFFC12A
@@ -62,9 +63,9 @@ spriteTableAddress equ $FFFFFE30
 dword_FFFFFE34 equ $FFFFFE34
 paletteFadeInTarget equ $FFFFFE4A
 spriteObjectBase equ $FFFFC000
-unk_FFFFC13A equ $FFFFC13A
-unk_FFFFC83A equ $FFFFC83A
-unk_FFFFCF3A equ $FFFFCF3A
+text_CheckingDisc equ $FFFFC13A
+text_PleaseWait equ $FFFFC83A
+text_PressStart equ $FFFFCF3A
 unk_FFFFD039 equ $FFFFD039
 unk_FFFFD03A equ $FFFFD03A
 unk_FFFFD03C equ $FFFFD03C
@@ -78,7 +79,7 @@ unk_FFFFD1D0 equ $FFFFD1D0
 unk_FFFFD1D2 equ $FFFFD1D2
 obj_FFFFD300 equ $FFFFD300
 unk_FFFFD380 equ $FFFFD380
-unk_FFFFD63A equ $FFFFD63A
+text_CloseDoor equ $FFFFD63A
 unk_FFFFE0A2 equ $FFFFE0A2
 unk_FFFFE0B6 equ $FFFFE0B6
 unk_FFFFE0D8 equ $FFFFE0D8
@@ -104,7 +105,7 @@ unk_FFFFFE50 equ $FFFFFE50
 unk_FFFFFE53 equ $FFFFFE53
 unk_FFFFFE57 equ $FFFFFE57
 unk_FFFFFF0E equ $FFFFFF0E
-word_FFFFC100 equ $FFFFC100
+cdInitTimer equ $FFFFC100
 palette2Rotation equ $FFFFC102
 word_FFFFC10A equ $FFFFC10A
 word_FFFFC10E equ $FFFFC10E
