@@ -5,7 +5,7 @@
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1CFA:               ; CODE XREF: sub_21F4p
+sub_1CFA:               ; CODE XREF: state_21F4p
 	st (byte_FFFFFE28).w
 
 	bsr.w displayOff
@@ -410,7 +410,7 @@ palette_21EC:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_21F4:               ; CODE XREF: ROM:000005DAj
+state_21F4:               ; CODE XREF: ROM:000005DAj
 	; Load assets for this state
 	bsr.w sub_1CFA
 
@@ -578,14 +578,14 @@ sub_21F4:               ; CODE XREF: ROM:000005DAj
 	jsr   checkDiscBootable
 	beq.s @loc_22F8
 	bra.w @loc_21FE
-; End of function sub_21F4
+; End of function state_21F4
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2310:               ; CODE XREF: sub_21F4+66p
-					; sub_21F4:loc_22BEp
+sub_2310:               ; CODE XREF: state_21F4+66p
+					; state_21F4:loc_22BEp
 	lsl.w #2, d2
 
 	movea.l off_2326(pc, d2.w), a0
@@ -1099,7 +1099,7 @@ sub_26BC:               ; CODE XREF: sub_286Ap sub_2A82p ...
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_26E8:               ; CODE XREF: sub_21F4:loc_21FEp
+sub_26E8:               ; CODE XREF: state_21F4:loc_21FEp
 	move.w (word_FFFFC10A).w, d0
 	andi.w #3, d0
 	cmpi.w #3, d0

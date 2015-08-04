@@ -528,14 +528,14 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 	bne.w   sub_640             ; Boot block didn't match, bail out
 
 	move.l  (_EXCPT+2).w, d0
-	bcs.w   loc_5AC
+	bcs.w   finishInit
 
 bootCartridge:
 	st    (byte_FFFFFE54).w
 	bsr.w setupGenHardware
 
 	move.w #INST_JMP, (_EXCPT).w
-	move.l #loc_5AC,  (_EXCPT+2).w
+	move.l #finishInit,  (_EXCPT+2).w
 	jmp    cartBoot
 ; ---------------------------------------------------------------------------
 
@@ -549,7 +549,7 @@ loc_598:                ; CODE XREF: ROM:00000552j
 	bsr.w clearSubCpuPrg
 	bsr.w clearWordRam2M
 
-loc_5AC:                ; CODE XREF: ROM:00000578j sub_640+38j
+finishInit:                ; CODE XREF: ROM:00000578j sub_640+38j
 	m_disableInterrupts
 
 	bsr.w testCartBootBlock
@@ -579,7 +579,7 @@ mainJumpTable:
 	nop
 	rts
 ; ---------------------------------------------------------------------------
-	bra.w sub_21F4
+	bra.w state_21F4
 ; ---------------------------------------------------------------------------
 	bra.w state_3040
 ; ---------------------------------------------------------------------------
@@ -653,7 +653,7 @@ sub_640:                ; CODE XREF: ROM:00000280j
 	jsr (loadDefaultVdpRegs).w
 	jsr (clearAllVram).w
 
-	bra.w loc_5AC
+	bra.w finishInit
 ; End of function sub_640
 
 ; ---------------------------------------------------------------------------
