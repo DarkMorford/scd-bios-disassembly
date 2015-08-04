@@ -16444,11 +16444,11 @@ word_9998:
 fill_99A0:
 	dcb.b 608, $FF
 
-unk_9C00:
-	incbin "misc\nemesis_9C00.bin"
+planet_tiles:
+	incbin "tilesets\nemesis_planetscape.bin"
 
-unk_B9DA:
-	incbin "misc\enigma_B9DA.bin"
+planet_tilemap:
+	incbin "tilemaps\enigma_planetscape.bin"
 
 unk_BAAE:
 	incbin "misc\nemesis_BAAE.bin"

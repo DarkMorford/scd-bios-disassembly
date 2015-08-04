@@ -14,12 +14,14 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	bsr.w loadDefaultVdpRegs
 
+	; Clear full VRAM
 	move.w #$FFFF, d1
 	m_loadVramWriteAddress 0, d0
 	bsr.w clearVramSegment
 
 	clr.l (dword_FFFFC106).w
 
+	; Clear comm flags 5/6 in memory buffer
 	bsr.w sub_16C4
 
 	lea vdpReg_217A(pc), a1
@@ -30,55 +32,55 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 	lea   (palette_218A).l, a1
 	bsr.w loadPalettesToBuffer
 
-	m_loadVramWriteAddress $A660
-	lea (unk_9C00).l, a1
+	m_loadVramWriteAddress $A660    ; Pattern $533
+	lea (planet_tiles).l, a1
 	jsr decompressNemesis
 
-	move.w #$2533, d0
-	lea    (unk_B9DA).l, a1
+	move.w #$2533, d0               ; Pri. 0, pal. 1, no flip, pattern $533
+	lea    (planet_tilemap).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
-	moveq #$27, d1
-	moveq #$15, d2
-	m_loadVramWriteAddress $D380, d0
+	moveq #39, d1
+	moveq #21, d2
+	m_loadVramWriteAddress $D380, d0    ; Scroll plane B (0, 39)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
-	m_loadVramWriteAddress $D0C0
+	m_loadVramWriteAddress $D0C0    ; Pattern $686
 	lea (unk_BAAE).l, a1
 	jsr decompressNemesis
 
-	move.w #$4686, d0
+	move.w #$4686, d0               ; Pri. 0, pal. 2, no flip, pattern $686
 	lea    (unk_BAC8).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
-	moveq #$1C, d1
+	moveq #28, d1
 	moveq #2, d2
-	m_loadVramWriteAddress $D492, d0
+	m_loadVramWriteAddress $D492, d0    ; Scroll plane B (9, 41)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
-	move.w #$4686 ,d0
+	move.w #$4686, d0               ; Pri. 0, pal. 2, no flip, pattern $686
 	lea    (unk_BAEC).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
-	moveq #$C, d1
+	moveq #12, d1
 	moveq #3, d2
-	m_loadVramWriteAddress $D614, d0
+	m_loadVramWriteAddress $D614, d0    ; Scroll plane B (10, 44)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
-	move.w #$4686, d0
+	move.w #$4686, d0               ; Pri. 0, pal. 2, no flip, pattern $686
 	lea    (unk_BB06).l, a1
 	lea    (decompScratch).w, a2
 	bsr.w  decompressEnigma
 
-	moveq #$C, d1
-	moveq #$A, d2
-	m_loadVramWriteAddress $D802, d0
+	moveq #12, d1
+	moveq #10, d2
+	m_loadVramWriteAddress $D802, d0    ; Scroll plane B (1, 48)
 	lea (decompScratch).w, a1
 	jsr writeTilemapToVram
 
@@ -129,24 +131,24 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	m_loadVramWriteAddress $E160
 	lea    (dword_EC72).l, a0
-	move.w #31,d7
+	move.w #31, d7
 	@loc_1E9C:
 		move.l (a0)+, (VDP_DATA).l
 		dbf d7, @loc_1E9C
 
 	move.w #$E70B, d0
-	moveq  #3, d7
+	moveq #3, d7
 	m_loadVramWriteAddress $D340
 	@loc_1EB6:
 		move.w d0, (VDP_DATA).l
 		addq.w #1, d0
 		dbf d7, @loc_1EB6
 
-	moveq  #9, d7
+	moveq #9, d7
 	m_loadVramWriteAddress $D260, d0
-	lea    (word_ECF2).l, a0
+	lea (word_ECF2).l, a0
 	@loc_1ED0:
-		move.l  d0, (VDP_CONTROL).l
+		move.l d0, (VDP_CONTROL).l
 
 		moveq #15, d6
 		@loc_1ED8:
