@@ -301,7 +301,7 @@ clearSubCommBuffer:             ; CODE XREF: boot_user0+Cp
 sub_619A:               ; CODE XREF: sub_6178+4p
 					; BOOT:0000720Cp ...
 	lea  (GA_COMM_SUBFLAGS).w, a0
-	bset #GA_SUBFLAG0, (a0)
+	bset #GA_SUBBUSY, (a0)
 
 	; Copy data from registers to cache
 	lea mainCommCache(a6), a2
@@ -320,7 +320,7 @@ sub_619A:               ; CODE XREF: sub_6178+4p
 		clr.l  (a2)+
 		dbf d0, @loc_61B8
 
-	bchg  #GA_SUBFLAG1, (a0)
+	bchg  #GA_SUBACK, (a0)
 	bsr.w sub_6384
 	rts
 ; End of function sub_619A
@@ -335,7 +335,7 @@ sub_61CA:               ; CODE XREF: sub_726E+8Ep sub_7ADC+54p
 
 	; Wait for main CPU to clear flag 2
 	@loc_61D0:
-		btst  #GA_MAINFLAG2, (GA_COMM_MAINFLAGS).w
+		btst  #GA_MAINRAMREQ, (GA_COMM_MAINFLAGS).w
 		bne.s @loc_61D0
 
 	bclr #GA_SUBFLAG6, (GA_COMM_SUBFLAGS).w
@@ -541,7 +541,7 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 	bsr.s   cdbGetBiosStatus
 	movea.l (sp)+, a0
 
-	bclr #GA_SUBFLAG2, (a0)
+	bclr #GA_SUBRAMREQ, (a0)
 
 	moveq #0, d0
 
@@ -565,8 +565,8 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 ; ---------------------------------------------------------------------------
 
 @loc_6330:
-	bset   #GA_SUBFLAG2, (a0)
-	bset   #GA_SUBFLAG3, (a0)
+	bset   #GA_SUBRAMREQ, (a0)
+	bset   #GA_SUBSYNC, (a0)
 	move.w (a3)+, d0 ; current status
 	move.w d0, GA_SUBDATA1(a2)
 	move.w (a3)+, d1 ; previous status
@@ -583,7 +583,7 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 	adda.w #$A, a3
 	move.w (a3)+, GA_SUBDATA1+2(a2) ; first/last tracks
 	move.l (a3)+, GA_SUBDATA3(a2) ; lead-out start time
-	bclr   #GA_SUBFLAG3, (a0)
+	bclr   #GA_SUBSYNC, (a0)
 	bra.s  @loc_637E
 ; ---------------------------------------------------------------------------
 

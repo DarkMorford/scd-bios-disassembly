@@ -34,33 +34,33 @@ GA_STOPWATCH        equ $FFFF800C
 
 ;   Communication
 GA_COMM_MAINFLAGS   equ $FFFF800E   ; Read-only
-	GA_MAINFLAG0: equ 0
-	GA_MAINFLAG1: equ 1
-	GA_MAINFLAG2: equ 2
-	GA_MAINFLAG3: equ 3
-	GA_MAINFLAG4: equ 4
-	GA_MAINFLAG5: equ 5
-	GA_MAINFLAG6: equ 6
-	GA_MAINFLAG7: equ 7
+	GA_MAINBUSY:   equ 0
+	GA_MAINACK:    equ 1
+	GA_MAINRAMREQ: equ 2
+	GA_MAINSYNC:   equ 3
+	GA_MAINFLAG4:  equ 4
+	GA_MAINFLAG5:  equ 5
+	GA_MAINFLAG6:  equ 6
+	GA_MAINFLAG7:  equ 7
 GA_COMM_SUBFLAGS    equ $FFFF800F
-	GA_SUBFLAG0:  equ 0
-	GA_SUBFLAG1:  equ 1
-	GA_SUBFLAG2:  equ 2
-	GA_SUBFLAG3:  equ 3
-	GA_SUBFLAG4:  equ 4
-	GA_SUBFLAG5:  equ 5
-	GA_SUBFLAG6:  equ 6
-	GA_SUBFLAG7:  equ 7
+	GA_SUBBUSY:    equ 0
+	GA_SUBACK:     equ 1
+	GA_SUBRAMREQ:  equ 2
+	GA_SUBSYNC:    equ 3
+	GA_SUBFLAG4:   equ 4
+	GA_SUBFLAG5:   equ 5
+	GA_SUBFLAG6:   equ 6
+	GA_SUBFLAG7:   equ 7
 GA_COMM_MAINDATA    equ $FFFF8010   ; Read-only
-	GA_MAINDATA0: equ 0
-	GA_MAINDATA1: equ 4
-	GA_MAINDATA2: equ 8
-	GA_MAINDATA3: equ $C
+	GA_MAINDATA0:  equ 0
+	GA_MAINDATA1:  equ 4
+	GA_MAINDATA2:  equ 8
+	GA_MAINDATA3:  equ $C
 GA_COMM_SUBDATA     equ $FFFF8020
-	GA_SUBDATA0:  equ 0
-	GA_SUBDATA1:  equ 4
-	GA_SUBDATA2:  equ 8
-	GA_SUBDATA3:  equ $C
+	GA_SUBDATA0:   equ 0
+	GA_SUBDATA1:   equ 4
+	GA_SUBDATA2:   equ 8
+	GA_SUBDATA3:   equ $C
 
 ;   CDD
 GA_CDD_FADER        equ $FFFF8034
