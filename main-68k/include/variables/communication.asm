@@ -2,8 +2,8 @@
 ;       Communication variables
 ;   ======================================================================
 
-mainCommFlags   equ $FFFFFDDE
-subCommFlags    equ $FFFFFDDF
+mainCommFlagBuffer  equ $FFFFFDDE
+subCommFlagCache    equ $FFFFFDDF
 
-mainCommData    equ $FFFFFDE0
-subCommData     equ $FFFFFDF0
+mainCommDataBuffer  equ $FFFFFDE0
+subCommDataCache    equ $FFFFFDF0

@@ -14,7 +14,7 @@ unk_99C02 equ $99C02
 unk_99C0C equ $99C0C
 unk_99C16 equ $99C16
 unk_99C18 equ $99C18
-unk_99E80 equ $99E80
+WR_vectorTable equ $99E80
 unk_CE000 equ $CE000
 unk_CE080 equ $CE080
 unk_CE082 equ $CE082
@@ -30,7 +30,7 @@ word_CE0FC equ $CE0FC
 
 word_0 equ 0
 byte_2 equ 2
-byte_3 equ 3
+vblankFlag equ 3
 word_4 equ 4
 byte_6 equ 6
 
@@ -103,22 +103,24 @@ byte_135B equ $135B
 cdcHeaderBuffer equ $135C
 cdcDataBuffer equ $1360 ; (through $1C7F)
 
+;   Variables related to GFX scaling/rotation
 word_1C90 equ $1C90
 word_1C92 equ $1C92
 byte_1C94 equ $1C94
 byte_1C96 equ $1C96
 oldGfxCompleteHandler equ $1C98
-word_1C9C equ $1C9C ; (through $1F1B)
+word_1C9C equ $1C9C
 byte_1C9E equ $1C9E
 byte_1C9F equ $1C9F
 word_1CA0 equ $1CA0
 word_1CA2 equ $1CA2
 word_1CA4 equ $1CA4
 byte_1CA8 equ $1CA8
-unk_1CAA equ $1CAA
-unk_1D4A equ $1D4A
-unk_1DEA equ $1DEA
-unk_1F6A equ $1F6A
+object0 equ $1CAA
+object1 equ $1D4A
+vectorTable0 equ $1DEA
+vectorTable1 equ $1F6A
+
 word_20EA equ $20EA
 
 ;   ======================================================================

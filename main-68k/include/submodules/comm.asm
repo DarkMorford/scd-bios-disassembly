@@ -16,7 +16,7 @@ clearCommRegisters:         ; CODE XREF: ROM:00000340j finishHardwareInit+14p 
 	move.l d0, (a6)+
 	move.l d0, (a6)+
 
-	lea (mainCommFlags).w, a6
+	lea (mainCommFlagBuffer).w, a6
 	move.w d0, (a6)+
 	move.l d0, (a6)+
 	move.l d0, (a6)+
@@ -46,7 +46,7 @@ sub_15EE:               ; CODE XREF: ROM:00000344j
 	lea (GA_COMM_MAINFLAGS).l, a4
 	bset #GA_MAINBUSY, (a4)
 
-	lea (mainCommFlags).w, a6
+	lea (mainCommFlagBuffer).w, a6
 	bclr #GA_MAINACK, (a6)
 
 	; Return if sub-CPU is in RESET
@@ -115,7 +115,7 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 					; vblankHandler+2Ep
 	bclr #GA_MAINACK, (GA_COMM_MAINFLAGS).l
 
-	lea (mainCommFlags).w, a4
+	lea (mainCommFlagBuffer).w, a4
 
 	btst  #GA_MAINACK, (a4)
 	beq.s @locret_16C2
@@ -125,7 +125,7 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 
 	bset #GA_MAINRAMREQ, (a4)
 
-	lea  (subCommData+4).w, a0
+	lea  (subCommDataCache+4).w, a0
 
 	move.w (a0)+, d0
 	move.w d0, (cdBiosStatus).w
@@ -172,8 +172,8 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 
 
 sub_16C4:               ; CODE XREF: ROM:000006B6p sub_1730+Cp ...
-	bclr #GA_MAINFLAG6, (mainCommFlags).w
-	bclr #GA_MAINFLAG5, (mainCommFlags).w
+	bclr #GA_MAINFLAG6, (mainCommFlagBuffer).w
+	bclr #GA_MAINFLAG5, (mainCommFlagBuffer).w
 	rts
 ; End of function sub_16C4
 
@@ -258,7 +258,7 @@ sub_1730:               ; CODE XREF: ROM:00000378j
 	bmi.s  @loc_1778
 	bne.s  @loc_175C
 
-	move.w d3, (mainCommData).w
+	move.w d3, (mainCommDataBuffer).w
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -280,14 +280,14 @@ sub_1730:               ; CODE XREF: ROM:00000378j
 @loc_1778:
 	swap   d3
 	move.w d1, d3
-	move.l d3, (mainCommData).w
+	move.l d3, (mainCommDataBuffer).w
 	rts
 ; ---------------------------------------------------------------------------
 
 @loc_1782:
 	move.b d3, d1
 	swap   d1
-	move.l d1, (mainCommData).w
+	move.l d1, (mainCommDataBuffer).w
 	rts
 ; End of function sub_1730
 
@@ -385,8 +385,8 @@ byte_178D:
 
 
 sub_17E2:               ; CODE XREF: ROM:00000350j
-	move.w d0, (mainCommData).w
-	move.w d1, (mainCommData+2).w
+	move.w d0, (mainCommDataBuffer).w
+	move.w d1, (mainCommDataBuffer+2).w
 	rts
 ; End of function sub_17E2
 
@@ -395,8 +395,8 @@ sub_17E2:               ; CODE XREF: ROM:00000350j
 
 
 sub_17EC:               ; CODE XREF: ROM:00000354j
-	move.w d0, (mainCommData+8).w
-	move.w d1, (mainCommData+$A).w
+	move.w d0, (mainCommDataBuffer+8).w
+	move.w d1, (mainCommDataBuffer+$A).w
 	rts
 ; End of function sub_17EC
 
@@ -405,8 +405,8 @@ sub_17EC:               ; CODE XREF: ROM:00000354j
 
 
 sub_17F6:               ; CODE XREF: ROM:00000358j
-	move.w d0, (mainCommData+$C).w
-	move.w d1, (mainCommData+$E).w
+	move.w d0, (mainCommDataBuffer+$C).w
+	move.w d1, (mainCommDataBuffer+$E).w
 	rts
 ; End of function sub_17F6
 
@@ -422,8 +422,8 @@ sub_1800:               ; CODE XREF: ROM:0000035Cj
 	bset #GA_MAINRAMREQ, (GA_COMM_MAINFLAGS).l
 
 @loc_180E:
-	move.w d0, (mainCommData+4).w
-	move.w d1, (mainCommData+6).w
+	move.w d0, (mainCommDataBuffer+4).w
+	move.w d1, (mainCommDataBuffer+6).w
 	rts
 ; End of function sub_1800
 
@@ -433,11 +433,11 @@ sub_1800:               ; CODE XREF: ROM:0000035Cj
 
 checkDiscReady:               ; CODE XREF: vblankHandler+32p
 					; sub_2424p
-	btst  #GA_MAINACK, (mainCommFlags).w
+	btst  #GA_MAINACK, (mainCommFlagBuffer).w
 	beq.s @locret_1830
 
-	move.w (subCommData).w,   d0
-	move.w (subCommData+2).w, d1
+	move.w (subCommDataCache).w,   d0
+	move.w (subCommDataCache+2).w, d1
 	andi.w #$FC, d0
 	jmp    loc_1832(pc, d0.w)
 ; ---------------------------------------------------------------------------

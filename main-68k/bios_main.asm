@@ -10122,7 +10122,7 @@ sub_6476:
 @loc_64F0:
 	bsr.s   sub_6534
 
-	btst    #1, (GA_COMM_MAINFLAGS).l
+	btst    #GA_MAINACK, (GA_COMM_MAINFLAGS).l
 	beq.s   @loc_6512
 
 	move.w  #2000, d6   ; NTSC
@@ -10140,7 +10140,7 @@ sub_6476:
 	tst.b   (byte_FFFFD061).w
 	beq.s   @loc_6520
 
-	bclr    #1, (GA_COMM_MAINFLAGS).l
+	bclr    #GA_MAINACK, (GA_COMM_MAINFLAGS).l
 
 @loc_6520:
 	m_z80ReleaseBus
@@ -10225,7 +10225,7 @@ loc_6598:               ; CODE XREF: sub_6534+1Cj sub_6572+4j
 	beq.s   sub_65BA
 	bclr    #7,(byte_FFFFD004).w
 	beq.s   locret_65FA
-	bclr    #1,(GA_COMM_MAINFLAGS).l
+	bclr    #GA_MAINACK,(GA_COMM_MAINFLAGS).l
 	addi.w  #$1771,d7
 	bsr.w   sub_681C
 	jmp displayOn(pc)
@@ -10238,7 +10238,7 @@ sub_65BA:               ; CODE XREF: ROM:0000659Cj
 	bne.s   locret_65FA
 	tst.b   (byte_FFFFD061).w
 	beq.s   locret_65FA
-	bclr    #1,(GA_COMM_MAINFLAGS).l
+	bclr    #GA_MAINACK,(GA_COMM_MAINFLAGS).l
 	addi.w  #$1771,d7
 	jsr displayOff(pc)
 	move.w  #$8F01,(a4)
@@ -11234,7 +11234,7 @@ waitForWordRam:             ; CODE XREF: sub_73CA+2Aj ...
 
 
 sub_73CA:               ; CODE XREF: ROM:000073FAp sub_7446+4p ...
-	lea (mainCommData).w, a0
+	lea (mainCommDataBuffer).w, a0
 	lea $10(a0), a1
 
 	@loc_73D2:
@@ -13721,7 +13721,7 @@ sub_873A:               ; CODE XREF: state_7374p
 	lea sub_86A6, a1
 	jsr setVblankUserRoutine
 
-	move.l  #0,(mainCommData+8).w
+	move.l  #0,(mainCommDataBuffer+8).w
 
 	lea vdpReg_87FE(pc),a1
 	bsr.w   loadVdpRegs
