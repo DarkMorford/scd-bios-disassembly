@@ -172,8 +172,8 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 
 
 sub_16C4:               ; CODE XREF: ROM:000006B6p sub_1730+Cp ...
-	bclr #6, (mainCommFlags).w
-	bclr #5, (mainCommFlags).w
+	bclr #GA_MAINFLAG6, (mainCommFlags).w
+	bclr #GA_MAINFLAG5, (mainCommFlags).w
 	rts
 ; End of function sub_16C4
 
@@ -181,6 +181,7 @@ sub_16C4:               ; CODE XREF: ROM:000006B6p sub_1730+Cp ...
 ; =============== S U B R O U T I N E =======================================
 
 
+; Corresponds to sub_61CA on sub CPU
 sub_16D2:               ; CODE XREF: ROM:0000034Cj sub_16D2+8j ...
 	; Wait for sub-CPU to set flag 6
 	btst  #GA_SUBFLAG6, (GA_COMM_SUBFLAGS).l
@@ -211,7 +212,7 @@ sub_16FE:               ; CODE XREF: loadPrgFromWordRam+30p
 	btst  #0, (byte_FFFFFDDD).w
 	beq.s @loc_171A
 
-	btst  #7, (GA_COMM_SUBFLAGS).l
+	btst  #GA_SUBFLAG7, (GA_COMM_SUBFLAGS).l
 	bne.s @loc_172A
 
 	bclr  #0, (byte_FFFFFDDD).w
@@ -220,7 +221,7 @@ sub_16FE:               ; CODE XREF: loadPrgFromWordRam+30p
 ; ---------------------------------------------------------------------------
 
 @loc_171A:
-	btst  #7, (GA_COMM_SUBFLAGS).l
+	btst  #GA_SUBFLAG7, (GA_COMM_SUBFLAGS).l
 	beq.s @loc_172A
 
 	bset  #0, (byte_FFFFFDDD).w

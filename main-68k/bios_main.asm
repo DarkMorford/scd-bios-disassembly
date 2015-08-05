@@ -561,7 +561,7 @@ finishInit:                ; CODE XREF: ROM:00000578j sub_640+38j
 	moveq #4, d1
 	jsr   sub_1800(pc)
 
-	moveq #STATE_21F4, d0
+	moveq #STATE_ATTRACT, d0
 	bsr.w setNextState
 
 mainLoop:

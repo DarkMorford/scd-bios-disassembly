@@ -113,6 +113,7 @@ boot_user1:             ; CODE XREF: sub_610A+Cj
 	bsr.w sub_61E0
 	beq.s sub_610A
 
+	; We only ever reach this point if MAINFLAG7 is set
 	move.b #$80, (GA_COMM_SUBFLAGS).l
 
 	; Set priority mode off
@@ -221,12 +222,13 @@ sub_6142:               ; CODE XREF: BOOT:000071FCj
 
 
 sub_6150:               ; CODE XREF: sub_7302p sub_7302+12p ...
-	tst.b   byte_2(a6)
-	beq.s   locret_615E
-	clr.b   byte_2(a6)
-	andi    #$FB,ccr ; 'û'
+	tst.b byte_2(a6)
+	beq.s @locret_615E
 
-locret_615E:                ; CODE XREF: sub_6150+4j
+	clr.b byte_2(a6)
+	andi  #$FB, ccr
+
+@locret_615E:
 	rts
 ; End of function sub_6150
 
@@ -243,7 +245,7 @@ sub_6160:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6166:               ; CODE XREF: sub_7302:loc_730Ap
+waitForVblank:               ; CODE XREF: sub_7302:loc_730Ap
 					; sub_7B5E+Cp ...
 	; Set byte_3 to $FF
 	st byte_3(a6)
@@ -253,7 +255,7 @@ sub_6166:               ; CODE XREF: sub_7302:loc_730Ap
 		tst.b byte_3(a6)
 		bne.s @loc_616A
 	rts
-; End of function sub_6166
+; End of function waitForVblank
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -327,6 +329,7 @@ sub_619A:               ; CODE XREF: sub_6178+4p
 ; =============== S U B R O U T I N E =======================================
 
 
+; Corresponds to sub_16D2 on main CPU
 sub_61CA:               ; CODE XREF: sub_726E+8Ep sub_7ADC+54p
 	bset #GA_SUBFLAG6, (GA_COMM_SUBFLAGS).w
 
@@ -355,13 +358,13 @@ sub_61E0:               ; CODE XREF: boot_user1p sub_7302+Cp ...
 initCdBoot:               ; CODE XREF: boot_user0+10p
 	lea word_2E(a6), a0
 
-	; Clear 124 bytes ($2E-$A9)
+	; Clear 124 bytes ($2E-$AA)
 	moveq #61, d0
 	@loc_61EE:
 		clr.w (a0)+
 		dbf d0, @loc_61EE
 
-	; Load addresses into $AA-$C1
+	; Load addresses into $AA-$C2
 	lea dword_6218(pc), a1
 	movea.l a1, a3
 	@loc_61FA:
@@ -2677,7 +2680,7 @@ sub_71E6:               ; CODE XREF: sub_6178+10j
 	clr.w   (a0)+
 	move.w  (a0), d0
 	add.w   d1, d1
-	add.w   d1,d1
+	add.w   d1, d1
 	jmp *+2(pc, d1.w)
 ; ---------------------------------------------------------------------------
 
@@ -2808,6 +2811,8 @@ loc_7296:
 	bsr.w   sub_7AC0
 	bsr.w   sub_66F4
 	st  byte_6(a6)
+
+	; Sync/handshake with main CPU
 	bsr.w   sub_61CA
 	rts
 ; End of function sub_726E
@@ -2821,7 +2826,7 @@ sub_7302:               ; CODE XREF: BOOT:00006120j
 		bsr.w   sub_726E
 
 loc_730A:               ; CODE XREF: sub_7302+20j sub_7302+48j
-		bsr.w   sub_6166
+		bsr.w   waitForVblank
 		bsr.w   sub_61E0
 		bne.s   loc_7350
 
@@ -4003,6 +4008,8 @@ sub_7ADC:               ; CODE XREF: sub_7B5E+8p
 		dbf d7, @loc_7B24
 
 	move.w #1, byte_1C9E(a6)
+
+	; Sync/handshake with main CPU
 	bsr.w  sub_61CA
 
 	move.b #$81, (byte_18022).l
@@ -4027,7 +4034,7 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 	clr.b   byte_1C96(a6)
 	bsr.w   sub_6150
 	bsr.w   sub_7ADC
-	bsr.w   sub_6166
+	bsr.w   waitForVblank
 
 @loc_7B6E:               ; CODE XREF: sub_7B5E:loc_7C6Aj
 	bsr.w   sub_61E0
@@ -4055,11 +4062,12 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 	move.b  byte_1C9E(a6), byte_1C9F(a6)
 
 	@loc_7BAA:
-		bsr.w   sub_6150
-		bne.w   @loc_7C6E
+		bsr.w sub_6150
+		bne.w @loc_7C6E
 
-		btst    #GA_DMNA, (GAL_MEMORY_MODE).l
-		beq.s   @loc_7BAA
+		; Check if main CPU has given Word RAM back
+		btst  #GA_DMNA, (GAL_MEMORY_MODE).l
+		beq.s @loc_7BAA
 
 	clr.w   word_1CA2(a6)
 
@@ -4128,8 +4136,10 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 	move.b  #$E0, (byte_18022).l
 
 @loc_7C76:               ; CODE XREF: sub_7B5E+142j
+	; Reset the GFX interrupt handler
 	bclr    #GA_IEN1, (GA_INT_MASK).w
 	move.l  oldGfxCompleteHandler(a6), (_LEVEL1+2).w
+
 	bclr    #GA_PM0, (GAL_MEMORY_MODE).l
 	bclr    #GA_PM1, (GAL_MEMORY_MODE).l
 	rts
@@ -4137,7 +4147,7 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 
 @loc_7C94:               ; CODE XREF: sub_7B5E+14j
 	move.b  #$E1, (byte_18022).l
-	bsr.w   sub_6166
+	bsr.w   waitForVblank
 	bra.s   @loc_7C76
 ; End of function sub_7B5E
 
@@ -4457,14 +4467,14 @@ word_7F12:
 	incbin "word_7F12.bin"
 
 word_8012:
-	dc.w 40
-	dc.w 40
-	dc.w 40
-	dc.w 40
-	dc.w 40
-	dc.w 40
-	dc.w 40
-	dc.w 40
+	dc.w (5 * 8)
+	dc.w (5 * 8)
+	dc.w (5 * 8)
+	dc.w (5 * 8)
+	dc.w (5 * 8)
+	dc.w (5 * 8)
+	dc.w (5 * 8)
+	dc.w (5 * 8)
 
 word_8022:
 	dc.w ($1A000 >> 2)
@@ -4574,7 +4584,9 @@ sub_810A:               ; CODE XREF: BOOT:00006128j
 		btst  #GA_DMNA, (GAL_MEMORY_MODE).l
 		beq.s @loc_811C
 
+	; Clear some space in Word RAM
 	bsr.w sub_82E8
+
 	bra.s loc_816E
 ; ---------------------------------------------------------------------------
 
@@ -4582,7 +4594,7 @@ loc_812C:               ; CODE XREF: sub_810A+4Aj sub_810A+7Aj
 	clr.l subCommBuffer+8(a6)
 
 loc_8130:               ; CODE XREF: sub_810A+40j
-	bsr.w sub_6166
+	bsr.w waitForVblank
 	bsr.w sub_6150
 	beq.s loc_8142
 
@@ -4593,25 +4605,26 @@ loc_8130:               ; CODE XREF: sub_810A+40j
 ; ---------------------------------------------------------------------------
 
 loc_8142:               ; CODE XREF: sub_810A+2Ej
-	btst    #GA_DMNA,(GAL_MEMORY_MODE).l
+	; Wait for main CPU to pass Word RAM back
+	btst    #GA_DMNA, (GAL_MEMORY_MODE).l
 	beq.s   loc_8130
 
-	movem.w mainCommCache+8(a6),d0-d1
+	movem.w mainCommCache+8(a6), d0-d1
 	tst.w   d0
 	beq.s   loc_812C
 
-	move.w  d0,subCommBuffer+8(a6)
-	subq.w  #1,d0
-	asl.w   #2,d0
+	move.w  d0, subCommBuffer+8(a6)
+	subq.w  #1, d0
+	asl.w   #2, d0
 
-	lea (WORD_RAM_2M).l,a2
-	lea (unk_90000).l,a3
-	jsr loc_8186(pc,d0.w)
+	lea (WORD_RAM_2M).l, a2
+	lea (unk_90000).l, a3
+	jsr loc_8186(pc, d0.w)
 
+loc_816E:
 	; Give WordRAM back to main CPU
-	loc_816E:
-		bset    #GA_RET,(GAL_MEMORY_MODE).l
-		beq.s   loc_816E
+	bset  #GA_RET, (GAL_MEMORY_MODE).l
+	beq.s loc_816E
 
 	nop
 	nop
@@ -4619,7 +4632,7 @@ loc_8142:               ; CODE XREF: sub_810A+2Ej
 	nop
 	nop
 	nop
-	bra.s   loc_812C
+	bra.s loc_812C
 ; End of function sub_810A
 
 ; ---------------------------------------------------------------------------
@@ -4813,38 +4826,52 @@ sub_82D0:               ; CODE XREF: BOOT:000081A2j
 ; =============== S U B R O U T I N E =======================================
 
 
+; Clears the following memory areas:
+;   $80000-$80200
+;   $84010-$84020
+;   $90000-$90200
+;   $94010-$94020
 sub_82E8:               ; CODE XREF: sub_810A+1Cp
-		lea (WORD_RAM_2M).l,a0
-		lea (unk_90000).l,a1
-		lea $4010(a0),a2
-		lea $4010(a1),a3
-		moveq   #0,d0
-		moveq   #0,d1
-		moveq   #0,d2
-		moveq   #0,d3
-		moveq   #$1F,d4
-		moveq   #$10,d5
+	lea (WORD_RAM_2M).l, a0
+	lea (unk_90000).l,   a1
 
-loc_8308:               ; CODE XREF: sub_82E8+34j
-		movem.l d0-d3,(a0)
-		movem.l d0-d3,(a1)
-		movem.l d0-d3,(a2)
-		movem.l d0-d3,(a3)
-		adda.l  d5,a0
-		adda.l  d5,a1
-		dbf d4,loc_8308
-		rts
+	lea $4010(a0), a2   ; $84010
+	lea $4010(a1), a3   ; $94010
+
+	moveq #0, d0
+	moveq #0, d1
+	moveq #0, d2
+	moveq #0, d3
+
+	moveq #31, d4
+	moveq #16, d5
+
+	@loc_8308:
+		movem.l d0-d3, (a0)
+		movem.l d0-d3, (a1)
+		movem.l d0-d3, (a2)
+		movem.l d0-d3, (a3)
+
+		adda.l  d5, a0
+		adda.l  d5, a1
+
+		dbf d4, @loc_8308
+
+	rts
 ; End of function sub_82E8
 
 ; ---------------------------------------------------------------------------
 
 loc_8322:               ; CODE XREF: BOOT:000060AAj
-		lea RAM_BASE,a6
-		bsr.w   sub_619A
-		bsr.w   sub_6296
-		bsr.w   sub_6414
-		bsr.w   sub_71E6
-		addq.w  #1,word_20EA(a6)
-		rts
+	lea RAM_BASE, a6
 
-		END
+	bsr.w sub_619A
+	bsr.w sub_6296
+	bsr.w sub_6414
+	bsr.w sub_71E6
+
+	addq.w #1, word_20EA(a6)
+	rts
+
+END_833C:
+	END

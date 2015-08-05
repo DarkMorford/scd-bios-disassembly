@@ -21,12 +21,12 @@
 	include "constants\cd.asm"
 
 ;   Main loop states
-STATE_NULL   equ 0
-STATE_21F4   equ 4
-STATE_3040   equ 8
-STATE_LOAD   equ $C
-STATE_7374   equ $10
-STATE_LAUNCH equ $14
+STATE_NULL      equ 0
+STATE_ATTRACT   equ 4
+STATE_3040      equ 8
+STATE_LOAD      equ $C
+STATE_7374      equ $10
+STATE_LAUNCH    equ $14
 
 ;   Message text
 MSG_CHECKINGDISC    equ 0
