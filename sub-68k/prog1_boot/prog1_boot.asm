@@ -99,7 +99,7 @@ loc_609A:
 ; ---------------------------------------------------------------------------
 	bra.w loc_7CA2
 ; ---------------------------------------------------------------------------
-	bra.w loc_7208
+	bra.w sub_7208
 ; ---------------------------------------------------------------------------
 	nop
 	rts
@@ -277,7 +277,7 @@ sub_6178:               ; CODE XREF: boot_user2+Cj
 					; BOOT:loc_609Aj
 	lea RAM_BASE(pc), a6
 
-	bsr.w sub_619A
+	bsr.w transferCommData
 	bsr.w sub_6296
 	bsr.w sub_6414
 	bra.w sub_71E6
@@ -288,7 +288,7 @@ sub_6178:               ; CODE XREF: boot_user2+Cj
 
 
 clearSubCommBuffer:             ; CODE XREF: boot_user0+Cp
-	lea subCommBuffer(a6), a0
+	lea subCommDataBuffer(a6), a0
 
 	clr.l (a0)+
 	clr.l (a0)+
@@ -301,22 +301,22 @@ clearSubCommBuffer:             ; CODE XREF: boot_user0+Cp
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_619A:               ; CODE XREF: sub_6178+4p
+transferCommData:               ; CODE XREF: sub_6178+4p
 					; BOOT:0000720Cp ...
 	lea  (GA_COMM_SUBFLAGS).w, a0
 	bset #GA_SUBBUSY, (a0)
 
 	; Copy data from registers to cache
-	lea mainCommCache(a6), a2
+	lea mainCommDataCache(a6), a2
 	lea (GA_COMM_MAINDATA).w, a1
 	move.l (a1)+, (a2)+
 	move.l (a1)+, (a2)+
 	move.l (a1)+, (a2)+
 	move.l (a1)+, (a2)+
 
-	bsr.w sub_62FA
+	bsr.w prepareCommData
 
-	; Copy data from buffer to registers
+	; Move data from buffer to registers
 	; a1/a2 are pointing at sub-CPU comm data locations
 	moveq #3, d0
 	@loc_61B8:
@@ -328,7 +328,7 @@ sub_619A:               ; CODE XREF: sub_6178+4p
 
 	bsr.w sub_6384
 	rts
-; End of function sub_619A
+; End of function transferCommData
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -390,6 +390,7 @@ initCdBoot:               ; CODE XREF: boot_user0+10p
 	; Initialize CD boot system
 	moveq #CBTINIT, d0
 	jsr   _CDBOOT
+
 	rts
 ; End of function initCdBoot
 
@@ -444,7 +445,7 @@ checkDiscType:              ; CODE XREF: boot_user2+4p
 sub_625A:               ; CODE XREF: boot_user0+3Cj
 	bsr.w cdbGetBiosStatus
 
-	cmpi.b #5, biosStatus.cddStatusCode(a6)
+	cmpi.b #CDD_OPEN, biosStatus.cddStatusCode(a6)
 	bne.s  sub_626E
 
 	; Set disc type to "not ready"
@@ -479,7 +480,7 @@ sub_626E:               ; CODE XREF: BOOT:00006264j
 
 sub_6296:               ; CODE XREF: sub_6178+8p
 					; BOOT:loc_722Ep ...
-	lea mainCommCache(a6), a1
+	lea mainCommDataCache(a6), a1
 	lea word_2E(a6), a2
 	lea byte_43(a6), a0
 
@@ -515,7 +516,7 @@ sub_6296:               ; CODE XREF: sub_6178+8p
 
 
 cdbGetBiosStatus:               ; CODE XREF: BOOT:sub_625Ap
-					; sub_62FA+6p ...
+					; prepareCommData+6p ...
 	; Get CD-BIOS status data
 	move.w #CDBSTAT, d0
 	jsr    _CDBIOS
@@ -543,7 +544,7 @@ cdbGetBiosStatus:               ; CODE XREF: BOOT:sub_625Ap
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_62FA:               ; CODE XREF: sub_619A+18p
+prepareCommData:               ; CODE XREF: transferCommData+18p
 	movem.l a1-a2, -(sp)
 
 	move.l  a0, -(sp)
@@ -554,7 +555,7 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 
 	moveq #0, d0
 
-	; Return if this combination is not 0
+	; Return if data already exists
 	move.w GA_SUBDATA1(a2), d0
 	or.w   GA_SUBDATA3(a2), d0
 	bne.s  @locret_637E
@@ -570,6 +571,7 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 	bclr  #0, flags_3E(a6)
 	moveq #4, d0
 	bsr.w sub_66EA
+
 	bra.s @locret_637E
 ; ---------------------------------------------------------------------------
 
@@ -613,66 +615,68 @@ sub_62FA:               ; CODE XREF: sub_619A+18p
 @locret_637E:
 	movem.l (sp)+, a1-a2
 	rts
-; End of function sub_62FA
+; End of function prepareCommData
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6384:               ; CODE XREF: sub_619A+2Ap
-	cmpi.b  #$E,biosStatus.cddStatusCode(a6)
-	bne.s   loc_63B8
+sub_6384:               ; CODE XREF: transferCommData+2Ap
+	cmpi.b  #$E, biosStatus.cddStatusCode(a6)
+	bne.s   @loc_63B8
 
-	cmpi.b  #5,byte_59(a6)
-	beq.s   loc_63E6
+	cmpi.b  #5, byte_59(a6)
+	beq.s   @loc_63E6
 
 	tst.w   word_5A(a6)
-	bne.s   loc_63A6
+	bne.s   @loc_63A6
 
-	move.w  #$168,word_5A(a6)
+	move.w  #360, word_5A(a6)
 	bsr.w   sub_6404
-	bra.s   locret_63F2
+
+	bra.s   @locret_63F2
 ; ---------------------------------------------------------------------------
 
-loc_63A6:               ; CODE XREF: sub_6384+14j sub_6384+66j
-	subq.w  #1,word_5A(a6)
-	bne.s   locret_63F2
+@loc_63A6:               ; CODE XREF: sub_6384+14j sub_6384+66j
+	subq.w  #1, word_5A(a6)
+	bne.s   @locret_63F2
 
 	bsr.w   sub_626E
-	move.b  #$FF,byte_59(a6)
-	bra.s   locret_63F2
+
+	move.b  #$FF, byte_59(a6)
+	bra.s   @locret_63F2
 ; ---------------------------------------------------------------------------
 
-loc_63B8:               ; CODE XREF: sub_6384+6j
+@loc_63B8:               ; CODE XREF: sub_6384+6j
 	clr.w   word_5A(a6)
-	cmpi.b  #5,biosStatus.cddStatusCode(a6)
-	bne.s   loc_63D2
+	cmpi.b  #CDD_OPEN, biosStatus.cddStatusCode(a6)
+	bne.s   @loc_63D2
 
-	cmpi.b  #5,byte_59(a6)
-	beq.s   locret_63F2
+	cmpi.b  #5, byte_59(a6)
+	beq.s   @locret_63F2
 
 	bsr.w   sub_63F4
-	bra.s   loc_63DE
+	bra.s   @loc_63DE
 ; ---------------------------------------------------------------------------
 
-loc_63D2:               ; CODE XREF: sub_6384+3Ej
-	cmpi.b  #5,byte_59(a6)
-	bne.s   locret_63F2
+@loc_63D2:               ; CODE XREF: sub_6384+3Ej
+	cmpi.b  #5, byte_59(a6)
+	bne.s   @locret_63F2
 
 	bsr.w   sub_626E
 
-loc_63DE:               ; CODE XREF: sub_6384+4Cj
-	move.b  biosStatus.cddStatusCode(a6),byte_59(a6)
-	bra.s   locret_63F2
+@loc_63DE:               ; CODE XREF: sub_6384+4Cj
+	move.b  biosStatus.cddStatusCode(a6), byte_59(a6)
+	bra.s   @locret_63F2
 ; ---------------------------------------------------------------------------
 
-loc_63E6:               ; CODE XREF: sub_6384+Ej
+@loc_63E6:               ; CODE XREF: sub_6384+Ej
 	tst.w   word_5A(a6)
-	bne.s   loc_63A6
+	bne.s   @loc_63A6
 
-	move.w  #$168,word_5A(a6)
+	move.w  #360, word_5A(a6)
 
-locret_63F2:                ; CODE XREF: sub_6384+20j sub_6384+26j ...
+@locret_63F2:                ; CODE XREF: sub_6384+20j sub_6384+26j ...
 	rts
 ; End of function sub_6384
 
@@ -684,7 +688,7 @@ sub_63F4:               ; CODE XREF: sub_6384+48p
 	; Set disc type to "not ready"
 	move.b  #CD_NOTREADY, discType(a6)
 
-	moveq   #$FFFFFFFF, d1
+	moveq   #CD_NOTREADY, d1
 	moveq   #4, d0
 	bsr.w   sub_66EA
 	rts
@@ -721,7 +725,7 @@ sub_6414:               ; CODE XREF: sub_6178+Cp
 	movea.w #_CDBIOS, a3
 	lea word_2E(a6), a1
 	lea unk_64(a6), a0
-	lea subCommBuffer(a6), a2
+	lea subCommDataBuffer(a6), a2
 
 	move.w (a1), d0
 	beq.w  locret_656C
@@ -1006,58 +1010,58 @@ dword_65F4:
 
 
 sub_65F8:               ; CODE XREF: sub_6414p
-	move.w  biosStatus.currentStatus(a6),d0
+	move.w biosStatus.currentStatus(a6), d0
 
 	; Return if flag byte is non-negative
-	tst.b   flags_3F(a6)
-	bpl.s   @locret_665A
+	tst.b flags_3F(a6)
+	bpl.s @locret_665A
 
 	; Jump if flag bit 6 is clear
-	btst    #6,flags_3F(a6)
-	beq.s   @loc_664A
+	btst  #6, flags_3F(a6)
+	beq.s @loc_664A
 
-	cmpi.w  #$100,d0    ; Playing, data read complete
-	beq.s   @loc_6622
+	cmpi.w #$100, d0    ; Playing, data read complete
+	beq.s  @loc_6622
 
-	cmpi.w  #$300,d0    ; Scanning, data read complete
-	beq.s   @loc_6642
+	cmpi.w #$300, d0    ; Scanning, data read complete
+	beq.s  @loc_6642
 
-	cmpi.w  #0,d0       ; Stopped, data read complete
-	beq.s   @loc_6642
+	cmpi.w #0, d0       ; Stopped, data read complete
+	beq.s  @loc_6642
 
-	cmpi.w  #$500,d0    ; Paused, data read complete
-	bne.s   @locret_665A
+	cmpi.w #$500, d0    ; Paused, data read complete
+	bne.s  @locret_665A
 
 @loc_6622:
-	move.b  byte_63(a6),d1
-	beq.s   @loc_6642
+	move.b byte_63(a6), d1
+	beq.s  @loc_6642
 
-	cmp.b   biosStatus.trackNumber(a6),d1
-	beq.s   @loc_6642
+	cmp.b  biosStatus.trackNumber(a6), d1
+	beq.s  @loc_6642
 
-	cmpi.w  #$500,d0    ; Paused, data read complete
-	bne.s   @locret_665A
+	cmpi.w #$500, d0    ; Paused, data read complete
+	bne.s  @locret_665A
 
-	subq.b  #1,d1
-	beq.s   @locret_665A
+	subq.b #1, d1
+	beq.s  @locret_665A
 
-	cmp.b   biosStatus.trackNumber(a6),d1
-	bne.s   @locret_665A
+	cmp.b  biosStatus.trackNumber(a6), d1
+	bne.s  @locret_665A
 
-	bsr.w   sub_6E2C
+	bsr.w  sub_6E2C
 
 @loc_6642:
-	andi.b  #$3F,flags_3F(a6)
+	andi.b #$3F, flags_3F(a6)
 	rts
 ; ---------------------------------------------------------------------------
 
 @loc_664A:
-	move.w  biosStatus.currentStatus(a6),d0
+	move.w biosStatus.currentStatus(a6), d0
 
-	cmp.w   word_40(a6),d0
-	beq.s   @locret_665A
+	cmp.w  word_40(a6), d0
+	beq.s  @locret_665A
 
-	bset    #6,flags_3F(a6)
+	bset #6, flags_3F(a6)
 
 @locret_665A:
 	rts
@@ -1187,9 +1191,9 @@ stopCdAudio:                ; CODE XREF: sub_6B46+1E2j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_66EA:               ; CODE XREF: sub_62FA+30p sub_63F4+Ap
-	move.w d0, subCommBuffer(a6)
-	move.w d1, subCommBuffer+2(a6)
+sub_66EA:               ; CODE XREF: prepareCommData+30p sub_63F4+Ap
+	move.w d0, subCommDataBuffer(a6)
+	move.w d1, subCommDataBuffer+2(a6)
 	rts
 ; End of function sub_66EA
 
@@ -1198,7 +1202,7 @@ sub_66EA:               ; CODE XREF: sub_62FA+30p sub_63F4+Ap
 
 
 sub_66F4:               ; CODE XREF: sub_626E+12p sub_726E+86p
-	clr.l dword_A14(a6)
+	clr.l word_A14(a6)
 	clr.w flags_A22(a6)
 	rts
 ; End of function sub_66F4
@@ -1210,92 +1214,93 @@ sub_66F4:               ; CODE XREF: sub_626E+12p sub_726E+86p
 sub_66FE:               ; CODE XREF: BOOT:0000723Cp
 	bsr.w   cdbGetBiosStatus
 
-	lea (WORD_RAM_1M).l,a5
-	move.w  WR1_word_42C(a5),d7
+	lea   (WORD_RAM_1M).l, a5
+	move.w WR1_word_42C(a5), d7
 
-	lea dword_A14(a6),a4
-	lea biosStatus(a6),a3
+	lea word_A14(a6), a4
+	lea biosStatus(a6), a3
 
-	move.w  (a4),d6
-	eor.w   d7,d6
-	andi.w  #$F00,d6
-	beq.s   loc_673C
+	move.w (a4), d6
+	eor.w  d7, d6
+	andi.w #$F00, d6
+	beq.s  @loc_673C
 
-	btst    #$A,d6
-	beq.s   loc_6728
+	btst  #$A, d6
+	beq.s @loc_6728
 
-	bsr.w   sub_691E
+	bsr.w sub_691E
 
-loc_6728:               ; CODE XREF: sub_66FE+24j
-	btst    #9,d6
-	beq.s   loc_6732
+@loc_6728:               ; CODE XREF: sub_66FE+24j
+	btst  #9, d6
+	beq.s @loc_6732
 
-	bsr.w   sub_695E
+	bsr.w sub_695E
 
-loc_6732:               ; CODE XREF: sub_66FE+2Ej
-	btst    #$B,d6
-	beq.s   loc_673C
+@loc_6732:               ; CODE XREF: sub_66FE+2Ej
+	btst  #$B, d6
+	beq.s @loc_673C
 
-	bsr.w   sub_69A2
+	bsr.w sub_69A2
 
-loc_673C:               ; CODE XREF: sub_66FE+1Ej sub_66FE+38j
-	bsr.w   sub_67CE
-	bsr.w   sub_6850
+@loc_673C:               ; CODE XREF: sub_66FE+1Ej sub_66FE+38j
+	bsr.w sub_67CE
+	bsr.w sub_6850
 
-	move.w  (a4),d6
-	eor.w   d7,d6
-	andi.w  #$700,d6
-	bne.s   loc_6788
+	move.w (a4), d6
+	eor.w  d7, d6
+	andi.w #$700, d6
+	bne.s  @loc_6788
 
-	btst    #2,(a4)
-	beq.w   loc_6788
+	btst  #2, (a4)
+	beq.w @loc_6788
 
-	bsr.w   sub_6B46
+	bsr.w sub_6B46
 
-	btst    #1,flags_A23(a6)
-	bne.w   loc_6788
+	btst  #1, flags_A23(a6)
+	bne.w @loc_6788
 
-	cmpi.b  #$3F,flags_3F(a6) ; '?'
-	bhi.w   loc_6788
+	cmpi.b #$3F, flags_3F(a6)
+	bhi.w  @loc_6788
 
-	bsr.w   sub_6AC4
+	bsr.w sub_6AC4
 
-	btst    #2,flags_A23(a6)
-	beq.s   loc_6780
+	btst  #2, flags_A23(a6)
+	beq.s @loc_6780
 
-	btst    #$B,d7
-	beq.s   loc_6788
+	btst  #$B, d7
+	beq.s @loc_6788
 
-loc_6780:               ; CODE XREF: sub_66FE+7Aj
-	bsr.w   sub_6A02
-	bsr.w   sub_6A6C
+@loc_6780:
+	bsr.w sub_6A02
+	bsr.w sub_6A6C
 
-loc_6788:               ; CODE XREF: sub_66FE+4Ej sub_66FE+54j ...
-	move.l  word_1C90(a6),WR1_dword_426(a5)
-	move.w  (a4),WR1_word_402(a5)
+@loc_6788:
+	move.l word_1C90(a6), WR1_dword_426(a5)
+	move.w (a4), WR1_word_402(a5)
 
-	lea biosStatus(a6),a0
-	lea WR1_unk_404(a5),a1
+	lea biosStatus(a6), a0
+	lea WR1_unk_404(a5), a1
 
-	move.l  (a0)+,(a1)+
-	addq.l  #4,a0
-	addq.l  #4,a1
-	move.l  (a0)+,(a1)+
-	move.l  (a0)+,(a1)+
-	bsr.w   sub_6E34
+	move.l (a0)+, (a1)+
+	addq.l #4, a0
+	addq.l #4, a1
+	move.l (a0)+, (a1)+
+	move.l (a0)+, (a1)+
+	bsr.w  sub_6E34
 
-	move.w  flags_A22(a6),WR1_word_42A(a5)
-	move.b  byte_A17(a6),WR1_byte_410(a5)
+	move.w flags_A22(a6), WR1_word_42A(a5)
+	move.b byte_A17(a6), WR1_byte_410(a5)
 
-	move.l  biosStatus.absFrameTime(a6),d6
-	cmpi.l  #$FFFFFFFF,d6
-	beq.s   loc_67C4
+	move.l biosStatus.absFrameTime(a6), d6
+	cmpi.l #$FFFFFFFF, d6
+	beq.s  @loc_67C4
 
-	move.l  d6,WR1_dword_408(a5)
+	move.l d6, WR1_dword_408(a5)
 
-loc_67C4:               ; CODE XREF: sub_66FE+C0j
-	bsr.w   cdbCheckBusy
-	scs WR1_byte_440(a5)
+@loc_67C4:
+	bsr.w cdbCheckBusy
+	scs   WR1_byte_440(a5)
+
 	rts
 ; End of function sub_66FE
 
@@ -1596,7 +1601,7 @@ loc_69BC:               ; CODE XREF: sub_69A2+Aj sub_69A2+10j ...
 ; ---------------------------------------------------------------------------
 
 loc_69C2:               ; CODE XREF: sub_69A2+4j
-	cmpi.b  #$C,biosStatus.cddStatusCode(a6)
+	cmpi.b  #CDD_END, biosStatus.cddStatusCode(a6)
 	beq.s   loc_69E6
 
 	btst    #5,d7
@@ -1880,7 +1885,7 @@ loc_6C24:               ; CODE XREF: sub_6B46+6j
 loc_6C2C:               ; CODE XREF: sub_6B46+1Ej
 		cmpi.w  #$300,(a3)
 		bne.s   loc_6C9E
-		cmpi.b  #$C,biosStatus.cddStatusCode(a6)
+		cmpi.b  #CDD_END,biosStatus.cddStatusCode(a6)
 		beq.s   loc_6C40
 		bsr.w   sub_6D90
 		beq.s   locret_6C9C
@@ -1987,7 +1992,7 @@ loc_6D1C:               ; CODE XREF: sub_6A02+56j sub_6B46+3Cj ...
 ; ---------------------------------------------------------------------------
 
 loc_6D2C:               ; CODE XREF: sub_6B46+26j
-		cmpi.b  #$C,biosStatus.cddStatusCode(a6)
+		cmpi.b  #CDD_END,biosStatus.cddStatusCode(a6)
 		beq.s   loc_6D4C
 		move.b  $A17(a6),d0
 		move.b  $A16(a6),d1
@@ -2170,8 +2175,8 @@ sub_6E20:
 
 
 sub_6E2C:               ; CODE XREF: sub_65F8+46p
-		bset    #1,flags_A22(a6)
-		rts
+	bset #1, flags_A22(a6)
+	rts
 ; End of function sub_6E2C
 
 
@@ -2735,17 +2740,21 @@ sub_71E6:               ; CODE XREF: sub_6178+10j
 	bra.w   @locret_71FA
 ; ---------------------------------------------------------------------------
 
-loc_7208:               ; CODE XREF: BOOT:000060A2j
+; =============== S U B R O U T I N E =======================================
+
+
+sub_7208:               ; CODE XREF: BOOT:000060A2j
 	lea RAM_BASE, a6
-	bsr.w   sub_619A
+
+	bsr.w transferCommData
 
 	; Skip if WordRAM is in 2M mode
 	btst  #GA_MODE, (GA_MEMORY_MODE).w
-	beq.s loc_722E
+	beq.s @loc_722E
 
 	; Skip if we have WordRAM0
 	btst  #GA_RET, (GA_MEMORY_MODE).w
-	bne.s loc_722E
+	bne.s @loc_722E
 
 	; Request a WordRAM swap and wait until we have WordRAM0
 	bset #GA_RET, (GA_MEMORY_MODE).w
@@ -2753,39 +2762,41 @@ loc_7208:               ; CODE XREF: BOOT:000060A2j
 		btst  #GA_RET, (GA_MEMORY_MODE).w
 		beq.s @loc_7226
 
-loc_722E:
+@loc_722E:
 	bsr.w   sub_6296
 	bsr.w   sub_6414
 
 	tst.b   vblankFlag(a6)
-	beq.s   loc_7240
+	beq.s   @loc_7240
 
 	bsr.w   sub_66FE
 
-loc_7240:
+@loc_7240:
 	bsr.w   sub_71E6
 
-loc_7244:
-	; Return if WordRAM is in 2M mode
-	btst    #GA_MODE,(GA_MEMORY_MODE).w
-	beq.s   locret_726C
+	@loc_7244:
+		; Return if WordRAM is in 2M mode
+		btst  #GA_MODE, (GA_MEMORY_MODE).w
+		beq.s @locret_726C
 
-	; Loop until main CPU clears flag bit 1
-	btst    #GA_MAINACK,(GA_COMM_MAINFLAGS).l
-	bne.s   loc_7244
+		; Loop until main CPU clears flag bit 1
+		btst  #GA_MAINACK, (GA_COMM_MAINFLAGS).l
+		bne.s @loc_7244
 
 	; Return if we have WordRAM1
-	btst    #GA_RET,(GA_MEMORY_MODE).w
-	beq.s   locret_726C
+	btst  #GA_RET, (GA_MEMORY_MODE).w
+	beq.s @locret_726C
 
 	; Request a swap and wait until we have WordRAM1
-	bclr    #GA_RET,(GA_MEMORY_MODE).w
-	loc_7264:
-		btst    #GA_RET,(GA_MEMORY_MODE).w
-		bne.s   loc_7264
+	bclr #GA_RET, (GA_MEMORY_MODE).w
+	@loc_7264:
+		btst  #GA_RET, (GA_MEMORY_MODE).w
+		bne.s @loc_7264
 
-locret_726C:
+@locret_726C:
 	rts
+; End of function sub_7208
+
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -3812,69 +3823,69 @@ loc_7956:               ; CODE XREF: sub_7940+Cj
 ; ---------------------------------------------------------------------------
 
 loc_79A2:               ; CODE XREF: BOOT:00007200j
-		bset    #0,flags_BFC(a6)
-		rts
+	bset #0, flags_BFC(a6)
+	rts
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_79AA:               ; CODE XREF: sub_7302+18p
-	lea (_CDBIOS).w,a2
+	lea (_CDBIOS).w, a2
 
-	cmpi.w  #$100,biosStatus.currentStatus(a6)  ; Playing, data read complete
-	beq.s   loc_79C6
+	cmpi.w #$100, biosStatus.currentStatus(a6)  ; Playing, data read complete
+	beq.s  loc_79C6
 
-	clr.l   word_1C90(a6)
+	clr.l  word_1C90(a6)
 
 	; Return if byte is 0
-	tst.b   byte_135A(a6)
-	beq.w   locret_7A64
+	tst.b byte_135A(a6)
+	beq.w locret_7A64
 
-	bra.w   loc_7AD2
+	bra.w loc_7AD2
 ; ---------------------------------------------------------------------------
 
 loc_79C6:               ; CODE XREF: sub_79AA+Aj
-		tst.b   byte_135A(a6)
-		bne.s   loc_79D8
+	tst.b   byte_135A(a6)
+	bne.s   loc_79D8
 
-		st  byte_135A(a6)
+	st  byte_135A(a6)
 
 loc_79D0:               ; CODE XREF: sub_79AA+56j
-		moveq   #$E,d1
-		move.w  #CDCSTARTP,d0
-		jmp (a2)
+	moveq   #$E, d1
+	move.w  #CDCSTARTP, d0
+	jmp (a2)
 ; ---------------------------------------------------------------------------
 
 loc_79D8:               ; CODE XREF: sub_79AA+20j
-		move.b  biosStatus.absFrameTime+3(a6),d0
-		cmpi.b  #$FF,d0
-		beq.s   loc_79E6
+	move.b  biosStatus.absFrameTime+3(a6), d0
+	cmpi.b  #$FF, d0
+	beq.s   loc_79E6
 
-		move.b  d0,byte_135B(a6)
+	move.b  d0,byte_135B(a6)
 
 loc_79E6:               ; CODE XREF: sub_79AA+36j
-		btst    #2,byte_135B(a6)
-		beq.s   loc_79F4
+	btst    #2, byte_135B(a6)
+	beq.s   loc_79F4
 
-		clr.l   $1C90(a6)
-		rts
+	clr.l   $1C90(a6)
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_79F4:               ; CODE XREF: sub_79AA+42j
-	move.w  #CDCSTAT,d0
+	move.w  #CDCSTAT, d0
 	jsr (a2)
 
 	; Read data if it's ready
 	bcc.s   loc_7A04
 
-	btst    #0,d0
+	btst    #0, d0
 	bne.s   loc_79D0
 
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_7A04:               ; CODE XREF: sub_79AA+50j
-	move.b  #3,(GA_CDC_TRANSFER).w          ; SUB-CPU READ mode
+	move.b  #3, (GA_CDC_TRANSFER).w          ; SUB-CPU READ mode
 
 	move.w  #CDCREAD,d0
 	jsr (a2)
@@ -4119,7 +4130,7 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 	bsr.w beginGfxOperation
 
 	lea object1(a6), a5
-	move.w  #1, $1CA4(a6)
+	move.w  #1, word_1CA4(a6)
 
 	lea vectorTable1(a6), a1
 	bsr.w   sub_7CD0
@@ -4134,6 +4145,7 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 	cmpi.w  #3, d0
 	bne.s   @loc_7C34
 
+	; Load data for object 0 ("SEGA" logo?)
 	moveq #4, d7
 	lea (unk_99C02).l, a0
 	lea object0(a6), a5
@@ -4143,6 +4155,7 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 		move.w (a0)+, (a1)+
 		dbf d7, @loc_7C18
 
+	; Load data for object 1 ("SEGA CD" logo?)
 	moveq #4, d7
 	lea (unk_99C0C).l, a0
 	lea object1(a6), a5
@@ -4200,7 +4213,7 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 loc_7CA2:               ; CODE XREF: BOOT:0000609Ej
 	lea RAM_BASE, a6
 
-	bsr.w sub_619A
+	bsr.w transferCommData
 	bsr.w sub_6296
 	bsr.w sub_6414
 	bsr.w sub_71E6
@@ -4215,6 +4228,7 @@ gfxCompleteHandler:               ; DATA XREF: prepareGfxOperation+32o
 	beq.s @locret_7CCE
 
 @loc_7CC4:
+	; Pass Word RAM back to main CPU
 	bset  #GA_RET, (GAL_MEMORY_MODE).l
 	beq.s @loc_7CC4
 
@@ -4663,7 +4677,7 @@ sub_810A:               ; CODE XREF: BOOT:00006128j
 ; ---------------------------------------------------------------------------
 
 loc_812C:               ; CODE XREF: sub_810A+4Aj sub_810A+7Aj
-	clr.l subCommBuffer+8(a6)
+	clr.l subCommDataBuffer+8(a6)
 
 loc_8130:               ; CODE XREF: sub_810A+40j
 	bsr.w waitForVblank
@@ -4681,11 +4695,11 @@ loc_8142:               ; CODE XREF: sub_810A+2Ej
 	btst    #GA_DMNA, (GAL_MEMORY_MODE).l
 	beq.s   loc_8130
 
-	movem.w mainCommCache+8(a6), d0-d1
+	movem.w mainCommDataCache+8(a6), d0-d1
 	tst.w   d0
 	beq.s   loc_812C
 
-	move.w  d0, subCommBuffer+8(a6)
+	move.w  d0, subCommDataBuffer+8(a6)
 	subq.w  #1, d0
 	asl.w   #2, d0
 
@@ -4937,7 +4951,7 @@ sub_82E8:               ; CODE XREF: sub_810A+1Cp
 loc_8322:               ; CODE XREF: BOOT:000060AAj
 	lea RAM_BASE, a6
 
-	bsr.w sub_619A
+	bsr.w transferCommData
 	bsr.w sub_6296
 	bsr.w sub_6414
 	bsr.w sub_71E6

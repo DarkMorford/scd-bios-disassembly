@@ -34,8 +34,7 @@ byte_FFFFFDDD equ $FFFFFDDD
 byte_FFFFFE27 equ $FFFFFE27
 byte_FFFFFE28 equ $FFFFFE28
 cdBiosStatus equ $FFFFFE3A
-byte_FFFFFE42 equ $FFFFFE42
-byte_FFFFFE43 equ $FFFFFE43
+currentTrackIndex equ $FFFFFE43
 paletteFadeInOffset equ $FFFFFE46
 paletteFadeInCount equ $FFFFFE47
 byte_FFFFFE54 equ $FFFFFE54
@@ -98,8 +97,8 @@ unk_FFFFEB4A equ $FFFFEB4A
 unk_FFFFEB4C equ $FFFFEB4C
 unk_FFFFED06 equ $FFFFED06
 unk_FFFFF5C6 equ $FFFFF5C6
-unk_FFFFFE3C equ $FFFFFE3C
-unk_FFFFFE3E equ $FFFFFE3E
+absDiscTime equ $FFFFFE3C
+relTrackTime equ $FFFFFE3E
 unk_FFFFFE4E equ $FFFFFE4E
 unk_FFFFFE50 equ $FFFFFE50
 unk_FFFFFE53 equ $FFFFFE53
@@ -144,8 +143,9 @@ word_FFFFD33A equ $FFFFD33A
 word_FFFFD33C equ $FFFFD33C
 word_FFFFE172 equ $FFFFE172
 nextSpriteIndex equ $FFFFFE38
-word_FFFFFE40 equ $FFFFFE40
-word_FFFFFE44 equ $FFFFFE44
+discEndTime equ $FFFFFE40
+discFirstTrack equ $FFFFFE44
+discLastTrack equ $FFFFFE45
 paletteFadeInIncrement equ $FFFFFE48
 word_FFFFFF00 equ $FFFFFF00
 word_FFFFFF02 equ $FFFFFF02

@@ -84,7 +84,7 @@ sub_15EE:               ; CODE XREF: ROM:00000344j
 	move.b (a4), (a6)+
 	addq.w #1, a4
 
-	; Copy main comm data from buffer to registers
+	; Move main comm data from buffer to registers
 	moveq #3, d0
 	@loc_1638:
 		move.l (a6), (a4)+
@@ -131,7 +131,7 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 	move.w d0, (cdBiosStatus).w
 
 	andi.w #$A000, d0
-	bne.s  @locret_16C2
+	bne.s  @locret_16C2 ; Drive either not ready or reading TOC
 
 	move.b 5(a0), (unk_FFFFFE57).w
 
@@ -141,25 +141,25 @@ sub_1658:               ; CODE XREF: ROM:00000348j
 	btst  #GA_MAINFLAG5, (a4)
 	beq.s @locret_16C2
 
-	move.w (a0)+, (unk_FFFFFE3C).w
+	move.w (a0)+, (absDiscTime).w
 
 	addq.w #4, a0
-	move.w (a0)+, (unk_FFFFFE3E).w
+	move.w (a0)+, (relTrackTime).w
 
 	move.b (a0)+, d0
-	move.b d0, (byte_FFFFFE43).w
+	move.b d0, (currentTrackIndex).w
 
 	bset #GA_MAINFLAG6, (a4)
 	rts
 ; ---------------------------------------------------------------------------
 
 @loc_16B0:
-	move.w (a0)+, (word_FFFFFE44).w
+	move.w (a0)+, (discFirstTrack).w
 
 	addq.w #4, a0
-	move.w (a0)+, (word_FFFFFE40).w
 
-	move.b (a0)+, (byte_FFFFFE42).w
+	move.w (a0)+, (discEndTime).w
+	move.b (a0)+, (discEndTime+2).w
 
 	bset #GA_MAINFLAG5, (a4)
 
@@ -248,7 +248,7 @@ sub_1730:               ; CODE XREF: ROM:00000378j
 ; ---------------------------------------------------------------------------
 
 @loc_1742:
-	moveq  #$FFFFFFFF, d1
+	moveq  #CD_NOTREADY, d1
 	bsr.w  setDiscType
 
 @loc_1748:

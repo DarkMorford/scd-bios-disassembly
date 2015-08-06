@@ -5551,7 +5551,7 @@ sub_4400:               ; CODE XREF: sub_43F2+6p
 ; ---------------------------------------------------------------------------
 
 @loc_444E:
-	move.b (word_FFFFFE44+1).w, d7
+	move.b (discLastTrack).w, d7
 
 	cmpi.w #$1000, (word_FFFFD024).w
 	bne.s  @loc_447E
@@ -5771,8 +5771,8 @@ sub_45BE:               ; CODE XREF: sub_4400+40j
 	bsr.w   sub_4F18
 	bsr.w   sub_5DB0
 	clr.b   (byte_FFFFD038).w
-	clr.b   (word_FFFFFE44+1).w
-	clr.w   (word_FFFFFE40).w
+	clr.b   (discLastTrack).w
+	clr.w   (discEndTime).w
 	moveq   #$FFFFFFFF,d1
 	bsr.w   setDiscType
 	bsr.w   sub_5732
@@ -6353,9 +6353,9 @@ loc_4A12:               ; CODE XREF: sub_4A58+4j sub_4A58+16j
 	move.b  d1,(byte_FFFFD038).w
 	bclr    #6,(byte_FFFFD004).w
 	bclr    #6,1(a0)
-	move.b  (byte_FFFFFE43).w,d3
+	move.b  (currentTrackIndex).w,d3
 	bsr.w   sub_53B0
-	clr.b   (byte_FFFFFE43).w
+	clr.b   (currentTrackIndex).w
 	bsr.w   sub_5034
 	bsr.w   sub_4720
 	bsr.w   sub_47FE
@@ -6421,7 +6421,7 @@ loc_4ADE:               ; CODE XREF: sub_4A70+3Ej sub_4A70+46j ...
 	andi.w  #$400D,d0
 	bne.s   sub_4B22
 	bsr.w   sub_53C2
-	cmp.b   (word_FFFFFE44).w,d1
+	cmp.b   (discFirstTrack).w,d1
 	bne.s   sub_4B40
 	cmpi.w  #5,(dword_FFFFD02C).w
 	bhi.s   sub_4B40
@@ -6625,7 +6625,7 @@ loc_4C62:               ; CODE XREF: sub_4C54+Aj
 
 sub_4C74:               ; CODE XREF: sub_4730+80p
 					; sub_4BA2:loc_4BF0p
-	move.l (word_FFFFFE40).w, d0
+	move.l (discEndTime).w, d0
 
 	moveq #4, d1
 	swap  d1
@@ -6893,7 +6893,7 @@ loc_4E30:               ; CODE XREF: sub_4DF2+38j
 sub_4E48:               ; CODE XREF: ROM:0000456Ej
 	btst    #2,(byte_FFFFD004).w
 	beq.w   sub_5250
-	tst.b   (word_FFFFFE44+1).w
+	tst.b   (discFirstTrack+1).w
 	beq.w   sub_5250
 	bsr.w   getDiscType
 	beq.s   loc_4E94
@@ -7398,7 +7398,7 @@ loc_521C:               ; CODE XREF: sub_51D6+4j sub_51D6+Cj ...
 sub_5232:
 	btst    #2,(byte_FFFFD008).w
 	beq.s   loc_5240
-	cmp.b   (byte_FFFFFE43).w,d1
+	cmp.b   (currentTrackIndex).w,d1
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -7530,7 +7530,7 @@ sub_52F4:               ; CODE XREF: sub_4400:loc_447Ep
 	moveq   #0,d0
 	tst.b   d7
 	beq.s   loc_5310
-	move.b  (word_FFFFFE44).w,d1
+	move.b  (discFirstTrack).w,d1
 	lea (unk_FFFFD102).w,a1
 
 loc_5306:               ; CODE XREF: sub_52F4+1Aj

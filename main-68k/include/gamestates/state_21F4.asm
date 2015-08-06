@@ -236,22 +236,26 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 		move.l #0, (a0)+
 		dbf d7, @loc_1FB0
 
+	; Clear object data (Work RAM)
 	move.w #0, (word_FFFFC10E).w
 	move.w #0, (word_FFFFC110).w
 	move.w #0, (word_FFFFC112).w
 	move.w #0, (word_FFFFC114).w
 	move.w #0, (word_FFFFC116).w
+
 	move.w #0, (word_FFFFC118).w
 	move.w #0, (word_FFFFC11A).w
 	move.w #0, (word_FFFFC11C).w
 	move.w #0, (word_FFFFC11E).w
 	move.w #0, (word_FFFFC120).w
 
+	; Clear object data (Word RAM)
 	move.w #0, (word_219C02).l
 	move.w #0, (word_219C04).l
 	move.w #0, (word_219C06).l
 	move.w #0, (word_219C08).l
 	move.w #0, (word_219C0A).l
+
 	move.w #0, (word_219C0C).l
 	move.w #0, (word_219C0E).l
 	move.w #0, (word_219C10).l
@@ -1894,6 +1898,7 @@ sub_2B2C:               ; CODE XREF: ROM:00002AB0j
 	move.w #0,   (word_FFFFC112).w
 	move.w #0,   (word_FFFFC114).w
 	move.w #0,   (word_FFFFC116).w
+
 	addq.w #1,   (word_FFFFC132).w
 	move.w #$10, (dword_FFFFC122).w
 	rts

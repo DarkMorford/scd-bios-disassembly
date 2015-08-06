@@ -22,3 +22,13 @@ GAL_BUFFER_VDOTS    equ $FF8064
 GAL_BUFFER_VCELLS   equ $FF805C
 GAL_BUFFER_ADDRESS  equ $FF805E
 GAL_TRACE_VECTORS   equ $FF8066
+
+;   CDD status codes
+CDD_PLAY    equ $1
+CDD_SEEK    equ $2
+CDD_SCAN    equ $3
+CDD_READY   equ $4
+CDD_OPEN    equ $5
+CDD_STOP    equ $9
+CDD_NODISC  equ $B
+CDD_END     equ $C
