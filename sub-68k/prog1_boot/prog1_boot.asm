@@ -4040,6 +4040,7 @@ prepareGfxOperation:               ; CODE XREF: sub_7B5E+8p
 	move.b #0, (GAL_MEMORY_MODE).l  ; Priority mode off, 2M mode
 
 	; 16x16 stamps, 16x16 screens, no repeat
+	; Each stamp is 128 ($80) bytes
 	move.w #4, (GAL_STAMP_SIZE).l
 
 	; Stamp map at Word RAM offset $20000 (absolute address $A0000)
@@ -4566,6 +4567,7 @@ word_8012:
 	dc.w (5 * 8)
 
 word_8022:
+	; Buffers are $17C0 bytes (304x40 px)
 	dc.w ($1A000 >> 2)
 	dc.w ($1B7C0 >> 2)
 	dc.w ($1CF80 >> 2)

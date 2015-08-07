@@ -66,8 +66,8 @@ playerVblank:              ; CODE XREF: sub_18000j
 
 
 sub_18948:              ; CODE XREF: playerVblank+20p
-	clr.b $E(a5)
-	lea $80(a5), a3
+	clr.b byte_E(a5)
+	lea off_80(a5), a3
 
 	moveq #7, d7
 	@loc_18952:
@@ -81,7 +81,7 @@ sub_18948:              ; CODE XREF: playerVblank+20p
 		dbf d7, @loc_18952
 
 	lea $500(a5), a3
-	move.b  #$80, $E(a5)
+	move.b #$80, byte_E(a5)
 
 	moveq #7, d7
 	@loc_1896E:
@@ -103,14 +103,14 @@ sub_18948:              ; CODE XREF: playerVblank+20p
 
 sub_18980:              ; CODE XREF: sub_18948+12p
 					; sub_18948+2Ap
-	subq.b #1, $B(a3)
+	subq.b #1, PCMCMD.byteB(a3)
 	bne.s  @loc_1899A
 
 	bclr #4, (a3)
 
 	jsr sub_189A2(pc)
 	jsr sub_18A98(pc)
-	jsr sub_18A66(pc)
+	jsr setChannelFrequency(pc)
 
 	bra.w sub_18EF8
 ; ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ sub_18980:              ; CODE XREF: sub_18948+12p
 
 
 sub_189A2:              ; CODE XREF: sub_18980+Ap
-	movea.l 4(a3), a2
+	movea.l PCMCMD.long4(a3), a2
 	bclr    #1, (a3)
 
 @loc_189AA:
@@ -251,7 +251,7 @@ sub_18A52:              ; CODE XREF: sub_18980+1Ej
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_18A66:              ; CODE XREF: sub_18980+12p
+setChannelFrequency:              ; CODE XREF: sub_18980+12p
 	btst    #1, PCMCMD.byte0(a3)
 	bne.s   @loc_18A94
 
@@ -278,7 +278,7 @@ sub_18A66:              ; CODE XREF: sub_18980+12p
 @loc_18A94:
 	addq.w #4, sp
 	rts
-; End of function sub_18A66
+; End of function setChannelFrequency
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -433,13 +433,13 @@ sub_18BB0:              ; CODE XREF: PLAYER:00018F84j
 
 	@loc_18BBC:
 		movea.l (a0)+, a1
-		adda.l  $10(a5), a1
+		adda.l  long_10(a5), a1
 
 		tst.b   $D(a1)
 		beq.s   @loc_18C20
 
 		movea.l 0(a1), a2
-		adda.l  $10(a5), a2
+		adda.l  long_10(a5), a2
 
 		move.w  $E(a1), d1
 
@@ -541,6 +541,7 @@ loc_18C6A:              ; CODE XREF: sub_18C26+68j
 	cmp.b  d3, d2
 	bcs.s  loc_18C78
 
+	; Keep the largest byte
 	move.b d2, d3
 	move.b d1, byte_9(a5)
 
@@ -1436,15 +1437,17 @@ unk_192D0:      ; CODE XREF: PLAYER:00019130j
 	dc.l $192FA
 	dc.l $192FA
 
-unk_192F8:  dc.b $80 ; €     ; DATA XREF: sub_18C26+64o
+unk_192F8:       ; DATA XREF: sub_18C26+64o
 					; sub_18CA4:loc_18D90o
+	dc.b $80
 	dc.b   0
-unk_192FA:  dc.b $80 ; €     ; DATA XREF: sub_18C26+6Eo
+unk_192FA:       ; DATA XREF: sub_18C26+6Eo
 					; sub_18C26+78o
-	dc.b $80 ; €
-	dc.b $80 ; €
-	dc.b $80 ; €
-	dc.b $80 ; €
+	dc.b $80
+	dc.b $80
+	dc.b $80
+	dc.b $80
+	dc.b $80
 	dc.b   0
 off_19300:  dc.l off_19304      ; DATA XREF: sub_18CA4+44o
 off_19304:  dc.l $800        ; DATA XREF: PLAYER:off_19300o

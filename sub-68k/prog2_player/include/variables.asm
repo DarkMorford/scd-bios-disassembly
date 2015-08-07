@@ -16,6 +16,7 @@ word_4 equ 4        ; $1801C
 vblankCounter equ 6
 byte_9 equ 9
 long_A equ $A       ; $18022
+byte_E equ $E
 byte_F equ $F
 long_10 equ $10
 byte_14 equ $14

@@ -192,7 +192,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	clr.w (word_219C00).l
 
-	; Clear Word RAM $220000-$240000 (Second 1M bank)
+	; Clear Word RAM $220000-$240000 (Stamp map)
 	lea    (WordRAM_Bank1).l, a0
 	move.w #$7FFF, d7
 	@loc_1F44:
@@ -200,6 +200,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 		dbf d7, @loc_1F44
 
 	; Copy "SEGA" tiles ($BB46-$D0C6) to Word RAM ($200080-$201600)
+	; Occupies stamps 1-44 (1-$2C)
 	lea    (segaLogoTiles).l, a0
 	lea    (unk_200080).l, a1
 	move.w #1375, d7
@@ -208,6 +209,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 		dbf d7, @loc_1F5A
 
 	; Copy "SEGA CD" tiles ($D09E-$E69E) to Word RAM ($201880-$202E80)
+	; Occupies stamps 49-93 ($31-$5D)
 	lea    (segaCdLogoTiles).l, a0
 	lea    (unk_201880).l, a1
 	move.w #1407, d7
@@ -231,7 +233,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 	move.w #$200, d2
 	bsr.w  multipartCopy
 
-	; Clear Word RAM $21A000-$21FF00
+	; Clear Word RAM $21A000-$21FF00 (Image buffers)
 	lea    (unk_21A000).l,a0
 	move.w #6079, d7
 	@loc_1FB0:
