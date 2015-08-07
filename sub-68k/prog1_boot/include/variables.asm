@@ -15,8 +15,8 @@ sub_18004 equ $18004
 ; Word RAM (2M)
 unk_90000 equ $90000
 unk_99C00 equ $99C00
-unk_99C02 equ $99C02
-unk_99C0C equ $99C0C
+WR_object0 equ $99C02
+WR_object1 equ $99C0C
 unk_99C16 equ $99C16
 unk_99C18 equ $99C18
 WR_vectorTable equ $99E80
@@ -116,10 +116,10 @@ byte_1C94 equ $1C94
 byte_1C96 equ $1C96
 oldGfxCompleteHandler equ $1C98
 word_1C9C equ $1C9C
-byte_1C9E equ $1C9E
-byte_1C9F equ $1C9F
+gfxCompleteFlag equ $1C9E
+gfxPrevCompleteFlag equ $1C9F
 word_1CA0 equ $1CA0
-word_1CA2 equ $1CA2
+gfxAllOpsComplete equ $1CA2
 word_1CA4 equ $1CA4
 byte_1CA8 equ $1CA8
 object0 equ $1CAA

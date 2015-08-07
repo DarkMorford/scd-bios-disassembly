@@ -8,11 +8,14 @@
 ;   Structure initialized in initGfxObject
 ;   Size is <= $A0 bytes
 GFXOBJ.word0 equ 0
+
+;   Provided by main CPU
 GFXOBJ.word2 equ 2
 GFXOBJ.word4 equ 4
 GFXOBJ.word6 equ 6
 GFXOBJ.word8 equ 8
 GFXOBJ.wordA equ $A
+
 GFXOBJ.word20 equ $20
 GFXOBJ.word22 equ $22
 GFXOBJ.word24 equ $24
@@ -29,6 +32,6 @@ GFXOBJ.dword48 equ $48
 GFXOBJ.dword4C equ $4C
 GFXOBJ.dword50 equ $50
 GFXOBJ.dword54 equ $54
-GFXOBJ.word58 equ $58
+GFXOBJ.divisor equ $58
 GFXOBJ.dword5C equ $5C
 GFXOBJ.dword60 equ $60

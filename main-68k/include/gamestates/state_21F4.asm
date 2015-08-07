@@ -215,6 +215,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 		move.l (a0)+, (a1)+
 		dbf d7, @loc_1F70
 
+	; Copy "SEGA" stamp map
 	lea    (dword_D046).l, a0
 	lea    (unk_220C02).l, a1
 	moveq  #10,   d0
@@ -222,6 +223,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 	move.w #$200, d2
 	bsr.w  multipartCopy
 
+	; Copy "SEGA CD" stamp map
 	lea    (dword_E61E).l, a0
 	lea    (unk_23F002).l, a1
 	moveq  #16,   d0
@@ -442,7 +444,7 @@ state_21F4:               ; CODE XREF: ROM:000005DAj
 	move.w #600, (cdInitTimer).w
 
 @loc_21FE:
-	bsr.w sub_26E8
+	bsr.w processAnimations
 
 	jsr waitForVblank
 
@@ -771,8 +773,9 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	jsr    displayOff
 
 	; Return if sub-CPU has Word RAM
+	; Probably means it's still working on our graphics tasks
 	btst   #GA_RET, (GA_MEM_MODE).l
-	beq.w  @loc_24DC
+	beq.w  @locret_24DC
 
 	move.w (word_219C00).l, d3
 	cmpi.w #3, d3
@@ -819,6 +822,7 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	lsl.w  #1, d3
 	move.l off_2502(pc, d3.w), d1
 
+	; Copy the processed graphics to VRAM
 	jsr dmaTransferToVramWithRewrite
 
 	move.w (word_219C00).l, (word_FFFFC10A).w
@@ -830,18 +834,18 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 	move.b (word_219C16).l, (byte_FFFFC10C).w
 
 @loc_24C0:
+	; Update params for graphics processing
 	moveq #9, d7
 	lea (word_FFFFC10E).w, a0
 	lea (word_219C02).l, a1
 
-	; Copy $FFC10E-$FFC12E to Word RAM $219C02-$219C22
 	@loc_24CC:
 		move.w (a0)+, (a1)+
 		dbf d7, @loc_24CC
 
 	m_giveWordRamToSubCpu
 
-@loc_24DC:
+@locret_24DC:
 	jsr displayOn
 	rts
 ; End of function sub_2424
@@ -1102,7 +1106,7 @@ word_2590:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2690:               ; CODE XREF: sub_27CCp sub_2994p ...
+resetGfxObj0:               ; CODE XREF: sub_27CCp sub_2994p ...
 	move.w #0, (word_FFFFC10E).w
 	move.w #0, (word_FFFFC110).w
 	move.w #0, (word_FFFFC112).w
@@ -1113,13 +1117,13 @@ sub_2690:               ; CODE XREF: sub_27CCp sub_2994p ...
 	clr.l (dword_FFFFC122).w
 	clr.l (dword_FFFFC126).w
 	rts
-; End of function sub_2690
+; End of function resetGfxObj0
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_26BC:               ; CODE XREF: sub_286Ap sub_2A82p ...
+resetGfxObj1:               ; CODE XREF: sub_286Ap sub_2A82p ...
 	move.w #0, (word_FFFFC118).w
 	move.w #0, (word_FFFFC11A).w
 	move.w #0, (word_FFFFC11C).w
@@ -1130,18 +1134,20 @@ sub_26BC:               ; CODE XREF: sub_286Ap sub_2A82p ...
 	clr.l (dword_FFFFC12A).w
 	clr.l (dword_FFFFC12E).w
 	rts
-; End of function sub_26BC
+; End of function resetGfxObj1
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_26E8:               ; CODE XREF: state_21F4:loc_21FEp
+processAnimations:               ; CODE XREF: state_21F4:loc_21FEp
+	; Animate every 4 frames
 	move.w (word_FFFFC10A).w, d0
 	andi.w #3, d0
 	cmpi.w #3, d0
 	bne.s  @locret_2704
 
+	; Animate if this byte (from player module) is non-zero
 	tst.b  (byte_FFFFC10C).w
 	beq.s  @locret_2704
 
@@ -1150,13 +1156,13 @@ sub_26E8:               ; CODE XREF: state_21F4:loc_21FEp
 
 @locret_2704:
 	rts
-; End of function sub_26E8
+; End of function processAnimations
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2706:               ; CODE XREF: sub_26E8+14p
+sub_2706:               ; CODE XREF: processAnimations+14p
 	move.w (word_FFFFC136).w, d0
 	lsl.w  #2, d0
 
@@ -1178,7 +1184,7 @@ loc_2712:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2722:               ; CODE XREF: sub_26E8+18p
+sub_2722:               ; CODE XREF: processAnimations+18p
 	move.w (word_FFFFC136).w, d0
 	lsl.w  #2, d0
 
@@ -1321,7 +1327,7 @@ sub_27C0:               ; CODE XREF: ROM:00002772j
 
 
 sub_27CC:               ; CODE XREF: ROM:0000277Aj
-	bsr.w sub_2690
+	bsr.w resetGfxObj0
 	rts
 ; End of function sub_27CC
 
@@ -1422,7 +1428,7 @@ sub_2834:               ; CODE XREF: ROM:0000279Aj
 
 
 sub_286A:               ; CODE XREF: ROM:0000279Ej
-	bsr.w  sub_26BC
+	bsr.w  resetGfxObj1
 
 	addq.w #1, (word_FFFFC136).w
 
@@ -1625,7 +1631,7 @@ sub_2978:               ; CODE XREF: ROM:0000289Cj
 
 
 sub_2994:               ; CODE XREF: ROM:000028A0j
-	bsr.w sub_2690
+	bsr.w resetGfxObj0
 	rts
 ; End of function sub_2994
 
@@ -1774,7 +1780,7 @@ sub_2A66:               ; CODE XREF: ROM:000028CCj
 
 
 sub_2A82:               ; CODE XREF: ROM:000028D0j
-	bsr.w  sub_26BC
+	bsr.w  resetGfxObj1
 
 	addq.w #1, (word_FFFFC136).w
 
@@ -1988,7 +1994,7 @@ sub_2BB6:               ; CODE XREF: ROM:00002AC0j
 
 
 sub_2BE4:               ; CODE XREF: ROM:00002AC4j
-	bsr.w sub_2690
+	bsr.w resetGfxObj0
 	rts
 ; End of function sub_2BE4
 
@@ -2061,7 +2067,7 @@ sub_2C36:               ; CODE XREF: ROM:00002AE4j
 
 
 sub_2C52:               ; CODE XREF: ROM:00002AECj
-	bsr.w  sub_26BC
+	bsr.w  resetGfxObj1
 
 	addq.w #1, (word_FFFFC136).w
 
@@ -2306,7 +2312,7 @@ sub_2DBA:               ; CODE XREF: ROM:00002C88j
 
 
 sub_2DF0:               ; CODE XREF: ROM:00002C90j
-	bsr.w sub_2690
+	bsr.w resetGfxObj0
 	rts
 ; End of function sub_2DF0
 
@@ -2499,7 +2505,7 @@ sub_2F32:               ; CODE XREF: ROM:00002CBCj
 
 
 sub_2F4A:               ; CODE XREF: ROM:00002CC0j
-	bsr.w sub_26BC
+	bsr.w resetGfxObj1
 
 	clr.w (word_FFFFC136).w
 	clr.b (byte_FFFFC10C).w

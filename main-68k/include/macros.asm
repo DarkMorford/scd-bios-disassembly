@@ -4,7 +4,7 @@
 
 ;   Word RAM macros
 	include "macros\wordRam.asm"
-	
+
 ;   VDP macros
 	include "macros\vdp.asm"
 

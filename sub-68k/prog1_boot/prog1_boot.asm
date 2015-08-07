@@ -4061,7 +4061,7 @@ prepareGfxOperation:               ; CODE XREF: sub_7B5E+8p
 		clr.l (a0)+
 		dbf d7, @loc_7B24
 
-	move.w #1, byte_1C9E(a6)
+	move.w #1, gfxCompleteFlag(a6)
 
 	; Sync/handshake with main CPU
 	bsr.w  sub_61CA
@@ -4086,35 +4086,36 @@ prepareGfxOperation:               ; CODE XREF: sub_7B5E+8p
 
 
 sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
-	clr.b   byte_1C96(a6)
-	bsr.w   sub_6150
-	bsr.w   prepareGfxOperation
-	bsr.w   waitForVblank
+	clr.b byte_1C96(a6)
+	bsr.w sub_6150
+	bsr.w prepareGfxOperation
+	bsr.w waitForVblank
 
 @loc_7B6E:               ; CODE XREF: sub_7B5E:loc_7C6Aj
-	bsr.w   sub_61E0
-	bne.w   @loc_7C94
+	bsr.w sub_61E0
+	bne.w @loc_7C94
 
-	bsr.w   sub_6150
-	bne.w   @loc_7C6E
+	bsr.w sub_6150
+	bne.w @loc_7C6E
 
 	lea RAM_BASE, a6
 
 	lea object0(a6), a5
-	clr.w   word_1CA4(a6)
+	clr.w word_1CA4(a6)
 
 	lea vectorTable0(a6), a1
-	bsr.w   sub_7CD0
+	bsr.w sub_7CD0
 
 	@loc_7B92:
-		bsr.w   sub_6150
-		bne.w   @loc_7C6E
+		bsr.w sub_6150
+		bne.w @loc_7C6E
 
-		move.b  byte_1C9E(a6), d0
-		cmp.b   byte_1C9F(a6), d0
-		beq.s   @loc_7B92
+		; Make sure the previous operation is finished
+		move.b gfxCompleteFlag(a6), d0
+		cmp.b  gfxPrevCompleteFlag(a6), d0
+		beq.s  @loc_7B92
 
-	move.b  byte_1C9E(a6), byte_1C9F(a6)
+	move.b gfxCompleteFlag(a6), gfxPrevCompleteFlag(a6)
 
 	@loc_7BAA:
 		bsr.w sub_6150
@@ -4124,32 +4125,32 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 		btst  #GA_DMNA, (GAL_MEMORY_MODE).l
 		beq.s @loc_7BAA
 
-	clr.w   word_1CA2(a6)
+	clr.w gfxAllOpsComplete(a6)
 
-	lea   vectorTable0(a6), a0
+	lea vectorTable0(a6), a0
 	bsr.w beginGfxOperation
 
 	lea object1(a6), a5
-	move.w  #1, word_1CA4(a6)
+	move.w #1, word_1CA4(a6)
 
 	lea vectorTable1(a6), a1
-	bsr.w   sub_7CD0
+	bsr.w sub_7CD0
 
-	move.w  word_1CA0(a6), (unk_99C00).l
-	move.b  (unk_99C18).l, byte_1CA8(a6)
-	move.b  (byte_1801C).l, (unk_99C16).l
-	clr.b   (byte_1801C).l
+	move.w word_1CA0(a6), (unk_99C00).l
+	move.b (unk_99C18).l, byte_1CA8(a6)
+	move.b (byte_1801C).l, (unk_99C16).l
+	clr.b  (byte_1801C).l
 
-	move.w  word_1CA0(a6), d0
-	andi.w  #3, d0
-	cmpi.w  #3, d0
-	bne.s   @loc_7C34
+	move.w word_1CA0(a6), d0
+	andi.w #3, d0
+	cmpi.w #3, d0
+	bne.s  @loc_7C34
 
 	; Load data for object 0 ("SEGA" logo?)
 	moveq #4, d7
-	lea (unk_99C02).l, a0
+	lea (WR_object0).l, a0
 	lea object0(a6), a5
-	lea 2(a5), a1
+	lea GFXOBJ.word2(a5), a1
 
 	@loc_7C18:
 		move.w (a0)+, (a1)+
@@ -4157,55 +4158,57 @@ sub_7B5E:               ; CODE XREF: BOOT:0000611Cj
 
 	; Load data for object 1 ("SEGA CD" logo?)
 	moveq #4, d7
-	lea (unk_99C0C).l, a0
+	lea (WR_object1).l, a0
 	lea object1(a6), a5
-	lea 2(a5), a1
+	lea GFXOBJ.word2(a5), a1
 
 	@loc_7C2E:
 		move.w (a0)+, (a1)+
 		dbf d7, @loc_7C2E
 
 	@loc_7C34:
-		bsr.w   sub_6150
-		bne.w   @loc_7C6E
+		bsr.w sub_6150
+		bne.w @loc_7C6E
 
-		move.b  byte_1C9E(a6), d0
-		cmp.b   byte_1C9F(a6), d0
-		beq.s   @loc_7C34
+		; Make sure the previous operation is finished
+		move.b gfxCompleteFlag(a6), d0
+		cmp.b  gfxPrevCompleteFlag(a6), d0
+		beq.s  @loc_7C34
 
-	move.b  byte_1C9E(a6), byte_1C9F(a6)
-	move.w  #1, word_1CA2(a6)
+	move.b gfxCompleteFlag(a6), gfxPrevCompleteFlag(a6)
+	move.w #1, gfxAllOpsComplete(a6)
 
-	lea   vectorTable1(a6), a0
+	lea vectorTable1(a6), a0
 	bsr.w beginGfxOperation
 
-	addq.w  #1, word_1CA0(a6)
-	cmpi.w  #7, word_1CA0(a6)
-	bls.s   @loc_7C6A
+	addq.w #1, word_1CA0(a6)
+	cmpi.w #7, word_1CA0(a6)
+	bls.s  @loc_7C6A
 
-	clr.w   word_1CA0(a6)
+	clr.w word_1CA0(a6)
 
 @loc_7C6A:               ; CODE XREF: sub_7B5E+106j
-	bra.w   @loc_7B6E
+	bra.w @loc_7B6E
 ; ---------------------------------------------------------------------------
 
 @loc_7C6E:               ; CODE XREF: sub_7B5E+1Cj sub_7B5E+38j ...
-	move.b  #$E0, (byte_18022).l
+	move.b #$E0, (byte_18022).l
 
 @loc_7C76:               ; CODE XREF: sub_7B5E+142j
 	; Reset the GFX interrupt handler
-	bclr    #GA_IEN1, (GA_INT_MASK).w
-	move.l  oldGfxCompleteHandler(a6), (_LEVEL1+2).w
+	bclr   #GA_IEN1, (GA_INT_MASK).w
+	move.l oldGfxCompleteHandler(a6), (_LEVEL1+2).w
 
+	; Set GFX priority mode to OFF
 	bclr #GA_PM0, (GAL_MEMORY_MODE).l
 	bclr #GA_PM1, (GAL_MEMORY_MODE).l
 	rts
 ; ---------------------------------------------------------------------------
 
 @loc_7C94:               ; CODE XREF: sub_7B5E+14j
-	move.b  #$E1, (byte_18022).l
-	bsr.w   waitForVblank
-	bra.s   @loc_7C76
+	move.b #$E1, (byte_18022).l
+	bsr.w  waitForVblank
+	bra.s  @loc_7C76
 ; End of function sub_7B5E
 
 ; ---------------------------------------------------------------------------
@@ -4222,9 +4225,9 @@ loc_7CA2:               ; CODE XREF: BOOT:0000609Ej
 ; ---------------------------------------------------------------------------
 
 gfxCompleteHandler:               ; DATA XREF: prepareGfxOperation+32o
-	bchg  #0, byte_1C9E(a6)
+	bchg #0, gfxCompleteFlag(a6)
 
-	tst.w word_1CA2(a6)
+	tst.w gfxAllOpsComplete(a6)
 	beq.s @locret_7CCE
 
 @loc_7CC4:
@@ -4254,8 +4257,8 @@ sub_7CD0:               ; CODE XREF: sub_7B5E+30p sub_7B5E+78p
 	bsr.w   sub_7D22
 
 	@loc_7CF2:
-		bsr.w  sub_7E24
-		bsr.w  sub_7E3C
+		bsr.w  calculateGfxDivisor
+		bsr.w  generateTraceVector
 		addq.w #1, d2
 		dbf d6, @loc_7CF2
 
@@ -4390,7 +4393,7 @@ sub_7D22:               ; CODE XREF: sub_7CD0+1Ep
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_7E24:               ; CODE XREF: sub_7CD0:loc_7CF2p
+calculateGfxDivisor:               ; CODE XREF: sub_7CD0:loc_7CF2p
 	move.w GFXOBJ.word20(a5), d0
 	muls.w d2, d0
 	asr.l  #8, d0
@@ -4399,12 +4402,13 @@ sub_7E24:               ; CODE XREF: sub_7CD0:loc_7CF2p
 	sub.w  d0, d3
 	bne.s  @loc_7E36
 
-	moveq  #1, d3
+	; Prevent possible divide-by-zero
+	moveq #1, d3
 
 @loc_7E36:
-	move.w d3, GFXOBJ.word58(a5)
+	move.w d3, GFXOBJ.divisor(a5)
 	rts
-; End of function sub_7E24
+; End of function calculateGfxDivisor
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -4413,17 +4417,17 @@ sub_7E24:               ; CODE XREF: sub_7CD0:loc_7CF2p
 ; Inputs:
 ;   a1: Address to put trace vector
 
-sub_7E3C:               ; CODE XREF: sub_7CD0+26p
+generateTraceVector:               ; CODE XREF: sub_7CD0+26p
 	move.w GFXOBJ.word40(a5), d0
 	muls.w d2, d0
 
 	add.l  GFXOBJ.dword50(a5), d0
 	add.l  GFXOBJ.dword48(a5), d0
 
-	divs.w GFXOBJ.word58(a5), d0
+	divs.w GFXOBJ.divisor(a5), d0
 
 	asl.w  #3, d0
-	addi.w #$4C0, d0
+	addi.w #(152 << 3), d0
 
 	; Write X start position
 	move.w d0, (a1)+
@@ -4434,36 +4438,36 @@ sub_7E3C:               ; CODE XREF: sub_7CD0+26p
 	sub.l  GFXOBJ.dword54(a5), d0
 	sub.l  GFXOBJ.dword4C(a5), d0
 
-	divs.w GFXOBJ.word58(a5), d0
+	divs.w GFXOBJ.divisor(a5), d0
 
 	asl.w  #3, d0
-	addi.w #$280, d0
+	addi.w #(80 << 3), d0
 
 	tst.w  word_1CA4(a6)
 	beq.s  @loc_7E78
 
-	addi.w #$7B00, d0
+	addi.w #($F60 << 3), d0
 
 @loc_7E78:
 	; Write Y start position
 	move.w d0, (a1)+
 
 	move.l GFXOBJ.dword5C(a5), d0
-	divs.w GFXOBJ.word58(a5), d0
+	divs.w GFXOBJ.divisor(a5), d0
 	asl.w  #3, d0
 
 	; Write X delta
 	move.w d0, (a1)+
 
 	move.l GFXOBJ.dword60(a5), d0
-	divs.w GFXOBJ.word58(a5), d0
+	divs.w GFXOBJ.divisor(a5), d0
 	asl.w  #3, d0
 
 	; Write Y delta
 	move.w d0, (a1)+
 
 	rts
-; End of function sub_7E3C
+; End of function generateTraceVector
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -4490,6 +4494,7 @@ sub_7E94:               ; CODE XREF: sub_7CD0+1Ap
 	bsr.s  sub_7EE6
 
 	move.w d7, GFXOBJ.word22(a5)
+
 	andi.w #$1FF, GFXOBJ.wordA(a5)
 	move.w GFXOBJ.wordA(a5), d7
 	move.w d7, d0
@@ -4616,7 +4621,7 @@ beginGfxOperation:               ; CODE XREF: sub_7B5E+66p sub_7B5E+F8p
 	bset #GA_PM0, (GAL_MEMORY_MODE).l
 
 @loc_80A6:
-	tst.w word_1CA2(a6)
+	tst.w gfxAllOpsComplete(a6)
 	beq.s @loc_80DA
 
 	; Priority mode overwrite
