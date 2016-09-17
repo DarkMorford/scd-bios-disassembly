@@ -1,0 +1,52 @@
+; Global registers
+YM_LFO      equ 22h
+YM_TMRAH    equ 24h
+YM_TMRAL    equ 25h
+YM_TMRB     equ 26h
+YM_TMRCTRL  equ 27h
+YM_KEYONOFF equ 28h
+YM_DACDATA  equ 2Ah
+YM_DACEN    equ 2Bh
+
+; Single-operator registers
+YM_DT1_MUL equ 30h
+YM_TL      equ 40h
+YM_RS_AR   equ 50h
+YM_AM_D1R  equ 60h
+YM_D2R     equ 70h
+YM_D1L_RR  equ 80h
+YM_SSG     equ 90h
+
+; Single-channel registers
+YM_FREQH    equ 0A0h
+YM_FREQL    equ 0A4h
+YM_CHCFREQH equ 0A8h
+YM_CHCFREQL equ 0ACh
+YM_FDBK_ALG equ 0B0h
+YM_CHENABLE equ 0B4h
+
+; Offsets for 30h-9Fh
+CHAOP1 equ  0
+CHBOP1 equ  1
+CHCOP1 equ  2
+
+CHAOP2 equ  4
+CHBOP2 equ  5
+CHCOP2 equ  6
+
+CHAOP3 equ  8
+CHBOP3 equ  9
+CHCOP3 equ 0Ah
+
+CHAOP4 equ 0Ch
+CHBOP4 equ 0Dh
+CHCOP4 equ 0Eh
+
+; Offsets for A0h-B7h
+CHANNELA equ  0
+CHANNELB equ  1
+CHANNELC equ  2
+
+CHANCOP2 equ  8
+CHANCOP3 equ  9
+CHANCOP4 equ 0Ah

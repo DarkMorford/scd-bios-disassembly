@@ -1,0 +1,28 @@
+zmac version 3dec2014
+	--version show version number
+	--help	show this help message
+	-8	use 8080 interpretation of mnemonics
+	-b	no binary (.hex,.cmd,.cas, etc.) output
+	-c	no cycle counts in listing
+	-e	error list only
+	-f	print if skipped lines
+	-g	do not list extra code
+	-h	show this information about options and quit
+	-i	do not list include files
+	-I dir	add 'dir' to include file search path
+	-j	promote relative jumps to absolute as needed
+	-J	warn when a jump could be relative
+	-l	no list
+	-L	force listing of everything
+	-m	print macro expansions
+	-n	put line numbers off
+	-o	list to standard output
+	-p	put out four \n's for eject
+	-s	don't produce a symbol list
+	-t	output error count instead of list of errors
+	-z	use Z-80 interpretation of mnemonics
+	--dep	list files included
+	--mras	limited MRAS/EDAS compatibility
+	--rel	output .rel file only
+	--zmac	compatibility with original zmac
+	--doc	output documentation as HTML file

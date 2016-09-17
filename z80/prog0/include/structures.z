@@ -1,0 +1,23 @@
+; Note structure (?)
+NOTE.flags equ 0
+	NOTE.flag0 equ 0
+	NOTE.flag1 equ 1
+	NOTE.flag2 equ 2
+	NOTE.flag3 equ 3
+	NOTE.flag4 equ 4
+	NOTE.flag5 equ 5
+	NOTE.flag6 equ 6
+	NOTE.flag7 equ 7
+NOTE.channel equ 1
+NOTE.addrlo_3 equ 3
+NOTE.addrhi_4 equ 4
+NOTE.byte_6 equ 6
+NOTE.byte_8 equ 8
+NOTE.byte_A equ 0Ah
+NOTE.byte_B equ 0Bh
+NOTE.byte_18 equ 18h
+NOTE.byte_19 equ 19h
+NOTE.byte_1A equ 1Ah
+NOTE.addrlo_1C equ 1Ch
+NOTE.addrhi_1D equ 1Dh
+NOTE.size equ 30h

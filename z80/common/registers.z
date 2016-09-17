@@ -1,0 +1,9 @@
+FM1_ADDR equ 4000h
+FM1_DATA equ 4001h
+
+FM2_ADDR equ 4002h
+FM2_DATA equ 4003h
+
+BANK_SEL equ 6000h
+
+PSG_CTRL equ 7F11h
