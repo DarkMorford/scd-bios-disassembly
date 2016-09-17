@@ -1793,7 +1793,7 @@ sub_6B14:               ; CODE XREF: sub_6AC4+4Cp sub_6B46+5Ej ...
 
 
 sub_6B46:               ; CODE XREF: sub_66FE+58p
-		cmpi.b  #$3F,flags_3F(a6) ; '?'
+		cmpi.b  #$3F,flags_3F(a6)
 		bhi.w   loc_6C24
 		bclr    #4,$A23(a6)
 		btst    #1,$A23(a6)
@@ -3065,26 +3065,29 @@ loc_743C:               ; CODE XREF: sub_7360+3Ej
 
 
 sub_744A:               ; CODE XREF: sub_7302+2Ep sub_7360+E0j
-		bsr.w   sub_77C0
-		lea (WORD_RAM_1M).l,a1
-		move.w  #$D7,d1 ; '×'
+	bsr.w   sub_77C0
+	lea (WORD_RAM_1M).l, a1
+	move.w #$D7, d1
 
-loc_7458:               ; CODE XREF: sub_744A+1Aj
-		moveq   #$26,d2 ; '&'
+	loc_7458:
+		moveq #$26, d2
 
-loc_745A:               ; CODE XREF: sub_744A+12j
-		move.l  d7,(a1)+
-		dbf d2,loc_745A
-		adda.w  #$64,a1 ; 'd'
-		dbf d1,loc_7458
-		lea word_BE4(a6),a2
-		moveq   #$C,d0
+		loc_745A:
+			move.l  d7, (a1)+
+			dbf d2, loc_745A
 
-loc_746E:               ; CODE XREF: sub_744A+26j
+		adda.w  #$64, a1
+		dbf d1, loc_7458
+
+	lea word_BE4(a6), a2
+	moveq   #$C, d0
+
+	loc_746E:               ; CODE XREF: sub_744A+26j
 		clr.w   (a2)+
-		dbf d0,loc_746E
-		lea (unk_CE080).l,a0
-		move.l  #$AFFFC,(a0)
+		dbf d0, loc_746E
+
+	lea (unk_CE080).l, a0
+	move.l  #$AFFFC, (a0)
 ; End of function sub_744A
 
 
@@ -3092,11 +3095,11 @@ loc_746E:               ; CODE XREF: sub_744A+26j
 
 
 sub_7480:               ; CODE XREF: sub_7302+36p sub_7360+E6j
-		moveq   #4,d0
-		move.w  d5,d1
-		move.l  d7,d2
-		bsr.w   sub_77F4
-		rts
+	moveq  #4, d0
+	move.w d5, d1
+	move.l d7, d2
+	bsr.w  sub_77F4
+	rts
 ; End of function sub_7480
 
 ; ---------------------------------------------------------------------------
@@ -3553,18 +3556,20 @@ loc_77AC:               ; CODE XREF: sub_7794+24j
 
 
 sub_77C0:               ; CODE XREF: sub_744Ap BOOT:000074AAp
-		move.w  d0,-(sp)
-		move.b  d7,d0
-		lsl.w   #4,d7
-		or.b    d0,d7
-		move.b  d7,d0
-		lsl.w   #8,d7
-		move.b  d0,d7
-		move.w  d7,d0
-		swap    d7
-		move.w  d0,d7
-		move.w  (sp)+,d0
-		rts
+	move.w  d0, -(sp)
+
+	move.b  d7, d0
+	lsl.w   #4, d7
+	or.b    d0, d7
+	move.b  d7, d0
+	lsl.w   #8, d7
+	move.b  d0, d7
+	move.w  d7, d0
+	swap    d7
+	move.w  d0, d7
+
+	move.w  (sp)+, d0
+	rts
 ; End of function sub_77C0
 
 
@@ -4050,9 +4055,9 @@ prepareGfxOperation:               ; CODE XREF: sub_7B5E+8p
 	move.w #(38 * 8), (GAL_BUFFER_HDOTS).l
 
 	; Set the graphic-complete interrupt
-	move.l (_LEVEL1+2).w, oldGfxCompleteHandler(a6)
+	move.l (_LEVEL1 + 2).w, oldGfxCompleteHandler(a6)
 	lea    gfxCompleteHandler(pc), a1
-	move.l a1, (_LEVEL1+2).w
+	move.l a1, (_LEVEL1 + 2).w
 	bset   #GA_IEN1, (GA_INT_MASK).w
 
 	; Clear RAM from $1C9C-$1F1C ($9FD8-$A258)
@@ -4702,11 +4707,11 @@ loc_8142:               ; CODE XREF: sub_810A+2Ej
 	btst    #GA_DMNA, (GAL_MEMORY_MODE).l
 	beq.s   loc_8130
 
-	movem.w mainCommDataCache+8(a6), d0-d1
+	movem.w mainCommDataCache + 8(a6), d0-d1
 	tst.w   d0
 	beq.s   loc_812C
 
-	move.w  d0, subCommDataBuffer+8(a6)
+	move.w  d0, subCommDataBuffer + 8(a6)
 	subq.w  #1, d0
 	asl.w   #2, d0
 
@@ -4725,6 +4730,7 @@ loc_816E:
 	nop
 	nop
 	nop
+
 	bra.s loc_812C
 ; End of function sub_810A
 
@@ -4749,47 +4755,51 @@ loc_8186:
 ; ---------------------------------------------------------------------------
 
 loc_81A6:               ; CODE XREF: BOOT:loc_8186j
-		lea $4010(a2),a0
-		lea $4000(a2),a1
-		move.w  #BRMINIT,d0
-		jsr _BURAM
-		bcs.s   loc_81BA
-		moveq   #3,d1
+	lea $4010(a2), a0
+	lea $4000(a2), a1
+	move.w  #BRMINIT, d0
+	jsr _BURAM
+	bcs.s   loc_81BA
+	moveq   #3, d1
 
 loc_81BA:               ; CODE XREF: BOOT:000081B6j
-		add.w   d1,d1
-		move.w  word_81C8(pc,d1.w),0(a2)
-		clr.b   $C(a1)
-		rts
+	add.w   d1, d1
+	move.w  word_81C8(pc, d1.w), 0(a2)
+	clr.b   $C(a1)
+	rts
 ; ---------------------------------------------------------------------------
-word_81C8:  dc.w 0
-		dc.w $8000
-		dc.w $8001
-		dc.w $8081
+word_81C8:
+	dc.w 0
+	dc.w $8000
+	dc.w $8001
+	dc.w $8081
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_81D0:               ; CODE XREF: BOOT:0000818Aj
 					; sub_81FE+10p
-		cmpi.w  #$8081,0(a2)
-		bne.s   loc_81F0
-		lea $4000(a2),a1
-		move.w  #BRMSTAT,d0
-		jsr _BURAM
-		cmpi.w  #$FFFF,d0
-		bne.s   loc_81F4
-		cmpi.w  #$FFFF,d1
-		bne.s   loc_81F4
+	cmpi.w  #$8081, 0(a2)
+	bne.s   loc_81F0
+
+	lea    $4000(a2), a1
+	move.w #BRMSTAT, d0
+	jsr    _BURAM
+
+	cmpi.w  #$FFFF, d0
+	bne.s   loc_81F4
+
+	cmpi.w  #$FFFF, d1
+	bne.s   loc_81F4
 
 loc_81F0:               ; CODE XREF: sub_81D0+6j
-		moveq   #0,d0
-		moveq   #0,d1
+	moveq #0, d0
+	moveq #0, d1
 
 loc_81F4:               ; CODE XREF: sub_81D0+18j sub_81D0+1Ej
-		move.w  d0,2(a2)
-		move.w  d1,4(a2)
-		rts
+	move.w d0, 2(a2)
+	move.w d1, 4(a2)
+	rts
 ; End of function sub_81D0
 
 
@@ -4797,19 +4807,22 @@ loc_81F4:               ; CODE XREF: sub_81D0+18j sub_81D0+1Ej
 
 
 sub_81FE:               ; CODE XREF: BOOT:0000818Ej
-		move.w  #BRMFORMAT,d0
-		jsr _BURAM
-		bcs.s   loc_8212
-		move.w  #$8081,0(a2)
-		bsr.s   sub_81D0
-		rts
+	move.w #BRMFORMAT, d0
+	jsr    _BURAM
+
+	bcs.s loc_8212
+
+	move.w #$8081, 0(a2)
+	bsr.s  sub_81D0
+
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_8212:               ; CODE XREF: sub_81FE+8j
-		move.w  #$8000,0(a2)
-		clr.w   2(a2)
-		clr.w   4(a2)
-		rts
+	move.w #$8000, 0(a2)
+	clr.w  2(a2)
+	clr.w  4(a2)
+	rts
 ; End of function sub_81FE
 
 
@@ -4817,14 +4830,14 @@ loc_8212:               ; CODE XREF: sub_81FE+8j
 
 
 sub_8222:               ; CODE XREF: BOOT:00008192j
-		move.w  $A(a2),d1
-		swap    d1
-		move.w  #$A,d1
-		lea $80(a2),a1
-		lea asc_823E(pc),a0 ; "***********"
-		move.w  #BRMDIR,d0
-		jsr _BURAM
-		rts
+	move.w  $A(a2), d1
+	swap    d1
+	move.w  #$A, d1
+	lea $80(a2), a1
+	lea asc_823E(pc), a0 ; "***********"
+	move.w  #BRMDIR, d0
+	jsr _BURAM
+	rts
 ; End of function sub_8222
 
 ; ---------------------------------------------------------------------------
@@ -4834,18 +4847,19 @@ asc_823E:   dc.b '***********',0    ; DATA XREF: sub_8222+Eo
 
 
 sub_824A:               ; CODE XREF: BOOT:00008196j
-		lea $120(a2),a0
-		lea $130(a2),a1
-		move.w  #BRMREAD,d0
-		jsr _BURAM
-		bcs.s   locret_8266
-		move.w  d0,$12C(a2)
-		move.b  d1,$12B(a2)
-		rts
+	lea $120(a2), a0
+	lea $130(a2), a1
+	move.w  #BRMREAD, d0
+	jsr _BURAM
+	bcs.s   locret_8266
+
+	move.w  d0, $12C(a2)
+	move.b  d1, $12B(a2)
+	rts
 ; ---------------------------------------------------------------------------
 
 locret_8266:                ; CODE XREF: sub_824A+10j
-		rts
+	rts
 ; End of function sub_824A
 
 
@@ -4853,35 +4867,36 @@ locret_8266:                ; CODE XREF: sub_824A+10j
 
 
 sub_8268:               ; CODE XREF: BOOT:0000819Aj
-		move.w  #0,$12E(a2)
-		moveq   #2,d7
+	move.w  #0, $12E(a2)
+	moveq   #2, d7
 
 loc_8270:               ; CODE XREF: sub_8268+2Aj
-		lea $120(a3),a0
-		lea $130(a3),a1
-		move.w  #BRMWRITE,d0
-		jsr _BURAM
-		bcs.s   locret_82B2
-		lea $120(a3),a0
-		lea $130(a3),a1
-		move.w  #BRMVERIFY,d0
-		jsr _BURAM
-		dbcc    d7,loc_8270
-		bcs.s   loc_829A
-		rts
+	lea $120(a3), a0
+	lea $130(a3), a1
+	move.w  #BRMWRITE, d0
+	jsr _BURAM
+	bcs.s   locret_82B2
+	lea $120(a3), a0
+	lea $130(a3), a1
+	move.w  #BRMVERIFY, d0
+	jsr _BURAM
+	dbcc    d7, loc_8270
+
+	bcs.s   loc_829A
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_829A:               ; CODE XREF: sub_8268+2Ej
-		lea $120(a3),a0
-		clr.b   $12B(a3)
-		move.w  #BRMDEL,d0
-		jsr _BURAM
-		move.w  #$FFFF,$12E(a2)
-		rts
+	lea $120(a3), a0
+	clr.b   $12B(a3)
+	move.w  #BRMDEL, d0
+	jsr _BURAM
+	move.w  #$FFFF, $12E(a2)
+	rts
 ; ---------------------------------------------------------------------------
 
 locret_82B2:                ; CODE XREF: sub_8268+18j
-		rts
+	rts
 ; End of function sub_8268
 
 
@@ -4889,17 +4904,17 @@ locret_82B2:                ; CODE XREF: sub_8268+18j
 
 
 sub_82B4:               ; CODE XREF: BOOT:0000819Ej
-		lea $120(a3),a0
-		move.w  #BRMSERCH,d0
-		jsr _BURAM
-		bcs.s   loc_82C8
-		clr.w   $12E(a2)
-		rts
+	lea $120(a3), a0
+	move.w  #BRMSERCH, d0
+	jsr _BURAM
+	bcs.s   loc_82C8
+	clr.w   $12E(a2)
+	rts
 ; ---------------------------------------------------------------------------
 
 loc_82C8:               ; CODE XREF: sub_82B4+Cj
-		move.w  #$FFFF,$12E(a2)
-		rts
+	move.w  #$FFFF, $12E(a2)
+	rts
 ; End of function sub_82B4
 
 
@@ -4907,12 +4922,12 @@ loc_82C8:               ; CODE XREF: sub_82B4+Cj
 
 
 sub_82D0:               ; CODE XREF: BOOT:000081A2j
-		lea $120(a2),a0
-		clr.b   $12B(a2)
-		move.w  #BRMDEL,d0
-		jsr _BURAM
-		move.w  #$FFFF,$12E(a2)
-		rts
+	lea $120(a2), a0
+	clr.b   $12B(a2)
+	move.w  #BRMDEL, d0
+	jsr _BURAM
+	move.w  #$FFFF, $12E(a2)
+	rts
 ; End of function sub_82D0
 
 

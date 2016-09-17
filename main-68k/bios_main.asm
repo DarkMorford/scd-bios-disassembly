@@ -13,7 +13,9 @@
 
 InitialSSP:
 	dc.l $FFFFFD00
+InitialPC:
 	dc.l _start
+
 	dc.l errorReset
 	dc.l _CODERR
 	dc.l _CODERR
@@ -144,7 +146,7 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   writeTilemapToVram
 ; ---------------------------------------------------------------------------
-	bra.w   sub_C52
+	bra.w   writeTilemapWithTemplate
 ; ---------------------------------------------------------------------------
 	bra.w   fillVramTilemap
 ; ---------------------------------------------------------------------------
@@ -190,9 +192,9 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   loadFont
 ; ---------------------------------------------------------------------------
-	bra.w   loc_1952
-; ---------------------------------------------------------------------------
 	bra.w   loadDefaultFont
+; ---------------------------------------------------------------------------
+	bra.w   loadDefaultFontAndAddress
 ; ---------------------------------------------------------------------------
 	bra.w   handleDpadRepeat
 ; ---------------------------------------------------------------------------
@@ -226,7 +228,7 @@ fill_21A:
 ; ---------------------------------------------------------------------------
 	bra.w   setVblankHandler
 ; ---------------------------------------------------------------------------
-	bra.w   sub_CA0
+	bra.w   writeTilemapSequence
 ; ---------------------------------------------------------------------------
 	bra.w   sub_CC6
 ; ---------------------------------------------------------------------------
@@ -541,8 +543,8 @@ bootCartridge:
 
 loc_598:                ; CODE XREF: ROM:00000552j
 	; Cold boot
-	jsr   (loadDefaultVdpRegs).w
-	jsr   (clearAllVram).w
+	jsr (loadDefaultVdpRegs).w
+	jsr (clearAllVram).w
 
 	bsr.w checkRegion
 
@@ -639,6 +641,7 @@ sub_640:                ; CODE XREF: ROM:00000280j
 					; ROM:00000570j
 	m_disableInterrupts
 
+	; Silence the PSG
 	move.b #$9F, (PSG_CTRL).l
 	nop
 	nop
@@ -841,7 +844,7 @@ checkRegion:
 	m_disableInterrupts
 
 	jsr loadDefaultVdpRegs(pc)
-	jsr loadDefaultFont(pc)
+	jsr loadDefaultFontAndAddress(pc)
 
 	lea regionErrorText(pc), a1
 
@@ -958,6 +961,7 @@ loc_976:                ; CODE XREF: ROM:00000304j
 		tst.b (vblankCode).w
 		bne.s @loc_97E
 
+	; Advance the RNG every frame
 	bsr.w rand
 	rts
 ; End of function waitForVblank
@@ -1018,10 +1022,12 @@ loadVdpRegs:                ; CODE XREF: ROM:000002B0j
 		cmpi.b #$92, d0
 		bhi.s  @loc_9F2
 
+		; Cache the new register value
 		add.b  d0, d0
 		move.w d1, (a2, d0.w)
 
 	@loc_9F2:
+		; Write the new value to the register
 		move.w d1, (VDP_CONTROL).l
 		bra.s  @loc_9E0
 ; ---------------------------------------------------------------------------
@@ -1213,7 +1219,7 @@ dmaFillVramSegment:         ; CODE XREF: ROM:000002C0j
 ; d2 - DMA length
 
 dmaTransferToVram:          ; CODE XREF: ROM:000002D0j
-	lea (VDP_CONTROL).l,a6
+	lea (VDP_CONTROL).l, a6
 
 	; Enable DMA
 	move.w (vdpRegCache+2).w, d3
@@ -1429,9 +1435,9 @@ writeTilemapToVram:             ; CODE XREF: ROM:000002C4j
 ; d1: Columns
 ; d2: Lines
 ; d3: Template word
-; a1: Source data
+; a1: Source data (bytes)
 
-sub_C52:                ; CODE XREF: ROM:000002C8j
+writeTilemapWithTemplate:                ; CODE XREF: ROM:000002C8j
 	lea (VDP_DATA).l, a5
 
 	move.w #0, -(sp)
@@ -1451,7 +1457,7 @@ sub_C52:                ; CODE XREF: ROM:000002C8j
 
 	addq.w #4, sp
 	rts
-; End of function sub_C52
+; End of function writeTilemapWithTemplate
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1463,7 +1469,7 @@ sub_C52:                ; CODE XREF: ROM:000002C8j
 ; d3: OR mask
 ; a1: Source data
 
-sub_C78:                ; CODE XREF: sub_5764+60p
+writeTilemapWithOrMask:                ; CODE XREF: sub_5764+60p
 	lea (VDP_DATA).l, a5
 
 	move.w #0, -(sp)
@@ -1484,13 +1490,13 @@ sub_C78:                ; CODE XREF: sub_5764+60p
 
 	addq.w #4,sp
 	rts
-; End of function sub_C78
+; End of function writeTilemapWithOrMask
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_CA0:                ; CODE XREF: ROM:0000036Cj
+writeTilemapSequence:                ; CODE XREF: ROM:0000036Cj
 	lea (VDP_DATA).l, a5
 
 	move.w #0, -(sp)
@@ -1510,7 +1516,7 @@ sub_CA0:                ; CODE XREF: ROM:0000036Cj
 
 	addq.w #4, sp
 	rts
-; End of function sub_CA0
+; End of function writeTilemapSequence
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1578,7 +1584,7 @@ fillVramTilemap:                ; CODE XREF: ROM:000002CCj
 
 displayOn:                      ; CODE XREF: ROM:000002D8j
 	bset  #6, (vdpRegCache+3).w
-	bra.s loc_D36
+	bra.s writeDisplayControlReg
 ; ---------------------------------------------------------------------------
 
 displayBlack:                   ; CODE XREF: ROM:00000384j
@@ -1588,7 +1594,7 @@ displayBlack:                   ; CODE XREF: ROM:00000384j
 displayOff:                     ; CODE XREF: ROM:000002DCj
 	bclr #6, (vdpRegCache+3).w
 
-loc_D36:
+writeDisplayControlReg:
 	move.w (vdpRegCache+2).w, (VDP_CONTROL).l
 	rts
 ; End of function displayOn
@@ -1629,7 +1635,7 @@ dmaTransferPalettes:            ; CODE XREF: ROM:000002E8j
 	lea (VDP_CONTROL).l, a4
 
 	; Enable DMA
-	move.w (vdpRegCache+2).w, d4
+	move.w (vdpRegCache + 2).w, d4
 	bset   #4, d4
 	move.w d4, (a4)
 
@@ -1652,7 +1658,7 @@ dmaTransferPalettes:            ; CODE XREF: ROM:000002E8j
 	m_z80ReleaseBus
 
 	; Disable DMA
-	move.w (vdpRegCache+2).w, (a4)
+	move.w (vdpRegCache + 2).w, (a4)
 
 	m_loadCramWriteAddress 0, (a4)
 	move.w (paletteBuffer0).w, -4(a4)
@@ -1828,14 +1834,14 @@ loadZ80Prg:             ; CODE XREF: setupGenHardware+8p
 
 	lea    (Z80_RAM_Base0).l, a6
 	lea    (Z80_PRG_Base0).l, a5
-	move.w #3231,d7
+	move.w #3231, d7
 	@loc_FEC:
 		move.b (a5)+, (a6)+
 		dbf d7, @loc_FEC
 
 	lea    (Z80_RAM_Base1).l, a6
 	lea    (Z80_PRG_Base1).l, a5
-	move.w #377,d7
+	move.w #377, d7
 	@loc_1002:
 		move.b (a5)+, (a6)+
 		dbf d7, @loc_1002
@@ -1917,12 +1923,14 @@ sendE3ToZ80:
 sendCommandToZ80:
 	m_saveStatusRegister
 	m_disableInterrupts
+
 	m_z80RequestBus
 	m_z80WaitForBus
 
 	move.b d7, (byte_A01C0A).l
 
 	m_z80ReleaseBus
+
 	m_restoreStatusRegister
 	rts
 ; End of function sendE3ToZ80
@@ -2063,10 +2071,10 @@ writeTextToScreen:          ; CODE XREF: ROM:0000031Cj
 	move.w (fontTileOffset).w, d1
 	lea (VDP_DATA).l, a5
 
-@loc_1922:
+@writeLine:
 	move.l  d0, 4(a5)
 
-@loc_1926:
+@writeCharacter:
 	moveq   #0, d2
 	move.b  (a1)+, d2
 	bmi.s   @returnFinished
@@ -2074,14 +2082,14 @@ writeTextToScreen:          ; CODE XREF: ROM:0000031Cj
 
 	add.w   d1, d2
 	move.w  d2, (a5)
-	bra.s   @loc_1926
+	bra.s   @writeCharacter
 ; ---------------------------------------------------------------------------
 
 @newLine:
 	swap    d0
 	add.w   (vdpLineIncrement).w, d0
 	swap    d0
-	bra.s   @loc_1922
+	bra.s   @writeLine
 ; ---------------------------------------------------------------------------
 
 @returnFinished:
@@ -2092,12 +2100,12 @@ writeTextToScreen:          ; CODE XREF: ROM:0000031Cj
 ; =============== S U B R O U T I N E =======================================
 
 
-loadDefaultFont:            ; CODE XREF: ROM:00000328j
+loadDefaultFontAndAddress:            ; CODE XREF: ROM:00000328j
 	m_loadVramWriteAddress $400, d0
 	move.w #0, (fontTileOffset).w
 	move.l #$00011011, d1
 
-loc_1952:               ; CODE XREF: ROM:00000324j
+loadDefaultFont:               ; CODE XREF: ROM:00000324j
 	move.l d0, d2
 	lea (defaultFontData).l, a1
 	move.w #96, d2
@@ -2129,7 +2137,7 @@ loadFont:               ; CODE XREF: ROM:00000320j
 
 	move.l (sp)+, d1
 	rts
-; End of function loadDefaultFont
+; End of function loadDefaultFontAndAddress
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2192,8 +2200,8 @@ writeTransposedTilemapToVram:           ; CODE XREF: ROM:00000334j
 randWithModulo:             ; CODE XREF: ROM:00000338j
 	move.w (prngState).w, d1
 
-	muls.w #$3619, d1
-	addi.w #$5D35, d1
+	muls.w #LCG_MULTIPLIER, d1
+	addi.w #LCG_INCREMENT, d1
 
 	move.w d1, (prngState).w
 
@@ -2216,8 +2224,8 @@ randWithModulo:             ; CODE XREF: ROM:00000338j
 rand:                   ; CODE XREF: ROM:0000033Cj
 	move.w (prngState).w, d0
 
-	muls.w #$3619, d0
-	addi.w #$5D35, d0
+	muls.w #LCG_MULTIPLIER, d0
+	addi.w #LCG_INCREMENT, d0
 
 	move.w d0, (prngState).w
 	rts
@@ -2391,8 +2399,8 @@ clearRamSegment:
 	moveq   #0, d6
 
 	@loc_1BFE:
-		move.l  d6, (a6)+
-		dbf     d7, @loc_1BFE
+		move.l d6, (a6)+
+		dbf    d7, @loc_1BFE
 
 	rts
 ; End of function clearRamSegment
@@ -2424,8 +2432,8 @@ sub_1C06:               ; CODE XREF: ROM:000002FCj
 
 updateObjectSprite:               ; CODE XREF: ROM:00000300j
 	; Don't process if flag 1 is set
-	btst    #1, OBJ6B14.flags2(a0)
-	beq.s   @loc_1C22
+	btst  #1, OBJ6B14.flags2(a0)
+	beq.s @loc_1C22
 
 	rts
 ; ---------------------------------------------------------------------------
@@ -8173,16 +8181,17 @@ sub_5764:               ; CODE XREF: sub_3B28+46p sub_4718+4j ...
 ; ---------------------------------------------------------------------------
 
 loc_5774:               ; CODE XREF: sub_5764+6j
-	cmpi.w  #$C,d1
+	cmpi.w  #$C, d1
 	bhi.s   loc_5780
-	lea unk_5904(pc),a1
+
+	lea unk_5904(pc), a1
 	bsr.s   loc_5784
 
 loc_5780:               ; CODE XREF: sub_5764+Ej sub_5764+14j
-	lea unk_580C(pc),a1
+	lea unk_580C(pc), a1
 
 loc_5784:               ; CODE XREF: sub_5764+1Ap
-	cmpi.w  #$1F,d1
+	cmpi.w  #$1F, d1
 	bcs.s   loc_578C
 
 locret_578A:                ; CODE XREF: sub_5764+2Cj sub_5764+40j ...
@@ -8190,31 +8199,37 @@ locret_578A:                ; CODE XREF: sub_5764+2Cj sub_5764+40j ...
 ; ---------------------------------------------------------------------------
 
 loc_578C:               ; CODE XREF: sub_5764+24j
-	cmpi.w  #$1B,d1
+	cmpi.w  #$1B, d1
 	bcc.s   locret_578A
-	cmpi.w  #$E,d1
+
+	cmpi.w  #$E, d1
 	bls.s   loc_57B0
-	cmpi.w  #$17,d1
+
+	cmpi.w  #$17, d1
 	bls.s   loc_57A8
-	cmpi.w  #2,(word_FFFFD052).w
+
+	cmpi.w  #2, (word_FFFFD052).w
 	bne.s   locret_578A
+
 	bra.s   loc_57B0
 ; ---------------------------------------------------------------------------
 
 loc_57A8:               ; CODE XREF: sub_5764+38j
-	cmpi.w  #1,(word_FFFFD052).w
+	cmpi.w  #1, (word_FFFFD052).w
 	bne.s   locret_578A
 
 loc_57B0:               ; CODE XREF: sub_5764+32j sub_5764+42j
-	movem.l d0-d5/a5,-(sp)
-	asl.w   #3,d1
-	adda.w  d1,a1
-	move.w  d0,d3
-	movem.w (a1),d0-d2/a1
+	movem.l d0-d5/a5, -(sp)
+
+	asl.w   #3, d1
+	adda.w  d1, a1
+	move.w  d0, d3
+	movem.w (a1), d0-d2/a1
 	swap    d0
-	move.w  #3,d0
-	jsr sub_C78(pc)
-	movem.l (sp)+,d0-d5/a5
+	move.w  #3, d0
+	jsr writeTilemapWithOrMask(pc)
+
+	movem.l (sp)+, d0-d5/a5
 	rts
 ; End of function sub_5764
 
@@ -8223,485 +8238,366 @@ loc_57B0:               ; CODE XREF: sub_5764+32j sub_5764+42j
 
 
 sub_57CE:               ; CODE XREF: sub_5764+Cp
-	cmpi.w  #$C,d1
+	cmpi.w  #$C, d1
 	bls.s   loc_57D6
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_57D6:               ; CODE XREF: sub_57CE+4j
-	movem.l d0-d5/a2,-(sp)
-	asl.w   #3,d1
-	adda.w  d1,a1
-	move.w  d0,d3
-	movem.w (a1),d0-d2/a1
-	subi.w  #$138,d0
-	move.w  d0,d4
-	andi.w  #$7E,d0 ; '~'
-	andi.w  #$F80,d4
-	lsr.w   #5,d4
-	mulu.w  #5,d4
-	add.w   d4,d0
-	lea (unk_FFFFF5C6).w,a2
-	adda.w  d0,a2
-	moveq   #$14,d0
+	movem.l d0-d5/a2, -(sp)
+
+	asl.w   #3, d1
+	adda.w  d1, a1
+	move.w  d0, d3
+	movem.w (a1), d0-d2/a1
+	subi.w  #$138, d0
+	move.w  d0, d4
+	andi.w  #$7E, d0
+	andi.w  #$F80, d4
+	lsr.w   #5, d4
+	mulu.w  #5, d4
+	add.w   d4, d0
+	lea (unk_FFFFF5C6).w, a2
+	adda.w  d0, a2
+	moveq   #$14, d0
 	bsr.w   sub_62AE
-	movem.l (sp)+,d0-d5/a2
+
+	movem.l (sp)+, d0-d5/a2
 	rts
 ; End of function sub_57CE
 
 ; ---------------------------------------------------------------------------
-unk_580C:   dc.b $46 ; F        ; DATA XREF: sub_5764:loc_5780o
-	dc.b $D8 ; ├ÿ
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $46 ; F
-	dc.b $DE ; ├₧
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $E8 ; ├¿
-	dc.b $FE ; ├╛
-	dc.b $48 ; H
-	dc.b $DE ; ├₧
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $1E
-	dc.b $47 ; G
-	dc.b $DE ; ├₧
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b  $E
-	dc.b $47 ; G
-	dc.b $58 ; X
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $2E ; .
-	dc.b $47 ; G
-	dc.b $66 ; f
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $3A ; :
-	dc.b $48 ; H
-	dc.b $58 ; X
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $46 ; F
-	dc.b $48 ; H
-	dc.b $66 ; f
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $52 ; R
-	dc.b $48 ; H
-	dc.b $58 ; X
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $76 ; v
-	dc.b $48 ; H
-	dc.b $66 ; f
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $82 ; ΓÇÜ
-	dc.b $4B ; K
-	dc.b $5C ; \
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $49 ; I
-	dc.b $DC ; ├£
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $5E ; ^
-	dc.b $4C ; L
-	dc.b $5C ; \
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $45 ; E
-	dc.b $5C ; \
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $44 ; D
-	dc.b $5C ; \
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $4B ; K
-	dc.b $2A ; *
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $D6 ; ├û
-	dc.b $4B ; K
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $EA ; ├¬
-	dc.b   6
-	dc.b $4B ; K
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $EE ; ├«
-	dc.b $4C ; L
-	dc.b $2A ; *
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $EA ; ├¬
-	dc.b $1E
-	dc.b $4C ; L
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $EA ; ├¬
-	dc.b $4E ; N
-	dc.b $4D ; M
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $EA ; ├¬
-	dc.b $7E ; ~
-	dc.b $4D ; M
-	dc.b $2A ; *
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $EA ; ├¬
-	dc.b $66 ; f
-	dc.b $4C ; L
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $EA ; ├¬
-	dc.b $36 ; 6
-	dc.b $4D ; M
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $BE ; ┬╛
-	dc.b $4B ; K
-	dc.b $2A ; *
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $8E ; ┼╜
-	dc.b $4B ; K
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $A6 ; ┬ª
-	dc.b $4B ; K
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $BE ; ┬╛
-	dc.b $46 ; F
-	dc.b $D8 ; ├ÿ
-	dc.b   0
-	dc.b   1
-	dc.b   0
-	dc.b   1
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $46 ; F
-	dc.b $D8 ; ├ÿ
-	dc.b   0
-	dc.b   1
-	dc.b   0
-	dc.b   1
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $46 ; F
-	dc.b $D8 ; ├ÿ
-	dc.b   0
-	dc.b   1
-	dc.b   0
-	dc.b   1
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $46 ; F
-	dc.b $D8 ; ├ÿ
-	dc.b   0
-	dc.b   1
-	dc.b   0
-	dc.b   1
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-unk_5904:   dc.b $54 ; T        ; DATA XREF: sub_5764+8o sub_5764+16o
-	dc.b $B8 ; ┬╕
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $54 ; T
-	dc.b $BE ; ┬╛
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $E8 ; ├¿
-	dc.b $FE ; ├╛
-	dc.b $56 ; V
-	dc.b $BE ; ┬╛
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $1E
-	dc.b $55 ; U
-	dc.b $BE ; ┬╛
-	dc.b   0
-	dc.b   3
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b  $E
-	dc.b $55 ; U
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $2E ; .
-	dc.b $55 ; U
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $3A ; :
-	dc.b $56 ; V
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $46 ; F
-	dc.b $56 ; V
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $52 ; R
-	dc.b $56 ; V
-	dc.b $38 ; 8
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $76 ; v
-	dc.b $56 ; V
-	dc.b $46 ; F
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $82 ; ΓÇÜ
-	dc.b $59 ; Y
-	dc.b $3C ; <
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $57 ; W
-	dc.b $BC ; ┬╝
-	dc.b   0
-	dc.b   5
-	dc.b   0
-	dc.b   1
-	dc.b $E9 ; ├⌐
-	dc.b $5E ; ^
-	dc.b $5A ; Z
-	dc.b $3C ; <
-	dc.b   0
-	dc.b   2
-	dc.b   0
-	dc.b   0
-	dc.b $E8 ; ├¿
-	dc.b $F8 ; ├╕
-	dc.b $43 ; C
-	dc.b $FA ; ├║
-	dc.b   0
-	dc.b $2C ; ,
-	dc.b  $C
-	dc.b $41 ; A
-	dc.b   0
-	dc.b  $A
-	dc.b $63 ; c
-	dc.b   2
-	dc.b $4E ; N
-	dc.b $75 ; u
+unk_580C:                       ; DATA XREF: sub_5764:loc_5780o
+	dc.w $46D8
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $46DE
+	dc.w $0003
+	dc.w $0001
+	dc.w $E8FE
+
+	dc.w $48DE
+	dc.w $0003
+	dc.w $0001
+	dc.w $E91E
+
+	dc.w $47DE
+	dc.w $0003
+	dc.w $0001
+	dc.w $E90E
+
+	dc.w $4758
+	dc.w $0002
+	dc.w $0001
+	dc.w $E92E
+
+	dc.w $4766
+	dc.w $0002
+	dc.w $0001
+	dc.w $E93A
+
+	dc.w $4858
+	dc.w $0002
+	dc.w $0001
+	dc.w $E946
+
+	dc.w $4866
+	dc.w $0002
+	dc.w $0001
+	dc.w $E952
+
+	dc.w $4858
+	dc.w $0002
+	dc.w $0001
+	dc.w $E976
+
+	dc.w $4866
+	dc.w $0002
+	dc.w $0001
+	dc.w $E982
+
+	dc.w $4B5C
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $49DC
+	dc.w $0005
+	dc.w $0001
+	dc.w $E95E
+
+	dc.w $4C5C
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $455C
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $445C
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $4B2A
+	dc.w $0005
+	dc.w $0001
+	dc.w $E9D6
+
+	dc.w $4B46
+	dc.w $0005
+	dc.w $0001
+	dc.w $EA06
+
+	dc.w $4B38
+	dc.w $0005
+	dc.w $0001
+	dc.w $E9EE
+
+	dc.w $4C2A
+	dc.w $0005
+	dc.w $0001
+	dc.w $EA1E
+
+	dc.w $4C46
+	dc.w $0005
+	dc.w $0001
+	dc.w $EA4E
+
+	dc.w $4D38
+	dc.w $0005
+	dc.w $0001
+	dc.w $EA7E
+
+	dc.w $4D2A
+	dc.w $0005
+	dc.w $0001
+	dc.w $EA66
+
+	dc.w $4C38
+	dc.w $0005
+	dc.w $0001
+	dc.w $EA36
+
+	dc.w $4D46
+	dc.w $0005
+	dc.w $0001
+	dc.w $E9BE
+
+	dc.w $4B2A
+	dc.w $0005
+	dc.w $0001
+	dc.w $E98E
+
+	dc.w $4B38
+	dc.w $0005
+	dc.w $0001
+	dc.w $E9A6
+
+	dc.w $4B46
+	dc.w $0005
+	dc.w $0001
+	dc.w $E9BE
+
+	dc.w $46D8
+	dc.w $0001
+	dc.w $0001
+	dc.w $E8F8
+
+	dc.w $46D8
+	dc.w $0001
+	dc.w $0001
+	dc.w $E8F8
+
+	dc.w $46D8
+	dc.w $0001
+	dc.w $0001
+	dc.w $E8F8
+
+	dc.w $46D8
+	dc.w $0001
+	dc.w $0001
+	dc.w $E8F8
+
+unk_5904:                       ; DATA XREF: sub_5764+8o sub_5764+16o
+	dc.w $54B8
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $54BE
+	dc.w $0003
+	dc.w $0001
+	dc.w $E8FE
+
+	dc.w $56BE
+	dc.w $0003
+	dc.w $0001
+	dc.w $E91E
+
+	dc.w $55BE
+	dc.w $0003
+	dc.w $0001
+	dc.w $E90E
+
+	dc.w $5538
+	dc.w $0002
+	dc.w $0001
+	dc.w $E92E
+
+	dc.w $5546
+	dc.w $0002
+	dc.w $0001
+	dc.w $E93A
+
+	dc.w $5638
+	dc.w $0002
+	dc.w $0001
+	dc.w $E946
+
+	dc.w $5646
+	dc.w $0002
+	dc.w $0001
+	dc.w $E952
+
+	dc.w $5638
+	dc.w $0002
+	dc.w $0001
+	dc.w $E976
+
+	dc.w $5646
+	dc.w $0002
+	dc.w $0001
+	dc.w $E982
+
+	dc.w $593C
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+	dc.w $57BC
+	dc.w $0005
+	dc.w $0001
+	dc.w $E95E
+
+	dc.w $5A3C
+	dc.w $0002
+	dc.w $0000
+	dc.w $E8F8
+
+loc_596C:
+	lea unk_599A(pc), a1
+	cmpi.w #$A, d1
+	bls.s sub_5978
+	rts
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_5978:
-	movem.l d0-d5/a5,-(sp)
-	add.w   d1,d1
-	adda.w  d1,a1
-	add.w   d1,d1
-	adda.w  d1,a1
-	move.w  d0,d3
-	movem.w (a1),d0-d1/a1
+	movem.l d0-d5/a5, -(sp)
+
+	add.w   d1, d1
+	adda.w  d1, a1
+
+	add.w   d1, d1
+	adda.w  d1, a1
+
+	move.w  d0, d3
+
+	movem.w (a1), d0-d1/a1
 	swap    d0
-	move.w  #3,d0
+	move.w  #3, d0
 	bsr.w   sub_5B6C
-	movem.l (sp)+,d0-d5/a5
+
+	movem.l (sp)+, d0-d5/a5
 	rts
 ; End of function sub_5978
 
 ; ---------------------------------------------------------------------------
-	dc.b $48 ; H
-	dc.b $26 ; &
+unk_599A:
+	dc.b $48
+	dc.b $26
 	dc.b   0
 	dc.b   2
-	dc.b $EB ; ├½
-	dc.b $4E ; N
-	dc.b $48 ; H
-	dc.b $30 ; 0
+	dc.b $EB
+	dc.b $4E
+
+	dc.b $48
+	dc.b $30
 	dc.b   0
 	dc.b   2
-	dc.b $EB ; ├½
-	dc.b $54 ; T
-	dc.b $48 ; H
-	dc.b $38 ; 8
+	dc.b $EB
+	dc.b $54
+
+	dc.b $48
+	dc.b $38
 	dc.b   0
 	dc.b   2
-	dc.b $EB ; ├½
-	dc.b $5A ; Z
-	dc.b $48 ; H
-	dc.b $40 ; @
+	dc.b $EB
+	dc.b $5A
+
+	dc.b $48
+	dc.b $40
 	dc.b   0
 	dc.b   2
-	dc.b $EB ; ├½
-	dc.b $60 ; `
-	dc.b $48 ; H
-	dc.b $48 ; H
+	dc.b $EB
+	dc.b $60
+
+	dc.b $48
+	dc.b $48
 	dc.b   0
 	dc.b   7
-	dc.b $EB ; ├½
-	dc.b $66 ; f
-	dc.b $48 ; H
-	dc.b $48 ; H
+	dc.b $EB
+	dc.b $66
+
+	dc.b $48
+	dc.b $48
 	dc.b   0
 	dc.b   7
-	dc.b $EB ; ├½
-	dc.b $66 ; f
-	dc.b $48 ; H
-	dc.b $5A ; Z
+	dc.b $EB
+	dc.b $66
+
+	dc.b $48
+	dc.b $5A
 	dc.b   0
 	dc.b   7
-	dc.b $EB ; ├½
-	dc.b $76 ; v
-	dc.b $48 ; H
-	dc.b $5A ; Z
+	dc.b $EB
+	dc.b $76
+
+	dc.b $48
+	dc.b $5A
 	dc.b   0
 	dc.b   7
-	dc.b $EB ; ├½
-	dc.b $76 ; v
-	dc.b $48 ; H
-	dc.b $5A ; Z
+	dc.b $EB
+	dc.b $76
+
+	dc.b $48
+	dc.b $5A
 	dc.b   0
 	dc.b   7
-	dc.b $EB ; ├½
-	dc.b $86 ; ΓÇá
-	dc.b $48 ; H
-	dc.b $5A ; Z
+	dc.b $EB
+	dc.b $86
+
+	dc.b $48
+	dc.b $5A
 	dc.b   0
 	dc.b   7
-	dc.b $EB ; ├½
-	dc.b $86 ; ΓÇá
-	dc.b $48 ; H
-	dc.b $26 ; &
+	dc.b $EB
+	dc.b $86
+
+	dc.b $48
+	dc.b $26
 	dc.b   0
 	dc.b   2
-	dc.b $EB ; ├½
-	dc.b $96 ; ΓÇô
-	dc.b $4E ; N
-	dc.b $75 ; u
+	dc.b $EB
+	dc.b $96
+
+	rts
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -8735,12 +8631,16 @@ loc_59F2:               ; CODE XREF: sub_59DE+6j sub_59DE+Cj
 loc_5A1C:               ; CODE XREF: sub_59DE+1Ej
 	cmpi.w  #6,d1
 	bne.s   loc_5A5E
+
 	tst.b   (insertedDiscType).w
 	beq.s   loc_5A60
+
 	btst    #1,(byte_FFFFD008).w
 	bne.s   loc_5A3E
+
 	btst    #2,(byte_FFFFD008).w
 	beq.s   loc_5A42
+
 	moveq   #4,d1
 	bra.w   loc_5A5E
 ; ---------------------------------------------------------------------------
@@ -10744,7 +10644,7 @@ playSegaAnimation:               ; CODE XREF: ROM:00000364j
 	clr.l (spriteTable).w
 	clr.l (spriteTable+4).w
 
-	jsr loadDefaultFont(pc)
+	jsr loadDefaultFontAndAddress(pc)
 
 	lea palette_6A38(pc), a1
 	jsr loadPalettesNoUpdate
@@ -11482,42 +11382,57 @@ sub_754E:               ; CODE XREF: sub_752C+8p
 ; End of function sub_754E
 
 ; ---------------------------------------------------------------------------
-word_757C:  dc.w $8100      ; DATA XREF: sub_754E+4w
-		dc.w $286
-		dc.w 0
-word_7582:  dc.w $8100      ; DATA XREF: sub_754E+Ew
-		dc.w $786
-		dc.w 4
-word_7588:  dc.w $8100      ; DATA XREF: sub_754E+18w
-		dc.w $C9C
-		dc.w $11
-word_758E:  dc.w $8100      ; DATA XREF: sub_754E+22w
-		dc.w $90
-		dc.w $1F
+word_757C:      ; DATA XREF: sub_754E+4w
+	dc.w $8100
+	dc.w $286
+	dc.w 0
+
+word_7582:      ; DATA XREF: sub_754E+Ew
+	dc.w $8100
+	dc.w $786
+	dc.w 4
+
+word_7588:      ; DATA XREF: sub_754E+18w
+	dc.w $8100
+	dc.w $C9C
+	dc.w $11
+
+word_758E:      ; DATA XREF: sub_754E+22w
+	dc.w $8100
+	dc.w $90
+	dc.w $1F
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_7594:               ; CODE XREF: sub_752C+Cp
-	lea (WordRAM_Bank0).l,a4
-	btst    #0,1(a4)
-	beq.s   loc_75E8
-	movem.w word_75F4(pc),d0-d2
+	lea (WordRAM_Bank0).l, a4
+
+	btst  #0, 1(a4)
+	beq.s loc_75E8
+
+	movem.w word_75F4(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_75FA(pc),d0-d2
+
+	movem.w word_75FA(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_7600(pc),d0-d2
+
+	movem.w word_7600(pc), d0-d2
 	bsr.w   sub_77FA
-	lea $4000(a4),a0
-	move.w  #$41C,d0
-	moveq   #0,d1
-	bsr.w   sub_783E
-	move.w  #$590,d1
-	move.w  4(a4),d0
-	bsr.w   sub_78D8
-	move.w  #$5B2,d1
-	move.w  2(a4),d0
-	bsr.w   sub_78D8
+
+	lea $4000(a4), a0
+
+	move.w #$41C, d0
+	moveq  #0, d1
+	bsr.w  sub_783E
+
+	move.w #$590, d1
+	move.w 4(a4), d0
+	bsr.w  sub_78D8
+
+	move.w #$5B2, d1
+	move.w 2(a4), d0
+	bsr.w  sub_78D8
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -11528,55 +11443,70 @@ loc_75E8:               ; CODE XREF: sub_7594+Cj
 ; End of function sub_7594
 
 ; ---------------------------------------------------------------------------
-word_75F4:  dc.w $8100      ; DATA XREF: sub_7594+Ew
-		dc.w $386
-		dc.w 1
-word_75FA:  dc.w $8100      ; DATA XREF: sub_7594+18w
-		dc.w $48C
-		dc.w 2
-word_7600:  dc.w $8100      ; DATA XREF: sub_7594+22w
-		dc.w $4AE
-		dc.w 3
-word_7606:  dc.w $8100      ; DATA XREF: sub_7594:loc_75E8w
-		dc.w $496
-		dc.w $1D
+word_75F4:      ; DATA XREF: sub_7594+Ew
+	dc.w $8100
+	dc.w $386
+	dc.w 1
+word_75FA:      ; DATA XREF: sub_7594+18w
+	dc.w $8100
+	dc.w $48C
+	dc.w 2
+word_7600:      ; DATA XREF: sub_7594+22w
+	dc.w $8100
+	dc.w $4AE
+	dc.w 3
+word_7606:      ; DATA XREF: sub_7594:loc_75E8w
+	dc.w $8100
+	dc.w $496
+	dc.w $1D
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_760C:               ; CODE XREF: sub_752C+10p
-	lea (unk_210000).l,a4
-	tst.w   0(a4)
-	bmi.s   loc_7624
-	movem.w word_7696(pc),d0-d2
+	lea (unk_210000).l, a4
+
+	tst.w 0(a4)
+	bmi.s loc_7624
+
+	movem.w word_7696(pc), d0-d2
 	bsr.w   sub_77FA
+
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_7624:               ; CODE XREF: sub_760C+Aj
-	btst    #0,1(a4)
-	beq.s   loc_7672
-	movem.w word_767E(pc),d0-d2
+	btst  #0, 1(a4)
+	beq.s loc_7672
+
+	movem.w word_767E(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_7684(pc),d0-d2
+
+	movem.w word_7684(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_768A(pc),d0-d2
+
+	movem.w word_768A(pc), d0-d2
 	bsr.w   sub_77FA
-	lea $4000(a4),a0
-	move.w  #$91C,d0
-	moveq   #0,d1
-	bsr.w   sub_783E
-	move.w  4(a4),d0
-	move.w  #$A90,d1
-	bsr.w   sub_78D8
-	move.w  2(a4),d0
-	move.w  #$AB2,d1
-	bsr.w   sub_78D8
+
+	lea $4000(a4), a0
+
+	move.w #$91C, d0
+	moveq  #0, d1
+	bsr.w  sub_783E
+
+	move.w 4(a4), d0
+	move.w #$A90, d1
+	bsr.w  sub_78D8
+
+	move.w 2(a4), d0
+	move.w #$AB2, d1
+	bsr.w  sub_78D8
+
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_7672:               ; CODE XREF: sub_760C+1Ej
-	movem.w word_7690(pc),d0-d2
+	movem.w word_7690(pc), d0-d2
 	bsr.w   sub_77FA
 	rts
 ; End of function sub_760C
@@ -11610,20 +11540,23 @@ loc_76A8:               ; CODE XREF: sub_769C+6j
 	bsr.w   sub_77A0
 	bsr.w   sub_7A1E
 	beq.s   locret_76D6
-	move.w  (word_FFFFFF0A).w,d0
-	btst    d0,(byte_FFFFFF06).w
+
+	move.w  (word_FFFFFF0A).w, d0
+	btst    d0, (byte_FFFFFF06).w
 	bne.s   loc_76C4
-	moveq   #Z80CMD_FF92,d7
+
+	moveq   #Z80CMD_FF92, d7
 	bsr.w   sendCommandToZ80
 	bra.s   locret_76D6
 ; ---------------------------------------------------------------------------
 
 loc_76C4:               ; CODE XREF: sub_769C+1Ej
-	move.w  (word_FFFFFF0A).w,d0
-	lsl.w   #2,d0
-	addq.w  #8,d0
-	move.w  d0,(word_FFFFFF02).w
-	moveq   #Z80CMD_FF91,d7
+	move.w  (word_FFFFFF0A).w, d0
+	lsl.w   #2, d0
+	addq.w  #8, d0
+	move.w  d0, (word_FFFFFF02).w
+
+	moveq   #Z80CMD_FF91, d7
 	bsr.w   sendCommandToZ80
 
 locret_76D6:                ; CODE XREF: sub_769C+14j sub_769C+26j
@@ -11635,50 +11568,70 @@ locret_76D6:                ; CODE XREF: sub_769C+14j sub_769C+26j
 
 
 sub_76D8:               ; CODE XREF: sub_769C+8p
-	bsr.w   sub_7876
-	lea (byte_FFFFFF06).w,a4
-	movem.w word_7770(pc),d0-d2
+	bsr.w sub_7876
+
+	lea (byte_FFFFFF06).w, a4
+
+	movem.w word_7770(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_7776(pc),d0-d2
-	btst    #1,(a4)
+
+	movem.w word_7776(pc), d0-d2
+
+	btst    #1, (a4)
 	bne.s   loc_76FA
-	addi.w  #$2000,d0
+
+	addi.w  #$2000, d0
 
 loc_76FA:               ; CODE XREF: sub_76D8+1Cj
 	bsr.w   sub_77FA
-	movem.w word_777C(pc),d0-d2
-	btst    #2,(a4)
+
+	movem.w word_777C(pc), d0-d2
+
+	btst    #2, (a4)
 	bne.s   loc_770E
-	addi.w  #$2000,d0
+
+	addi.w  #$2000, d0
 
 loc_770E:               ; CODE XREF: sub_76D8+30j
 	bsr.w   sub_77FA
-	movem.w word_7782(pc),d0-d2
-	btst    #3,(a4)
+
+	movem.w word_7782(pc), d0-d2
+
+	btst    #3, (a4)
 	bne.s   loc_7722
-	addi.w  #$2000,d0
+
+	addi.w  #$2000, d0
 
 loc_7722:               ; CODE XREF: sub_76D8+44j
 	bsr.w   sub_77FA
-	movem.w word_7788(pc),d0-d2
-	btst    #4,(a4)
+
+	movem.w word_7788(pc), d0-d2
+
+	btst    #4, (a4)
 	bne.s   loc_7736
-	addi.w  #$2000,d0
+
+	addi.w  #$2000, d0
 
 loc_7736:               ; CODE XREF: sub_76D8+58j
 	bsr.w   sub_77FA
-	movem.w word_778E(pc),d0-d2
-	btst    #5,(a4)
+
+	movem.w word_778E(pc), d0-d2
+
+	btst    #5, (a4)
 	bne.s   loc_774A
-	addi.w  #$2000,d0
+
+	addi.w  #$2000, d0
 
 loc_774A:               ; CODE XREF: sub_76D8+6Cj
 	bsr.w   sub_77FA
-	movem.w word_779A(pc),d0-d2
+
+	movem.w word_779A(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_7794(pc),d0-d2
+
+	movem.w word_7794(pc), d0-d2
 	bsr.w   sub_77FA
-	move.l  #$60000,(word_FFFFFF0A).w
+
+	move.l  #$60000, (word_FFFFFF0A).w
 	clr.w   (word_FFFFFF08).w
 	rts
 ; End of function sub_76D8
@@ -11714,36 +11667,41 @@ word_779A:  dc.w $8100      ; DATA XREF: sub_76D8+76w
 
 sub_77A0:               ; CODE XREF: sub_769C:loc_76A8p
 	bsr.w   sub_790A
-	move.w  (word_FFFFFF0A).w,d1
+
+	move.w  (word_FFFFFF0A).w, d1
 	bpl.s   loc_77AE
-	moveq   #0,d1
+
+	moveq   #0, d1
 	bra.s   loc_77B6
 ; ---------------------------------------------------------------------------
 
 loc_77AE:               ; CODE XREF: sub_77A0+8j
-	cmpi.w  #6,d1
+	cmpi.w  #6, d1
 	ble.s   loc_77B6
-	moveq   #6,d1
+
+	moveq   #6, d1
 
 loc_77B6:               ; CODE XREF: sub_77A0+Cj sub_77A0+12j
-	move.w  d1,(word_FFFFFF0A).w
-	mulu.w  #$10,d1
-	addi.w  #$B8,d1 ; '┬╕'
+	move.w  d1, (word_FFFFFF0A).w
+	mulu.w  #$10, d1
+	addi.w  #$B8, d1
 	swap    d1
-	move.w  #$D01,d1
-	move.l  #$1000D8,d2
-	moveq   #3,d0
-	moveq   #$20,d3 ; ' '
+
+	move.w  #$D01, d1
+	move.l  #$1000D8, d2
+	moveq   #3, d0
+	moveq   #$20, d3
 
 loc_77D2:               ; CODE XREF: sub_7BBA+24p sub_7F66+A2j ...
-	lea (dword_220E00).l,a0
+	lea (dword_220E00).l, a0
 
 loc_77D8:               ; CODE XREF: sub_77A0+42j
-	movem.l d1-d2,(a0)
-	addq.w  #8,a0
-	addq.w  #1,d1
-	add.w   d3,d2
-	dbf d0,loc_77D8
+	movem.l d1-d2, (a0)
+	addq.w  #8, a0
+	addq.w  #1, d1
+	add.w   d3, d2
+	dbf d0, loc_77D8
+
 	clr.l   (a0)
 	rts
 ; End of function sub_77A0
@@ -11980,63 +11938,66 @@ sub_790A:               ; CODE XREF: sub_77A0p sub_7F66p
 ; ---------------------------------------------------------------------------
 
 loc_791E:               ; CODE XREF: sub_790A+8j
-	moveq   #3,d0
-	and.b   (word_FFFFFF08).w,d0
-	add.w   d0,d0
-	move.w  word_7988(pc,d0.w),d0
-	add.w   d0,(word_FFFFFF0A).w
-	lea (multitapControllerTypes).w,a0
-	moveq   #3,d0
+	moveq   #3, d0
+	and.b   (word_FFFFFF08).w, d0
+	add.w   d0, d0
+	move.w  word_7988(pc, d0.w), d0
+	add.w   d0, (word_FFFFFF0A).w
+	lea (multitapControllerTypes).w, a0
+	moveq   #3, d0
 
 loc_7934:               ; CODE XREF: sub_790A+2Ej
-	cmpi.b  #MULTI_MOUSE,(a0)+
-	dbeq    d0,loc_7934
+	cmpi.b  #MULTI_MOUSE, (a0)+
+	dbeq    d0, loc_7934
 	beq.s   loc_7966
 	bra.s   loc_794E
 ; ---------------------------------------------------------------------------
 
 loc_7940:               ; CODE XREF: sub_790A+10j
-	move.w  (mouse1DeltaY).w,d0
+	move.w  (mouse1DeltaY).w, d0
 	bsr.w   sub_7A16
-	add.l   d0,(word_FFFFFF0A).w
+
+	add.l   d0, (word_FFFFFF0A).w
 	bra.s   loc_795E
 ; ---------------------------------------------------------------------------
 
 loc_794E:               ; CODE XREF: sub_790A+12j sub_790A+34j
-	moveq   #3,d0
-	and.b   (word_FFFFFF08).w,d0
-	add.w   d0,d0
-	move.w  word_7988(pc,d0.w),d0
-	add.w   d0,(word_FFFFFF0A).w
+	moveq   #3, d0
+	and.b   (word_FFFFFF08).w, d0
+	add.w   d0, d0
+	move.w  word_7988(pc, d0.w), d0
+	add.w   d0, (word_FFFFFF0A).w
 
 loc_795E:               ; CODE XREF: sub_790A+42j
-	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy2Type).w
+	cmpi.b  #JOYTYPE_MEGAMOUSE, (joy2Type).w
 	bne.s   loc_7974
 
 loc_7966:               ; CODE XREF: sub_790A+32j
-	move.w  (mouse2DeltaY).w,d0
+	move.w  (mouse2DeltaY).w, d0
 	bsr.w   sub_7A16
-	add.l   d0,(word_FFFFFF0A).w
+
+	add.l   d0, (word_FFFFFF0A).w
 	bra.s   loc_7984
 ; ---------------------------------------------------------------------------
 
 loc_7974:               ; CODE XREF: sub_790A+5Aj
-	moveq   #3,d0
-	and.b   (word_FFFFFF08+1).w,d0
-	add.w   d0,d0
-	move.w  word_7988(pc,d0.w),d0
-	add.w   d0,(word_FFFFFF0A).w
+	moveq   #3, d0
+	and.b   (word_FFFFFF08 + 1).w, d0
+	add.w   d0, d0
+	move.w  word_7988(pc, d0.w), d0
+	add.w   d0, (word_FFFFFF0A).w
 
 loc_7984:               ; CODE XREF: sub_790A+68j
-	movea.l (sp)+,a0
+	movea.l (sp)+, a0
 	rts
 ; End of function sub_790A
 
 ; ---------------------------------------------------------------------------
-word_7988:  dc.w 0
-		dc.w $FFFF
-		dc.w 1
-		dc.w 0
+word_7988:
+	dc.w 0
+	dc.w $FFFF
+	dc.w 1
+	dc.w 0
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -12132,37 +12093,43 @@ sub_7A16:               ; CODE XREF: sub_790A+3Ap sub_790A+60p ...
 
 sub_7A1E:               ; CODE XREF: sub_752C:loc_7540p
 					; sub_769C+10p ...
-	movem.l d0,-(sp)
-	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy1Type).w
-	bne.s   loc_7A32
+	movem.l d0, -(sp)
+
+	cmpi.b  #JOYTYPE_MEGAMOUSE, (joy1Type).w
+	bne.s   @loc_7A32
+
 	tst.b   (byte_FFFFFE0B).w
-	bne.s   loc_7A58
-	bra.s   loc_7A3A
+	bne.s   @loc_7A58
+
+	bra.s   @loc_7A3A
 ; ---------------------------------------------------------------------------
 
-loc_7A32:               ; CODE XREF: sub_7A1E+Aj
-	moveq   #$FFFFFFF0,d0
-	and.b   (joy1Triggered).w,d0
-	bne.s   loc_7A58
+@loc_7A32:
+	moveq   #$FFFFFFF0, d0
+	and.b   (joy1Triggered).w, d0
+	bne.s   @loc_7A58
 
-loc_7A3A:               ; CODE XREF: sub_7A1E+12j
-	cmpi.b  #JOYTYPE_MEGAMOUSE,(joy2Type).w
-	bne.s   loc_7A52
+@loc_7A3A:
+	cmpi.b  #JOYTYPE_MEGAMOUSE, (joy2Type).w
+	bne.s   @loc_7A52
+
 	tst.b   (byte_FFFFFE17).w
-	beq.s   loc_7A58
+	beq.s   @loc_7A58
+
 	nop
 	nop
 	nop
 	nop
-	bra.s   loc_7A58
+
+	bra.s   @loc_7A58
 ; ---------------------------------------------------------------------------
 
-loc_7A52:               ; CODE XREF: sub_7A1E+22j
-	moveq   #$FFFFFFF0,d0
-	and.b   (joy2Triggered).w,d0
+@loc_7A52:
+	moveq   #$FFFFFFF0, d0
+	and.b   (joy2Triggered).w, d0
 
-loc_7A58:               ; CODE XREF: sub_7A1E+10j sub_7A1E+1Aj ...
-	movem.l (sp)+,d0
+@loc_7A58:
+	movem.l (sp)+, d0
 	rts
 ; End of function sub_7A1E
 
@@ -12171,38 +12138,42 @@ loc_7A58:               ; CODE XREF: sub_7A1E+10j sub_7A1E+1Aj ...
 
 
 sub_7A5E:               ; CODE XREF: ROM:000074FEj
-	bset    #7,(word_FFFFFF02).w
-	bne.s   loc_7A6A
-	clr.w   (word_FFFFFF04).w
+	bset  #7, (word_FFFFFF02).w
+	bne.s @loc_7A6A
 
-loc_7A6A:               ; CODE XREF: sub_7A5E+6j
-	lea (WordRAM_Bank0).l,a4
-	moveq   #$7C,d0 ; '|'
-	and.w   (word_FFFFFF04).w,d0
-	jsr loc_7A7C(pc,d0.w)
+	clr.w (word_FFFFFF04).w
+
+@loc_7A6A:
+	lea (WordRAM_Bank0).l, a4
+
+	moveq #$7C, d0
+	and.w (word_FFFFFF04).w, d0
+
+	jsr loc_7A7C(pc, d0.w)
 	rts
 ; End of function sub_7A5E
 
 ; ---------------------------------------------------------------------------
 
 loc_7A7C:
-	bra.w   sub_7AA0
+	bra.w sub_7AA0
 ; ---------------------------------------------------------------------------
-	bra.w   sub_7BBA
+	bra.w sub_7BBA
 ; ---------------------------------------------------------------------------
-	bra.w   sub_7A90
+	bra.w sub_7A90
 ; ---------------------------------------------------------------------------
-	bra.w   sub_7B4A
+	bra.w sub_7B4A
 ; ---------------------------------------------------------------------------
-	bra.w   sub_7C34
+	bra.w sub_7C34
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_7A90:               ; CODE XREF: ROM:00007A84j
-	move.w  #3,d0
-	bsr.w   sub_73CA
-	move.w  #$C,(word_FFFFFF04).w
+	move.w #3, d0
+	bsr.w  sub_73CA
+
+	move.w #$C, (word_FFFFFF04).w
 	rts
 ; End of function sub_7A90
 
@@ -12213,38 +12184,49 @@ sub_7A90:               ; CODE XREF: ROM:00007A84j
 sub_7AA0:               ; CODE XREF: ROM:loc_7A7Cj
 	clr.l   (dword_220E00).l
 	bsr.w   sub_7876
-	movem.w word_7B26(pc),d0-d2
+
+	movem.w word_7B26(pc), d0-d2
 	bsr.w   sub_77FA
+
 	tst.b   1(a4)
 	beq.s   loc_7B04
 	bgt.s   loc_7AE8
-	movem.w word_7B32(pc),d0-d2
+
+	movem.w word_7B32(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_7B38(pc),d0-d2
+
+	movem.w word_7B38(pc), d0-d2
 	bsr.w   sub_77FA
-	move.w  4(a4),d0
-	move.w  #$690,d1
+
+	move.w  4(a4), d0
+	move.w  #$690, d1
 	bsr.w   sub_78D8
-	move.w  2(a4),d0
-	move.w  #$6B2,d1
+
+	move.w  2(a4), d0
+	move.w  #$6B2, d1
 	bsr.w   sub_78D8
 
 loc_7AE8:               ; CODE XREF: sub_7AA0+1Aj
-	movem.w word_7B2C(pc),d0-d2
+	movem.w word_7B2C(pc), d0-d2
 	bsr.w   sub_77FA
-	lea $4000(a4),a0
-	move.w  #$410,d0
-	moveq   #0,d1
+
+	lea $4000(a4), a0
+
+	move.w  #$410, d0
+	moveq   #0, d1
 	bsr.w   sub_783E
+
 	bsr.w   sub_7C4C
 
 loc_7B04:               ; CODE XREF: sub_7AA0+18j
-	movem.w word_7B3E(pc),d0-d2
+	movem.w word_7B3E(pc), d0-d2
 	bsr.w   sub_77FA
-	movem.w word_7B44(pc),d0-d2
+
+	movem.w word_7B44(pc), d0-d2
 	bsr.w   sub_77FA
-	move.w  #4,(word_FFFFFF04).w
-	move.w  #1,(word_FFFFFF0A).w
+
+	move.w  #4, (word_FFFFFF04).w
+	move.w  #1, (word_FFFFFF0A).w
 	rts
 ; End of function sub_7AA0
 
@@ -12273,35 +12255,43 @@ word_7B44:  dc.w $8100      ; DATA XREF: sub_7AA0+6Ew
 
 sub_7B4A:               ; CODE XREF: ROM:00007A88j
 					; ROM:00007C98j
-	bset    #7,(word_FFFFFF04).w
+	bset    #7, (word_FFFFFF04).w
 	bne.s   loc_7B94
+
 	clr.l   (dword_220E00).l
-	lea (dword_220E00).l,a0
-	move.w  #$BF,d4 ; '┬┐'
+	lea (dword_220E00).l, a0
+	move.w  #$BF, d4
 	bsr.w   loc_7880
-	btst    #0,1(a4)
+
+	btst    #0, 1(a4)
 	beq.s   loc_7B7A
-	movem.w word_7BA8(pc),d0-d2
+
+	movem.w word_7BA8(pc), d0-d2
 	bsr.w   sub_77FA
+
 	bra.s   loc_7B8A
 ; ---------------------------------------------------------------------------
 
 loc_7B7A:               ; CODE XREF: sub_7B4A+22j
-	movem.w word_7BB4(pc),d0-d2
+	movem.w word_7BB4(pc), d0-d2
 	bsr.w   sub_77FA
-	moveq   #Z80CMD_FF92,d7
+
+	moveq   #Z80CMD_FF92, d7
 	bsr.w   sendCommandToZ80
 
 loc_7B8A:               ; CODE XREF: sub_7B4A+2Ej
-	movem.w word_7BAE(pc),d0-d2
+	movem.w word_7BAE(pc), d0-d2
 	bsr.w   sub_77FA
 
 loc_7B94:               ; CODE XREF: sub_7B4A+6j
 	bsr.w   sub_7A1E
+
 	beq.s   locret_7BA6
-	moveq   #Z80CMD_FF91,d7
+
+	moveq   #Z80CMD_FF91, d7
 	bsr.w   sendCommandToZ80
-	move.w  #$10,(word_FFFFFF04).w
+
+	move.w  #$10, (word_FFFFFF04).w
 
 locret_7BA6:                ; CODE XREF: sub_7B4A+4Ej
 	rts
@@ -13711,6 +13701,7 @@ sub_8704:               ; CODE XREF: sub_86A6+54p
 
 sub_873A:               ; CODE XREF: state_7374p
 	st  (byte_FFFFFE28).w
+
 	bsr.w   displayOff
 
 	m_waitForWordRam2M
@@ -13741,9 +13732,9 @@ sub_873A:               ; CODE XREF: state_7374p
 	jsr decompressNemesis(pc)
 
 	m_loadVramWriteAddress $400, d0
-	move.w  #0,(fontTileOffset).w
-	move.l  #$EE0EE,d1
-	bsr.w   loc_1952
+	move.w  #0, (fontTileOffset).w
+	move.l  #$000EE0EE, d1
+	bsr.w   loadDefaultFont
 
 	bsr.w   sub_7854
 

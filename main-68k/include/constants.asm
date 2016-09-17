@@ -36,3 +36,7 @@ MSG_CLOSECDDOOR     equ 3
 
 ;   Common instructions
 INST_JMP    equ $4EF9
+
+;   Random-number generator
+LCG_MULTIPLIER  equ $3619
+LCG_INCREMENT   equ $5D35

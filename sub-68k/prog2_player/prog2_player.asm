@@ -306,38 +306,38 @@ sub_18AAC:              ; CODE XREF: sub_18980:loc_1899Ap
 	tst.b   $31(a3)
 	beq.s   @loc_18ABA
 
-	subq.b  #1,$31(a3)
+	subq.b  #1, $31(a3)
 	beq.w   sub_18ED8
 
 @loc_18ABA:
 	tst.b   $32(a3)
 	bne.w   @locret_18B0A
 
-	btst    #1,0(a3)
+	btst    #1, 0(a3)
 	bne.w   @locret_18B0A
 
-	lea (pcm_FF0020).l,a0
-	moveq   #0,d0
-	moveq   #0,d1
-	move.b  1(a3),d1
-	lsl.w   #2,d1
-	move.l  (a0,d1.w),d0
-	move.l  d0,d1
-	lsl.w   #8,d0
+	lea (pcm_FF0020).l, a0
+	moveq   #0, d0
+	moveq   #0, d1
+	move.b  1(a3), d1
+	lsl.w   #2, d1
+	move.l  (a0,d1.w), d0
+	move.l  d0, d1
+	lsl.w   #8, d0
 	swap    d1
-	move.b  d1,d0
-	move.w  $14(a3),d1
-	move.w  d0,$14(a3)
-	cmp.w   d1,d0
+	move.b  d1, d0
+	move.w  $14(a3), d1
+	move.w  d0, $14(a3)
+	cmp.w   d1, d0
 	bcc.s   @loc_18AFA
 
-	subi.w  #$1E00,$16(a3)
+	subi.w  #$1E00, $16(a3)
 
 @loc_18AFA:
-	andi.w  #$1FFF,d0
-	addi.w  #$1000,d0
-	move.w  $16(a3),d1
-	cmp.w   d1,d0
+	andi.w  #$1FFF, d0
+	addi.w  #$1000, d0
+	move.w  $16(a3), d1
+	cmp.w   d1, d0
 	bhi.s   loc_18B0C
 
 @locret_18B0A:
@@ -421,27 +421,30 @@ loc_18BA4:              ; CODE XREF: sub_18AAC+E8j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_18BB0:              ; CODE XREF: PLAYER:00018F84j
+loadPcmData:              ; CODE XREF: PLAYER:00018F84j
 					; playerMain+2Cj
-	lea dword_19544(pc), a0
+	lea tbl_19544(pc), a0
 
+	; Check how many data files there are
 	move.l (a0)+, d0
 	beq.s  @locret_18C24
 	bmi.s  @locret_18C24
 
+	; Subtract 1 for looping purposes
 	subq.w #1, d0
 
 	@loc_18BBC:
 		movea.l (a0)+, a1
 		adda.l  long_10(a5), a1
 
-		tst.b   $D(a1)
-		beq.s   @loc_18C20
+		tst.b   PCMMETA.byteD(a1)
+		beq.s   @loc_18C20  ; Skip it, next file
 
-		movea.l 0(a1), a2
+		; Get the address of the PCM data
+		movea.l PCMMETA.address(a1), a2
 		adda.l  long_10(a5), a2
 
-		move.w  $E(a1), d1
+		move.w  PCMMETA.loadAddress(a1), d1
 
 		move.w  d1, d5
 
@@ -450,15 +453,17 @@ sub_18BB0:              ; CODE XREF: PLAYER:00018F84j
 
 		andi.w  #$F00, d5
 
-		move.l  4(a1), d2
+		move.l  PCMMETA.dataSize(a1), d2
 
 		move.w  d2, d3
 		rol.w   #4, d3
 		andi.w  #$F, d3
 
 		@loc_18BEC:
+			; Select the wave bank
 			move.b d1, PCM_CTRL(a4)
 
+			; Check the data size
 			move.w d2, d4
 			cmpi.w #$1000, d2
 			bls.s  @loc_18BFC
@@ -471,10 +476,12 @@ sub_18BB0:              ; CODE XREF: PLAYER:00018F84j
 			sub.w  d5, d4
 			subq.w #1, d4
 
+			; Position the write pointer
 			lea (PCM_DATA).l, a3
 			adda.w d5, a3
 			adda.w d5, a3
 
+			; Copy data into PCM ram
 			@loc_18C0C:
 				move.b (a2)+, (a3)+
 				addq.w #1, a3
@@ -486,11 +493,12 @@ sub_18BB0:              ; CODE XREF: PLAYER:00018F84j
 			dbf d3, @loc_18BEC
 
 	@loc_18C20:
+		; Go on to the next data file
 		dbf d0, @loc_18BBC
 
 @locret_18C24:
 	rts
-; End of function sub_18BB0
+; End of function loadPcmData
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -904,10 +912,10 @@ loc_18F08:              ; CODE XREF: sub_18CA4+3Aj
 
 	subi.b #$E0, d7
 	lsl.w  #2, d7
-	jmp loc_18F14(pc, d7.w)
+	jmp tbl_18F14(pc, d7.w)
 ; ---------------------------------------------------------------------------
 
-loc_18F14:              ; CODE XREF: PLAYER:00018F10j
+tbl_18F14:              ; CODE XREF: PLAYER:00018F10j
 	jmp loc_18F28(pc)
 ; ---------------------------------------------------------------------------
 	jmp loc_18F7C(pc)
@@ -919,7 +927,7 @@ loc_18F14:              ; CODE XREF: PLAYER:00018F10j
 	jmp loc_18F4C(pc)
 ; ---------------------------------------------------------------------------
 
-loc_18F28:              ; CODE XREF: PLAYER:loc_18F14j
+loc_18F28:              ; CODE XREF: PLAYER:tbl_18F14j
 	move.b  #$18, $14(a5)
 	move.b  #1, $16(a5)
 	move.b  #1, $15(a5)
@@ -969,7 +977,7 @@ loc_18F7C:              ; CODE XREF: sub_18CA4+Aj
 	jsr sub_18F54(pc)
 	jsr sub_18F88(pc)
 
-	bra.w sub_18BB0
+	bra.w loadPcmData
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -980,8 +988,8 @@ sub_18F88:              ; CODE XREF: PLAYER:00018F80p
 
 	moveq #7, d1
 	@loc_18F8E:
-		lea    (pcm_FF3C01).l, a0
-		move.b d3, PCM_CTRL(a4)
+		lea    (pcm_FF3C01).l, a0   ; PCM address $1E00
+		move.b d3, PCM_CTRL(a4)     ; Select PCM bank
 		moveq  #$FFFFFFFF, d2
 
 		move.w #$1FF, d0
@@ -990,7 +998,7 @@ sub_18F88:              ; CODE XREF: PLAYER:00018F80p
 			addq.w #1, a0
 			dbf    d0, @loc_18F9E
 
-		addq.w #2, d3
+		addq.w #2, d3           ; Select every other bank
 		dbf    d1, @loc_18F8E
 	rts
 ; End of function sub_18F88
@@ -1016,7 +1024,7 @@ playerMain:              ; CODE XREF: sub_18004j
 
 	jsr sub_18F88(pc)
 
-	bra.w sub_18BB0
+	bra.w loadPcmData
 ; End of function playerMain
 
 
@@ -1135,12 +1143,12 @@ word_18FEE:          ; DATA XREF: sub_189D4+8o
 sub_190AE:              ; CODE XREF: sub_189A2+12p
 	subi.w #$E0, d5
 	lsl.w  #2, d5
-	jmp loc_190B8(pc, d5.w)
+	jmp tbl_190B8(pc, d5.w)
 ; End of function sub_190AE
 
 ; ---------------------------------------------------------------------------
 
-loc_190B8:              ; CODE XREF: sub_190AE+6j
+tbl_190B8:              ; CODE XREF: sub_190AE+6j
 	jmp loc_19136(pc)
 ; ---------------------------------------------------------------------------
 	jmp loc_1914C(pc)
@@ -1208,7 +1216,7 @@ locret_19134:               ; CODE XREF: PLAYER:000190C8j
 	rts
 ; ---------------------------------------------------------------------------
 
-loc_19136:              ; CODE XREF: PLAYER:loc_190B8j
+loc_19136:              ; CODE XREF: PLAYER:tbl_190B8j
 	move.b  PCMCMD.channel(a3), d0
 	ori.b   #$C0, d0
 	move.b  d0, PCM_CTRL(a4)
@@ -1292,27 +1300,33 @@ loc_191B4:              ; CODE XREF: PLAYER:000190E4j
 ; ---------------------------------------------------------------------------
 
 loc_191BA:              ; CODE XREF: PLAYER:000190F4j
-	moveq   #0,d0
-	move.b  (a2)+,d0
-	lea dword_19544(pc),a0
-	addq.w  #4,a0
-	lsl.w   #2,d0
-	movea.l (a0,d0.w),a0
-	adda.l  $10(a5),a0
-	move.b  $C(a0),$30(a3)
-	move.b  $C(a0),$31(a3)
-	move.b  $D(a0),$32(a3)
+	moveq   #0, d0
+	move.b  (a2)+, d0
+
+	lea tbl_19544(pc), a0
+	addq.w  #4, a0
+
+	lsl.w   #2, d0
+	movea.l (a0, d0.w), a0
+
+	adda.l  $10(a5), a0
+
+	move.b  $C(a0), $30(a3)
+	move.b  $C(a0), $31(a3)
+
+	move.b  $D(a0), $32(a3)
 	bne.s   loc_19218
-	movea.l 0(a0),a1
-	adda.l  $10(a5),a1
-	move.l  a1,$28(a3)
-	move.l  a1,$24(a3)
-	move.l  4(a0),$1C(a3)
-	move.l  4(a0),$20(a3)
-	move.l  8(a0),$2C(a3)
-	move.l  #PCM_DATA,$18(a3)
+
+	movea.l 0(a0), a1
+	adda.l  $10(a5), a1
+	move.l  a1, $28(a3)
+	move.l  a1, $24(a3)
+	move.l  4(a0), $1C(a3)
+	move.l  4(a0), $20(a3)
+	move.l  8(a0), $2C(a3)
+	move.l  #PCM_DATA, $18(a3)
 	clr.b   $12(a3)
-	move.b  #7,$13(a3)
+	move.b  #7, $13(a3)
 	rts
 ; ---------------------------------------------------------------------------
 
@@ -2024,10 +2038,10 @@ off_19304:  dc.l $800        ; DATA XREF: PLAYER:off_19300o
 	dc.b $F2 ; ò
 	dc.b   0
 
-dword_19544:        ; DATA XREF: sub_18BB0o
+tbl_19544:        ; DATA XREF: loadPcmDatao
 					; PLAYER:000191BEo
 	dc.l 7
-	dc.l dword_19564
+	dc.l data_19564
 	dc.l dword_19574
 	dc.l dword_19584
 	dc.l dword_19594
@@ -2035,16 +2049,16 @@ dword_19544:        ; DATA XREF: sub_18BB0o
 	dc.l dword_195B4
 	dc.l dword_195C4
 
-dword_19564:
-	dc.l unk_195D4
-	dc.l $969
+data_19564:
+	dc.l unk_195D4  ; PCMMETA.address
+	dc.l $969       ; PCMMETA.dataSize
 	dc.b 0
 	dc.b 0
 	dc.b 0
 	dc.b 0
 	dc.b 6
-	dc.b 1
-	dc.w 0
+	dc.b 1          ; PCMMETA.byteD
+	dc.w 0          ; PCMMETA.loadAddress
 
 dword_19574:
 	dc.l unk_19F3D

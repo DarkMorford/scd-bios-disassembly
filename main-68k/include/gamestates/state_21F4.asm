@@ -5,7 +5,8 @@
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1CFA:               ; CODE XREF: state_21F4p
+sub_1CFA:
+loadDemoAssets:               ; CODE XREF: state_21F4p
 	st (byte_FFFFFE28).w
 
 	bsr.w displayOff
@@ -347,7 +348,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 
 	jsr displayOn
 
-	lea (sub_2424).l, a1
+	lea (demoVblankHandler).l, a1
 	jsr setVblankUserRoutine
 
 	clr.b (byte_FFFFFE28).w
@@ -357,7 +358,7 @@ sub_1CFA:               ; CODE XREF: state_21F4p
 	jsr    sendCommandToZ80
 
 	jmp waitForVblank
-; End of function sub_1CFA
+; End of function loadDemoAssets
 
 ; ---------------------------------------------------------------------------
 vdpReg_217A:
@@ -439,7 +440,7 @@ palette_21EC:
 
 state_21F4:               ; CODE XREF: ROM:000005DAj
 	; Load assets for this state
-	bsr.w sub_1CFA
+	bsr.w loadDemoAssets
 
 @loc_21F8:
 	; Set a countdown for 600 frames (10 seconds)
@@ -704,7 +705,7 @@ sub_2354:               ; CODE XREF: loadMessageText+18p loadMessageText+32p .
 ; =============== S U B R O U T I N E =======================================
 
 
-loadMessageText:               ; CODE XREF: sub_1CFA+21Ap
+loadMessageText:               ; CODE XREF: loadDemoAssets+21Ap
 	; Load "CHECKING DISC" text
 	lea   (decompScratch).w, a2
 	lea   (unk_E6A6).l, a1
@@ -769,7 +770,8 @@ loadMessageText:               ; CODE XREF: sub_1CFA+21Ap
 
 
 ; V-blank handler for state_21F4
-sub_2424:               ; DATA XREF: sub_1CFA+462o
+sub_2424:
+demoVblankHandler:               ; DATA XREF: loadDemoAssets+462o
 	bsr.w  checkDiscReady
 
 	jsr    displayOff
@@ -850,7 +852,7 @@ sub_2424:               ; DATA XREF: sub_1CFA+462o
 @locret_24DC:
 	jsr displayOn
 	rts
-; End of function sub_2424
+; End of function demoVblankHandler
 
 ; ---------------------------------------------------------------------------
 word_24E2:
@@ -892,8 +894,8 @@ off_2502:
 ;   d1: Number of parts
 ;   d2: Address step between parts
 
-multipartCopy:               ; CODE XREF: sub_1CFA+290p
-					; sub_1CFA+2A8p ...
+multipartCopy:               ; CODE XREF: loadDemoAssets+290p
+					; loadDemoAssets+2A8p ...
 	@loc_2522:
 		movea.l a1, a2
 		move.w  d0, d3
@@ -2518,7 +2520,7 @@ sub_2F4A:               ; CODE XREF: ROM:00002CC0j
 ; =============== S U B R O U T I N E =======================================
 
 
-rotatePalette0:               ; CODE XREF: sub_2424+50p
+rotatePalette0:               ; CODE XREF: demoVblankHandler+50p
 	move.w (palette0Rotation).w, d0
 	lsl.w  #1, d0
 
@@ -2568,7 +2570,7 @@ palette_2F8C:
 ; =============== S U B R O U T I N E =======================================
 
 
-rotatePalette2:               ; CODE XREF: sub_2424:loc_2470p
+rotatePalette2:               ; CODE XREF: demoVblankHandler:loc_2470p
 	lea (paletteBuffer2+COLOR3).w, a0
 
 	addq.w #1,  (palette2Rotation).w

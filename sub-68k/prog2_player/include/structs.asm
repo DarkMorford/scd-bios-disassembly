@@ -11,3 +11,9 @@ PCMCMD.byteB equ $B
 PCMCMD.byteE equ $E
 PCMCMD.byteF equ $F
 PCMCMD.word10 equ $10
+
+; PCM metadata
+PCMMETA.address equ 0
+PCMMETA.dataSize equ 4
+PCMMETA.byteD equ $D
+PCMMETA.loadAddress equ $E
