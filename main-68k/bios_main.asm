@@ -346,15 +346,19 @@ _start:
 	movem.w (a5)+, d5-d7
 	movem.l (a5)+, a0-a4
 
+	; Perform version check
 	move.b -$10FF(a1), d0
 	andi.b #$F, d0
 	beq.s  @loc_456
 
+	; Make the TMSS happy
 	move.l #'SEGA', $2F00(a1)
 
 @loc_456:
 	move.w (a4), d0
-	moveq  #0, d0
+
+	; Set the entire color palette memory to black
+	moveq #0, d0
 	m_loadCramWriteAddress 0
 
 	move.w #31, d1
@@ -362,9 +366,11 @@ _start:
 		move.l  d0, (a3)
 		dbf     d1, @loc_468
 
+	; Zero out the user-mode stack pointer
 	movea.l d0, a6
 	move.l  a6, usp
 
+	; Write initial configuration to the VDP registers
 	moveq #23, d1
 	@loc_474:
 		move.b (a5)+, d5
@@ -372,8 +378,10 @@ _start:
 		add.w  d7, d5
 		dbf    d1, @loc_474
 
+	; Start DMA fill operation
 	move.l (a5)+, (a4)
 	move.w d0, (a3)
+
 	move.w d7, (a1)
 	move.w d7, (a2)
 
@@ -381,6 +389,7 @@ _start:
 		btst  d0, (a1)
 		bne.s @loc_486
 
+	; Write the initial (dummy) program to the Z80
 	moveq #37, d2
 	@loc_48C:
 		move.b (a5)+, (a0)+
@@ -395,26 +404,29 @@ _start:
 		dbf    d6, @loc_498
 
 	move.l (a5)+, (a4)
-	move.l (a5)+, (a4)
 
-	moveq #31, d3
+	move.l (a5)+, (a4)
+	moveq  #31, d3
 	@loc_4A4:
 		move.l d0, (a3)
 		dbf    d3, @loc_4A4
 
+	; Clear VSRAM
 	move.l (a5)+, (a4)
-
-	moveq #19, d4
+	moveq  #19, d4
 	@loc_4AE:
 		move.l d0, (a3)
 		dbf    d4, @loc_4AE
 
+	; Silence the PSG chip
 	moveq #3, d5
 	@loc_4B6:
 		move.b (a5)+, $11(a3)
 		dbf    d5, @loc_4B6
 
 	move.w  d0, (a2)
+
+	; Set registers to 0
 	movem.l (a6), d0-a6
 
 	m_maskInterrupts 7
@@ -423,41 +435,43 @@ _start:
 	bra.s loc_536
 ; ---------------------------------------------------------------------------
 InitData:
+	; d5-d7
 	dc.w $8000
 	dc.w $3FFF
 	dc.w $0100
 
+	; a0-a4
 	dc.l $A00000
-	dc.l $A11100
-	dc.l $A11200
-	dc.l $C00000
-	dc.l $C00004
+	dc.l Z80_BUSREQ
+	dc.l Z80_RESET
+	dc.l VDP_DATA
+	dc.l VDP_CONTROL
 
 	; VDP
-	dc.b   4
-	dc.b $14
-	dc.b ($C000 >> 10)
-	dc.b ($F000 >> 10)
-	dc.b ($E000 >> 13)
-	dc.b ($D800 >>  9)
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b   0
-	dc.b $FF
-	dc.b   0
-	dc.b $81
-	dc.b ($DC00 >> 10)
-	dc.b   0
-	dc.b   1
-	dc.b   1
-	dc.b   0
-	dc.b   0
-	dc.b $FF
-	dc.b $FF
-	dc.b   0
-	dc.b   0
-	dc.b $80
+	dc.b   4            ; H-int off, enable H/V counters
+	dc.b $14            ; Display off, V-int off, DMA on, V28 cells
+	dc.b ($C000 >> 10)  ; Scroll A pattern table
+	dc.b ($F000 >> 10)  ; Window pattern table
+	dc.b ($E000 >> 13)  ; Scroll B pattern table
+	dc.b ($D800 >>  9)  ; Sprite attribute table
+	dc.b   0            ;
+	dc.b   0            ; Background color - Palette 0, color 0
+	dc.b   0            ;
+	dc.b   0            ;
+	dc.b $FF            ; H Interrupt counter
+	dc.b   0            ; Ext. interrupt off, full H/V scroll
+	dc.b $81            ; H40 cells, shadow/highlight off, no interlace
+	dc.b ($DC00 >> 10)  ; H-scroll table
+	dc.b   0            ;
+	dc.b   1            ; Auto-increment 1
+	dc.b   1            ; Scroll size 32V x 64H
+	dc.b   0            ; Window H position
+	dc.b   0            ; Window V position
+	dc.b $FF            ; DMA length lo
+	dc.b $FF            ; DMA length hi
+	dc.b   0            ; DMA source lo
+	dc.b   0            ; DMA sourch mid
+	dc.b $80            ; DMA fill mode, DMA source hi
 
 	dc.l $40000080
 
@@ -489,8 +503,8 @@ InitData:
 	dc.b $E9                ; jp (hl)
 
 	; VDP
-	dc.w $8104
-	dc.w $8F02
+	dc.w $8104          ; Display off, V-int off, DMA off, V28 cells
+	dc.w $8F02          ; Auto-increment 2
 	dc.l $C0000000
 	dc.l $40000010
 
@@ -502,6 +516,7 @@ InitData:
 ; ---------------------------------------------------------------------------
 
 loc_536:                ; CODE XREF: ROM:loc_4C8j
+	; Read VDP so TMSS is happy
 	tst.w (VDP_CONTROL).l
 
 	m_disableInterrupts
@@ -529,7 +544,7 @@ loc_536:                ; CODE XREF: ROM:loc_4C8j
 	bsr.w   testCartBootBlock
 	bne.w   sub_640             ; Boot block didn't match, bail out
 
-	move.l  (_EXCPT+2).w, d0
+	move.l  (_EXCPT + 2).w, d0
 	bcs.w   finishInit
 
 bootCartridge:
@@ -537,7 +552,7 @@ bootCartridge:
 	bsr.w setupGenHardware
 
 	move.w #INST_JMP, (_EXCPT).w
-	move.l #finishInit,  (_EXCPT+2).w
+	move.l #finishInit,  (_EXCPT + 2).w
 	jmp    cartBoot
 ; ---------------------------------------------------------------------------
 
