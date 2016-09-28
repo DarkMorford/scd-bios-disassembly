@@ -1,3 +1,5 @@
+	; SMPS Z80 Type 1 FM driver
+
 	; Common include files
 	.include "memory.z"
 	.include "registers.z"
@@ -71,7 +73,7 @@ loc_23:
 ; =============== S U B R O U T I N E =======================================
 
 
-dereferenceWithWordCount:
+dereferencePointerTable:
 	ld  c, a
 	ld  b, 0
 	add hl, bc
@@ -79,7 +81,7 @@ dereferenceWithWordCount:
 	nop
 	nop
 	nop
-; End of function dereferenceWithWordCount
+; End of function dereferencePointerTable
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -99,7 +101,7 @@ dereferencePointer:
 ; =============== S U B R O U T I N E =======================================
 
 
-int_handler:
+vblankHandler:
 	; Save registers
 	push    af
 	push    bc
@@ -116,15 +118,15 @@ int_handler:
 	jr  loc_4D
 ; ---------------------------------------------------------------------------
 
-loc_46:                 ; CODE XREF: int_handler+9j
+loc_46:                 ; CODE XREF: vblankHandler+9j
 	; Increment the frame counter
 	ld  hl, frameCounter
 	inc (hl)
 
-	; Do stuff?
-	call sub_6B
+	; Do stuff
+	call performFrameUpdate
 
-loc_4D:                 ; CODE XREF: int_handler+Cj
+loc_4D:                 ; CODE XREF: vblankHandler+Cj
 	; Restore registers
 	pop hl
 	pop de
@@ -132,7 +134,7 @@ loc_4D:                 ; CODE XREF: int_handler+Cj
 	pop af
 
 	ret
-; End of function int_handler
+; End of function vblankHandler
 
 ; ---------------------------------------------------------------------------
 
@@ -143,99 +145,105 @@ start:                  ; CODE XREF: ROM:0004j
 	ld a, 3
 	ld (delayFrames), a
 
-startup_loop:           ; CODE XREF: ROM:005Fj
+startupLoop:           ; CODE XREF: ROM:005Fj
 	ei
 	ld a, (delayFrames)
 	or a
-	jp nz, startup_loop
+	jp nz, startupLoop
 
 	call initialize
 
-main_loop:              ; CODE XREF: ROM:0069j
+mainLoop:              ; CODE XREF: ROM:0069j
 	ei
-	call sub_75B
-	jr  main_loop
+	call processCommandQueue
+	jr  mainLoop
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6B:                 ; CODE XREF: int_handler+12p
-	call sub_62D
-	call sub_742
-	call sub_6BC
+performFrameUpdate:                 ; CODE XREF: vblankHandler+12p
+	call handlePause
+	call handleTempo
+	call handleFade
 	call sub_48E
-	call sub_A0
+	call updateSfxTracks
 
+	; Set driver to music mode
 	xor a
-	ld  (byte_1C19), a
+	ld (driverMode), a
 
 	ld   ix, struct_1C40
-	bit  NOTE.flag7, (ix + NOTE.flags)
+	bit  TRACK.updateBit, (ix + TRACK.flags)
 	call nz, sub_7EE
 
 	ld b, 6
 	ld ix, struct_1C70
-; End of function sub_6B
+; End of function performFrameUpdate
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_8F:                 ; CODE XREF: sub_8F+Ej sub_A0+Ep ...
+trackUpdateLoop:                 ; CODE XREF: trackUpdateLoop+Ej updateSfxTracks+Ep ...
 	push bc
 
-	bit  NOTE.flag7, (ix + NOTE.flags)
-	call nz, sub_BE
+	bit  TRACK.updateBit, (ix + TRACK.flags)
+	call nz, updateTrack
 
-	ld  de, NOTE.size
+	ld  de, TRACK.size
 	add ix, de
 
 	pop  bc
-	djnz sub_8F
+	djnz trackUpdateLoop
 
 	ret
-; End of function sub_8F
+; End of function trackUpdateLoop
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_A0:                 ; CODE XREF: sub_6B+Cp
+updateSfxTracks:                 ; CODE XREF: performFrameUpdate+Cp
 	call sub_48E
 
-	ld   a, 1
-	ld   (byte_1C19), a
+	; Set driver to SFX mode
+	ld a, 01h
+	ld (driverMode), a
+
 	ld   ix, struct_1D90
 	ld   b, 3
-	call sub_8F
+	call trackUpdateLoop
 
+	; Set driver to Special SFX mode
 	ld a, 80h
-	ld (byte_1C19), a
+	ld (driverMode), a
+
 	ld b, 2
-	ld ix, 1E20h
-	jr sub_8F
-; End of function sub_A0
+	ld ix, struct_1E20
+	jr trackUpdateLoop
+; End of function updateSfxTracks
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_BE:                 ; CODE XREF: sub_8F+5p
-	call sub_271
+updateTrack:                 ; CODE XREF: trackUpdateLoop+5p
+	call delayTrack
 	jr   nz, loc_DA
 
 	call sub_150
-	bit NOTE.flag4, (ix + NOTE.flags)
+
+	bit TRACK.flag4, (ix + TRACK.flags)
 	ret nz
 
 	call sub_2A8
 	call sub_3D9
 	call sub_2D3
-	call sub_FC
-	jp  loc_3B1
+	call setFmFrequency
+	jp  setKeyOn
 ; ---------------------------------------------------------------------------
 
-loc_DA:                 ; CODE XREF: sub_BE+3j
+loc_DA:                 ; CODE XREF: updateTrack+3j
 	call sub_25B
 	bit  4, (ix + 0)
 	ret  nz
@@ -246,28 +254,28 @@ loc_DA:                 ; CODE XREF: sub_BE+3j
 	jr   z, loc_F1
 
 	dec (ix + 1Eh)
-	jp  z, sub_3C8
+	jp  z, setKeyOff
 
-loc_F1:                 ; CODE XREF: sub_BE+2Bj
+loc_F1:                 ; CODE XREF: updateTrack+2Bj
 	call sub_3D9
 	bit  6, (ix + 0)
 	ret  nz
 
 	call sub_2D3
-; End of function sub_BE
+; End of function updateTrack
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_FC:                 ; CODE XREF: sub_BE+16p
+setFmFrequency:                 ; CODE XREF: updateTrack+16p
 	bit 2, (ix + 0)
 	ret nz
 
 	bit 0, (ix + 0)
 	jp  nz, loc_111
 
-loc_108:                ; CODE XREF: sub_FC+1Aj
+loc_108:                ; CODE XREF: setFmFrequency+1Aj
 	ld  a, YM_FREQL
 	ld  c, h
 	rst j_writeFMRegisters
@@ -279,7 +287,7 @@ loc_108:                ; CODE XREF: sub_FC+1Aj
 	ret
 ; ---------------------------------------------------------------------------
 
-loc_111:                ; CODE XREF: sub_FC+9j
+loc_111:                ; CODE XREF: setFmFrequency+9j
 	ld a, (ix + 1)
 	cp 2
 	jr nz, loc_108
@@ -287,15 +295,16 @@ loc_111:                ; CODE XREF: sub_FC+9j
 	call sub_140
 	exx
 
-	ld hl, data_7D2
+	ld hl, channelCFreq
 	ld b, 4
 
-	loc_121:                ; CODE XREF: sub_FC+40j
+	loc_121:                ; CODE XREF: setFmFrequency+40j
 		ld   a, (hl)
 		push af
 
 		inc hl
 		exx
+
 		ex  de, hl
 		ld  c, (hl)
 		inc hl
@@ -323,16 +332,16 @@ loc_111:                ; CODE XREF: sub_FC+9j
 
 	exx
 	ret
-; End of function sub_FC
+; End of function setFmFrequency
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_140:                ; CODE XREF: sub_FC+1Cp
+sub_140:                ; CODE XREF: setFmFrequency+1Cp
 	ld  de, 1C2Ah
 
-	ld  a, (byte_1C19)
+	ld  a, (driverMode)
 	or  a
 	ret z
 
@@ -347,20 +356,21 @@ sub_140:                ; CODE XREF: sub_FC+1Cp
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_150:                ; CODE XREF: sub_BE+5p
-	ld e, (ix + NOTE.addrlo_3)
-	ld d, (ix + NOTE.addrhi_4)
+sub_150:                ; CODE XREF: updateTrack+5p
+	ld e, (ix + TRACK.addrlo_3)
+	ld d, (ix + TRACK.addrhi_4)
 
-	res NOTE.flag1, (ix + NOTE.flags)
-	res NOTE.flag4, (ix + NOTE.flags)
+	res TRACK.flag1, (ix + TRACK.flags)
+	res TRACK.flag4, (ix + TRACK.flags)
 
+loc_15E:
 	ld  a, (de)
 	inc de
 	cp  0E0h
-	jp  nc, loc_996
+	jp  nc, handleCommandByte
 
 	ex   af, af'
-	call sub_3C8
+	call setKeyOff
 	call sub_215
 	ex   af, af'
 
@@ -398,7 +408,7 @@ loc_18C:                ; CODE XREF: sub_150+42j
 loc_194:                ; CODE XREF: sub_150+3Ej
 	add a, e
 	ld  hl, data_7D6
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 
 	ex  af, af'
 	or  h
@@ -514,7 +524,7 @@ sub_215:                ; CODE XREF: sub_150+19p
 
 	jr  nz, loc_257
 
-	bit NOTE.flag1, (ix + NOTE.flags)
+	bit TRACK.flag1, (ix + TRACK.flags)
 	ret nz
 
 loc_221:                ; CODE XREF: sub_25B+6j
@@ -527,7 +537,7 @@ loc_221:                ; CODE XREF: sub_25B+6j
 
 	ld  a, (ix + 12h)
 	ld  hl, data_263
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 
 	ld  e, (ix + 13h)
 	inc (ix + 13h)
@@ -547,7 +557,7 @@ loc_24E:                ; CODE XREF: sub_215+29j sub_215+33j
 	ld  d, 0
 	add hl, de
 	ex  de, hl
-	call sub_B47
+	call cmd_E0
 
 	exx
 	ret
@@ -562,7 +572,7 @@ loc_257:                ; CODE XREF: sub_215+5j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_25B:                ; CODE XREF: sub_BE:loc_DAp
+sub_25B:                ; CODE XREF: updateTrack:loc_DAp
 	ld  a, (ix + 11h)
 	sub 2
 	ret m
@@ -571,14 +581,21 @@ sub_25B:                ; CODE XREF: sub_BE:loc_DAp
 
 ; ---------------------------------------------------------------------------
 data_263:
-	dw 26Bh
-	dw 26Ch
-	dw 26Dh
-	dw 26Eh
+	dw byte_26B
+	dw byte_26C
+	dw byte_26D
+	dw byte_26E
 
+byte_26B:
 	db 0C0h
+
+byte_26C:
 	db  80h
+
+byte_26D:
 	db 0C0h
+
+byte_26E:
 	db  40h
 	db 0C0h
 	db  80h
@@ -586,18 +603,18 @@ data_263:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_271:                ; CODE XREF: sub_BEp sub_7EEp
-	ld  a, (ix + NOTE.byte_B)
+delayTrack:                ; CODE XREF: updateTrackp sub_7EEp
+	ld  a, (ix + TRACK.trackDelay)
 	dec a
-	ld  (ix + NOTE.byte_B), a
+	ld  (ix + TRACK.trackDelay), a
 	ret
-; End of function sub_271
+; End of function delayTrack
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_279:                ; CODE XREF: sub_BE+24p
+sub_279:                ; CODE XREF: updateTrack+24p
 	ld  a, (ix + 18h)
 	or  a
 	ret z
@@ -606,12 +623,13 @@ sub_279:                ; CODE XREF: sub_BE+24p
 	dec a
 	ld  c, 10
 	rst sub_20
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 	call sub_37B
 
 	ld  h, (ix + 1Dh)
 	ld  l, (ix + 1Ch)
-	ld  de, data_7CA
+
+	ld  de, instrumentVolume
 	ld  b, 4
 	ld  c, (ix + 19h)
 
@@ -633,7 +651,7 @@ sub_279:                ; CODE XREF: sub_BE+24p
 		inc de
 		inc hl
 		pop af
-		djnz    loc_295
+		djnz loc_295
 
 	ret
 ; End of function sub_279
@@ -642,7 +660,7 @@ sub_279:                ; CODE XREF: sub_BE+24p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2A8:                ; CODE XREF: sub_BE+Dp
+sub_2A8:                ; CODE XREF: updateTrack+Dp
 	bit 7, (ix + 7)
 	ret z
 
@@ -675,7 +693,7 @@ sub_2A8:                ; CODE XREF: sub_BE+Dp
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_2D3:                ; CODE XREF: sub_BE+13p sub_BE+3Bp
+sub_2D3:                ; CODE XREF: updateTrack+13p updateTrack+3Bp
 	ld  a, (ix + 7)
 	or  a
 	ret z
@@ -729,7 +747,7 @@ loc_324:
 	ex  de, hl
 	ld  c, 8
 	rst sub_20
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 	jr  loc_32F
 ; ---------------------------------------------------------------------------
 
@@ -863,48 +881,48 @@ loc_3A8:                ; CODE XREF: sub_37B+Aj
 
 
 sub_3AC:                ; CODE XREF: sub_150+2Dp sub_37B+21j
-	set NOTE.flag4, (ix + NOTE.flags)
+	set TRACK.flag4, (ix + TRACK.flags)
 	ret
 ; End of function sub_3AC
 
 ; ---------------------------------------------------------------------------
-; START OF FUNCTION CHUNK FOR sub_BE
+; START OF FUNCTION CHUNK FOR updateTrack
 
-loc_3B1:                ; CODE XREF: sub_BE+19j
+setKeyOn:                ; CODE XREF: updateTrack+19j
 	ld  a, (ix + 0Dh)
 	or  (ix + 0Eh)
 	ret z
 
-	ld  a, (ix + 0)
+	ld  a, (ix + TRACK.flags)
 	and 6
 	ret nz
 
-	ld  a, (ix + 1)
+	ld  a, (ix + TRACK.channel)
 	or  0F0h
 	ld  c, a
 	ld  a, YM_KEYONOFF
 	rst j_writeDataToFM1
 	ret
-; END OF FUNCTION CHUNK FOR sub_BE
+; END OF FUNCTION CHUNK FOR updateTrack
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3C8:                ; CODE XREF: sub_BE+30j sub_150+16p ...
-	ld  a, (ix + NOTE.flags)
+setKeyOff:                ; CODE XREF: updateTrack+30j sub_150+16p ...
+	ld  a, (ix + TRACK.flags)
 	and 6
 	ret nz
-; End of function sub_3C8
+; End of function setKeyOff
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-setKeyOnOff:                ; CODE XREF: muteChannel+Dj
+setFmKeyOff:                ; CODE XREF: muteChannel+Dj
 	; Clear flag in bit 6
-	res NOTE.flag6, (ix + NOTE.flags)
+	res TRACK.flag6, (ix + TRACK.flags)
 
-	ld  c, (ix + NOTE.channel)
+	ld  c, (ix + TRACK.channel)
 	ld  a, YM_KEYONOFF
 	rst j_writeDataToFM1
 	ret
@@ -912,7 +930,7 @@ setKeyOnOff:                ; CODE XREF: muteChannel+Dj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_3D9:                ; CODE XREF: sub_BE+10p sub_BE:loc_F1p
+sub_3D9:                ; CODE XREF: updateTrack+10p updateTrack:loc_F1p
 	ld b, 0
 
 	ld a, (ix + 10h)
@@ -922,8 +940,8 @@ sub_3D9:                ; CODE XREF: sub_BE+10p sub_BE:loc_F1p
 	dec b
 
 loc_3E3:
-	ld h, (ix + 0Eh)
-	ld l, (ix + 0Dh)
+	ld h, (ix + TRACK.byte_E)
+	ld l, (ix + TRACK.byte_D)
 	ld c, a
 	add hl, bc
 	ex  de, hl
@@ -936,7 +954,7 @@ loc_3E3:
 	sbc hl, bc
 	jr  c, loc_3FF
 
-	ld  hl, 0FA85h
+	ld  hl, -57Bh
 	add hl, de
 	jr  loc_40D
 ; ---------------------------------------------------------------------------
@@ -958,8 +976,8 @@ loc_40D:
 	bit 5, (ix + 0)
 	ret z
 
-	ld (ix + 0Eh), h
-	ld (ix + 0Dh), l
+	ld (ix + TRACK.byte_E), h
+	ld (ix + TRACK.byte_D), l
 	ret
 ; End of function sub_3D9
 
@@ -979,9 +997,11 @@ loc_419:                ; CODE XREF: sub_20+5j
 
 sub_41E:                ; CODE XREF: sub_2D3+60p sub_37B+4p
 	ld  b, 0
+
 	add hl, bc
 	ld  c, l
 	ld  b, h
+
 	ld  a, (bc)
 	ret
 ; End of function sub_41E
@@ -993,7 +1013,7 @@ sub_41E:                ; CODE XREF: sub_2D3+60p sub_37B+4p
 sub_425:
 	ld hl, (1C37h)
 
-	ld a, (byte_1C19)
+	ld a, (driverMode)
 	or a
 	jr z, loc_434
 
@@ -1008,9 +1028,9 @@ loc_434:
 
 	ld de, 19h
 
-loc_43B:
-	add hl, de
-	djnz loc_43B
+	loc_43B:
+		add hl, de
+		djnz loc_43B
 
 locret_43E:
 	ret
@@ -1022,14 +1042,14 @@ locret_43E:
 
 writeFMRegisters:                ; CODE XREF: j_writeFMRegistersj
 	; Jump down if writing to channels 4-6
-	bit 2, (ix + NOTE.channel)
+	bit 2, (ix + TRACK.channel)
 	jr  nz, loc_456
 
-	bit NOTE.flag2, (ix + NOTE.flags)
+	bit TRACK.flag2, (ix + TRACK.flags)
 	ret nz
 
 	; Adjust address for the correct channel
-	add a, (ix + NOTE.channel)
+	add a, (ix + TRACK.channel)
 
 writeDataToFM1:         ; CODE XREF: j_writeDataToFM1j
 	ld  (FM1_ADDR), a
@@ -1041,14 +1061,14 @@ writeDataToFM1:         ; CODE XREF: j_writeDataToFM1j
 ; ---------------------------------------------------------------------------
 
 loc_456:                ; CODE XREF: writeFMRegisters+4j
-	bit NOTE.flag2, (ix + NOTE.flags)
+	bit TRACK.flag2, (ix + TRACK.flags)
 	ret nz
 
 	; Adjust address for the correct channel
-	add a, (ix + NOTE.channel)
+	add a, (ix + TRACK.channel)
 	sub 4
 
-writeDataToFM2:         ; CODE XREF: sub_62D+21p
+writeDataToFM2:         ; CODE XREF: handlePause+21p
 	ld  (FM2_ADDR), a
 	rst waitForWrite
 
@@ -1061,8 +1081,8 @@ writeDataToFM2:         ; CODE XREF: sub_62D+21p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_469:                ; CODE XREF: sub_7F5+5Bp
-	ld de, data_7B5
+writeInstrumentData:                ; CODE XREF: sub_7F5+5Bp
+	ld de, instrumentRegisters
 
 	ld  c, (ix + 0Ah)
 	ld  a, YM_CHENABLE
@@ -1080,16 +1100,18 @@ sub_469:                ; CODE XREF: sub_7F5+5Bp
 	ld (ix + 1Ch), l
 	ld (ix + 1Dh), h
 	jp sub_B67
-; End of function sub_469
+; End of function writeInstrumentData
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
 sub_488:
+	; Fetch register address
 	ld  a, (de)
 	inc de
 
+	; Fetch register value
 	ld  c, (hl)
 	inc hl
 
@@ -1101,9 +1123,10 @@ sub_488:
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_48E:                ; CODE XREF: sub_6B+9p sub_A0p
+sub_48E:                ; CODE XREF: performFrameUpdate+9p updateSfxTracksp
 	ld a, (flags_1C09)
 
+loc_491:
 	bit 7, a
 	jp  z, initialize
 
@@ -1122,7 +1145,7 @@ sub_48E:                ; CODE XREF: sub_6B+9p sub_A0p
 	sub 0E0h
 
 	ld  hl, addr_4B5
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 
 	; Zero out byte_1C18
 	xor a
@@ -1136,18 +1159,20 @@ addr_4B5:
 	dw loc_4BB
 
 loc_4BB:
-	ld ix, 1E20h
+	ld ix, struct_1E20
 	ld b, 2
+
+	; Put driver in Special SFX mode
 	ld a, 80h
-	ld (byte_1C19), a
+	ld (driverMode), a
 
 	loc_4C6:
 		push bc
 
-		bit NOTE.flag7, (ix + NOTE.flags)
+		bit TRACK.updateBit, (ix + TRACK.flags)
 		call nz, loc_4D7
 
-		ld de, NOTE.size
+		ld de, TRACK.size
 		add ix, de
 
 		pop bc
@@ -1158,7 +1183,7 @@ loc_4BB:
 loc_4D7:
 	push hl
 	push hl
-	jp sub_BBF
+	jp cmd_F2
 
 
 ; ---------------------------------------------------------------------------
@@ -1173,26 +1198,27 @@ loc_4DC:                ; CODE XREF: sub_48E+Aj
 
 	ld  c, 4
 	rst sub_20
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 
 	push hl
 	push hl
+
 	rst dereferencePointer
-
 	ld  (1C37h), hl
+
 	pop hl
 	pop iy
 
 	ld a, (iy + 5)
-	ld (byte_1C13), a
+	ld (tempoTimeout), a
 	ld (byte_1C14), a
 
 	ld  de, 6
 	add hl, de
-	ld  (1C33h), hl
+	ld  (word_1C33), hl
 
-	ld  hl, 537h
-	ld  (1C35h), hl
+	ld  hl, data_537
+	ld  (word_1C35), hl
 
 	ld  de, struct_1C40
 	ld  b, (iy + 2)
@@ -1201,18 +1227,18 @@ loc_4DC:                ; CODE XREF: sub_48E+Aj
 	loc_510:
 		push bc
 
-		ld  hl, (1C35h)
+		ld  hl, (word_1C35)
 		ldi
 		ldi
 		ld  (de), a
 		inc de
-		ld  (1C35h), hl
-		ld  hl, (1C33h)
+		ld  (word_1C35), hl
+		ld  hl, (word_1C33)
 		ldi
 		ldi
 		ldi
 		ldi
-		ld  (1C33h), hl
+		ld  (word_1C33), hl
 		call sub_5F5
 
 		pop  bc
@@ -1221,20 +1247,20 @@ loc_4DC:                ; CODE XREF: sub_48E+Aj
 
 ; START OF FUNCTION CHUNK FOR initialize
 
-loc_531:                ; CODE XREF: sub_48E+147j sub_62D+36j ...
+loc_531:                ; CODE XREF: sub_48E+147j handlePause+36j ...
 	ld a, 80h
 	ld (flags_1C09), a
 	ret
 ; END OF FUNCTION CHUNK FOR initialize
 ; ---------------------------------------------------------------------------
 data_537:
-	db 80h, 02h
-	db 80h, 00h
-	db 80h, 01h
-	db 80h, 04h
-	db 80h, 05h
-	db 80h, 06h
-	db 80h, 02h
+	db 80h, 2
+	db 80h, 0
+	db 80h, 1
+	db 80h, 4
+	db 80h, 5
+	db 80h, 6
+	db 80h, 2
 ; ---------------------------------------------------------------------------
 ; START OF FUNCTION CHUNK FOR sub_48E
 
@@ -1254,11 +1280,11 @@ loc_54F:                ; CODE XREF: sub_48E+Fj
 	ld  hl, PROG1_START
 
 loc_556:                ; CODE XREF: sub_48E+BFj
-	ld  (byte_1C19), a
+	ld  (driverMode), a
 	ex  af, af'
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 
-	push    hl
+	push hl
 	rst dereferencePointer
 
 	ld  (1C39h), hl
@@ -1286,7 +1312,7 @@ loc_575:                ; CODE XREF: sub_48E+145j
 	set 2, (hl)
 	push    ix
 
-	ld  a, (byte_1C19)
+	ld  a, (driverMode)
 	or  a
 	jr  z, loc_589
 
@@ -1299,7 +1325,7 @@ loc_589:                ; CODE XREF: sub_48E+F6j
 	ldi
 	ld  a, (de)
 	cp  2
-	call z, loc_72F
+	call z, resetChannelCMode
 
 	ldi
 	ld  a, (1C3Bh)
@@ -1323,7 +1349,7 @@ loc_589:                ; CODE XREF: sub_48E+F6j
 loc_5B7:                ; CODE XREF: sub_48E+11Bj sub_48E+123j
 	push    hl
 	ld  hl, (1C39h)
-	ld  a, (byte_1C19)
+	ld  a, (driverMode)
 	or  a
 	jr  z, loc_5C5
 
@@ -1333,7 +1359,7 @@ loc_5B7:                ; CODE XREF: sub_48E+11Bj sub_48E+123j
 loc_5C5:                ; CODE XREF: sub_48E+131j
 	ld (ix + 2Ah), l
 	ld (ix + 2Bh), h
-	call sub_3C8
+	call setKeyOff
 	call disableSSG
 
 	pop  hl
@@ -1351,25 +1377,25 @@ setIndexRegisters:                ; CODE XREF: sub_48E+EBp
 	sub 2
 	ld (1C32h), a
 
-	; Set value of ix
+	; Set value of ix - SFX track
 	push af
 	ld   hl, addr_619
-	rst  dereferenceWithWordCount
+	rst  dereferencePointerTable
 	push hl
 	pop  ix
 	pop  af
 
-	; Set value of iy
+	; Set value of iy - Special SFX track
 	push af
 	ld   hl, addr_60F
-	rst  dereferenceWithWordCount
+	rst  dereferencePointerTable
 	push hl
 	pop  iy
 	pop  af
 
-	; Set value of hl
+	; Set value of hl - Music track
 	ld  hl, addr_623
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 	ret
 ; End of function setIndexRegisters
 
@@ -1418,21 +1444,21 @@ sub_5FC:                ; CODE XREF: sub_7F5+3Ep
 ; End of function sub_5FC
 
 ; ---------------------------------------------------------------------------
-addr_60F: ; ix
-	dw 1E20h
-	dw 1E20h
-	dw 1E20h
-	dw 1E20h
+addr_60F: ; iy - Special SFX
+	dw struct_1E20
+	dw struct_1E20
+	dw struct_1E20
+	dw struct_1E20
 	dw 1E50h
 
-addr_619: ; iy
+addr_619: ; ix - SFX
 	dw struct_1D90
 	dw 1DC0h
 	dw 1DC0h
 	dw 1DC0h
 	dw 1DF0h
 
-addr_623: ; hl
+addr_623: ; hl - Music
 	dw 1D60h
 	dw 1D00h
 	dw 1D00h
@@ -1442,14 +1468,14 @@ addr_623: ; hl
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_62D:                ; CODE XREF: sub_6Bp
-	; Return if byte_1C10 is zero
-	ld  hl, byte_1C10
+handlePause:                ; CODE XREF: performFrameUpdatep
+	; Return if pauseMode is zero
+	ld  hl, pauseMode
 	ld  a, (hl)
 	or  a
 	ret z
 
-	; Jump if byte_1C10 is negative
+	; Jump if pauseMode is negative
 	jp  m, loc_666
 
 	pop de
@@ -1502,69 +1528,69 @@ sub_62D:                ; CODE XREF: sub_6Bp
 	jp  loc_531
 ; ---------------------------------------------------------------------------
 
-loc_666:                ; CODE XREF: sub_62D+6j
+loc_666:                ; CODE XREF: handlePause+6j
 	xor a
 	ld  (hl), a
 
-	ld  a, (byte_1C0D)
-	or  a
-	jp  nz, initialize
+	ld a, (fadeCounter)
+	or a
+	jp nz, initialize
 
-	ld  ix, struct_1C70
-	ld  b, 6
+	ld ix, struct_1C70
+	ld b, 6
 
 	loc_675:
-		ld  a, (byte_1C11)
-		or  a
-		jr  nz, loc_681
+		ld a, (byte_1C11)
+		or a
+		jr nz, loc_681
 
-		bit 7, (ix + NOTE.flags)
+		bit TRACK.updateBit, (ix + TRACK.flags)
 		jr  z, loc_687
 
 	loc_681:
-		ld  c, (ix + NOTE.byte_A)
+		ld  c, (ix + TRACK.byte_A)
 		ld  a, YM_CHENABLE
 		rst j_writeFMRegisters
 
 	loc_687:
 		; Advance to the next object
-		ld  de, NOTE.size
+		ld  de, TRACK.size
 		add ix, de
 		djnz    loc_675
 
-	ld  ix, struct_1D90
-	ld  b, 5
+	ld ix, struct_1D90
+	ld b, 5
 
 	loc_694:
-		bit 7, (ix + NOTE.flags)
+		bit TRACK.updateBit, (ix + TRACK.flags)
 		jr  z, loc_6A0
 
-		ld  c, (ix + NOTE.byte_A)
+		ld  c, (ix + TRACK.byte_A)
 		ld  a, YM_CHENABLE
 		rst j_writeFMRegisters
 
 	loc_6A0:
 		; Advance to the next object
-		ld  de, NOTE.size
+		ld  de, TRACK.size
 		add ix, de
 		djnz    loc_694
 
 	ret
-; End of function sub_62D
+; End of function handlePause
 
 ; ---------------------------------------------------------------------------
 loc_6A8:
 	ld a, 18h
-	ld (1C0Dh), a
+	ld (fadeCounter), a
 
 	ld a, 2
-	ld (1C0Fh), a
-	ld (1C0Eh), a
+	ld (byte_1C0F), a
+	ld (byte_1C0E), a
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6B5:                ; CODE XREF: sub_6BC+6p
+sub_6B5:                ; CODE XREF: handleFade+6p
 	xor a
 	ld (struct_1C40), a
 	jp loc_531
@@ -1574,64 +1600,64 @@ sub_6B5:                ; CODE XREF: sub_6BC+6p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_6BC:                ; CODE XREF: sub_6B+6p
-	; Return if byte_1C0D is zero
-	ld  hl, byte_1C0D
+handleFade:                ; CODE XREF: performFrameUpdate+6p
+	; Return if fadeCounter is zero
+	ld  hl, fadeCounter
 	ld  a, (hl)
 	or  a
 	ret z
 
-	; If byte_1C0D is negative
+	; If fadeCounter is negative
 	call m, sub_6B5
 
 	res 7, (hl)
 
-	ld  a, (1C0Fh)
+	ld  a, (byte_1C0F)
 	dec a
 	jr  z, loc_6D1
 
-	ld  (1C0Fh), a
+	ld  (byte_1C0F), a
 
 	ret
 ; ---------------------------------------------------------------------------
 
-loc_6D1:                ; CODE XREF: sub_6BC+Fj
-	ld  a, (1C0Eh)
-	ld  (1C0Fh), a
+loc_6D1:                ; CODE XREF: handleFade+Fj
+	ld  a, (byte_1C0E)
+	ld  (byte_1C0F), a
 
-	; Decrement byte_1C0D
-	ld  a, (byte_1C0D)
+	; Decrement fadeCounter
+	ld  a, (fadeCounter)
 	dec a
-	ld  (byte_1C0D), a
+	ld  (fadeCounter), a
 
 	jr  z, initialize
 	ld  ix, struct_1C40
 	ld  b, 8
 
-	loc_6E6:                ; CODE XREF: sub_6BC+49j
-		inc (ix + NOTE.byte_6)
+	loc_6E6:                ; CODE XREF: handleFade+49j
+		inc (ix + TRACK.byte_6)
 		jp  p, loc_6F1
 
-		dec (ix + NOTE.byte_6)
+		dec (ix + TRACK.byte_6)
 		jr  loc_700
 	; ---------------------------------------------------------------------------
 
-	loc_6F1:                ; CODE XREF: sub_6BC+2Dj
-		bit 7, (ix + NOTE.flags)
+	loc_6F1:                ; CODE XREF: handleFade+2Dj
+		bit TRACK.updateBit, (ix + TRACK.flags)
 		jr  z, loc_700
 
-		bit 2, (ix + NOTE.flags)
+		bit TRACK.flag2, (ix + TRACK.flags)
 		jr  nz, loc_700
 
 		call    sub_B67
 
-	loc_700:                ; CODE XREF: sub_6BC+33j sub_6BC+39j ...
-		ld  de, NOTE.size
+	loc_700:                ; CODE XREF: handleFade+33j handleFade+39j ...
+		ld  de, TRACK.size
 		add ix, de
 		djnz    loc_6E6
 
 	ret
-; End of function sub_6BC
+; End of function handleFade
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1663,12 +1689,13 @@ initialize:                ; CODE XREF: ROM:0062p sub_48E+5j ...
 		pop  bc
 		djnz loc_71B
 
-	ld  b, 7
+	ld b, 7
 
+	; Clear fade step counter
 	xor a
-	ld  (byte_1C0D), a
+	ld (fadeCounter), a
 
-loc_72F:                ; CODE XREF: sub_48E+102p sub_7F5+62p
+resetChannelCMode:                ; CODE XREF: sub_48E+102p sub_7F5+62p
 	; Set CH3/6 to normal mode, enable timers A and B
 	ld  a, 0Fh
 	ld  (timerStatus), a
@@ -1694,8 +1721,8 @@ disableSSG:                ; CODE XREF: sub_48E+140p initialize+17p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_742:                ; CODE XREF: sub_6B+3p
-	ld  hl, byte_1C13
+handleTempo:                ; CODE XREF: performFrameUpdate+3p
+	ld  hl, tempoTimeout
 	ld  a, (hl)
 	or  a
 	ret z
@@ -1707,7 +1734,7 @@ sub_742:                ; CODE XREF: sub_6B+3p
 	ld (hl), a
 
 	ld hl, tbl_1C4B
-	ld de, NOTE.size
+	ld de, TRACK.size
 
 	ld b, 7
 	loc_756:
@@ -1716,13 +1743,13 @@ sub_742:                ; CODE XREF: sub_6B+3p
 		djnz loc_756
 
 	ret
-; End of function sub_742
+; End of function handleTempo
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_75B:                ; CODE XREF: ROM:0066p
+processCommandQueue:                ; CODE XREF: ROM:0066p
 	; Store the refresh counter
 	ld a, r
 	ld (refreshCount), a
@@ -1731,15 +1758,15 @@ sub_75B:                ; CODE XREF: ROM:0066p
 	ld de, CMD_BUFFER
 
 	; Process commands
-	call process_command
-	call process_command
-; End of function sub_75B
+	call processCommand
+	call processCommand
+; End of function processCommandQueue
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-process_command:
+processCommand:
 	; Read command buffer
 	ld a, (de)
 
@@ -1785,7 +1812,7 @@ loc_793:
 	; Go on to the next byte in the buffer
 	inc de
 	ret
-; End of function process_command
+; End of function processCommand
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -1800,7 +1827,7 @@ muteChannel:                ; CODE XREF: initialize+14p
 	call writeToAllOperators
 
 	ld   c, (ix + 1)
-	jp   setKeyOnOff
+	jp   setFmKeyOff
 ; End of function muteChannel
 
 
@@ -1830,71 +1857,73 @@ writeToAllOperators:        ; CODE XREF: disableSSG+4j muteChannel+7p
 ; End of function writeToAllOperators
 
 ; ---------------------------------------------------------------------------
-data_7B5:
-	db 0B0h
+instrumentRegisters:
+	db YM_FDBK_ALG
 
-	db  30h
-	db  38h
-	db  34h
-	db  3Ch
+instrumentDetuneMultiply:
+	db YM_DT1_MUL + CHAOP1
+	db YM_DT1_MUL + CHAOP3
+	db YM_DT1_MUL + CHAOP2
+	db YM_DT1_MUL + CHAOP4
 
-	db  50h
-	db  58h
-	db  54h
-	db  5Ch
+instrumentAttack:
+	db YM_RS_AR + CHAOP1
+	db YM_RS_AR + CHAOP3
+	db YM_RS_AR + CHAOP2
+	db YM_RS_AR + CHAOP4
 
-	db  60h
-	db  68h
-	db  64h
-	db  6Ch
+	db YM_AM_D1R + CHAOP1
+	db YM_AM_D1R + CHAOP3
+	db YM_AM_D1R + CHAOP2
+	db YM_AM_D1R + CHAOP4
 
-	db  70h
-	db  78h
-	db  74h
-	db  7Ch
+	db YM_D2R + CHAOP1
+	db YM_D2R + CHAOP3
+	db YM_D2R + CHAOP2
+	db YM_D2R + CHAOP4
 
-	db  80h
-	db  88h
-	db  84h
-	db  8Ch
+	db YM_D1L_RR + CHAOP1
+	db YM_D1L_RR + CHAOP3
+	db YM_D1L_RR + CHAOP2
+	db YM_D1L_RR + CHAOP4
 
-data_7CA:
+instrumentVolume:
 	db YM_TL + CHAOP1
 	db YM_TL + CHAOP3
 	db YM_TL + CHAOP2
 	db YM_TL + CHAOP4
 
-data_7CE:
+instrumentSsg:
 	db YM_SSG + CHAOP1
 	db YM_SSG + CHAOP3
 	db YM_SSG + CHAOP2
 	db YM_SSG + CHAOP4
 
-data_7D2:
-	db 0ADh
-	db 0AEh
-	db 0ACh
-	db 0A6h
+channelCFreq:
+	db YM_FREQL + CHANCOP3
+	db YM_FREQL + CHANCOP4
+	db YM_FREQL + CHANCOP2
+	db YM_FREQL + CHANNELC
 
 data_7D6:
-	dw 284h
-	dw 2ABh
-	dw 2D3h
-	dw 2FEh
-	dw 32Dh
-	dw 35Ch
-	dw 38Fh
-	dw 3C5h
-	dw 3FFh
-	dw 43Ch
-	dw 47Ch
-	dw 4C0h
+	dw 644
+	dw 683
+	dw 723
+	dw 766
+	dw 813
+	dw 860
+	dw 911
+	dw 965
+	dw 1023
+	dw 1084
+	dw 1148
+	dw 1216
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_7EE:                ; CODE XREF: sub_6B+1Bp
-	call sub_271
+sub_7EE:                ; CODE XREF: performFrameUpdate+1Bp
+	call delayTrack
 	call z, sub_7F5
 	ret
 ; End of function sub_7EE
@@ -1906,6 +1935,8 @@ sub_7EE:                ; CODE XREF: sub_6B+1Bp
 sub_7F5:                ; CODE XREF: sub_7EE+3p
 	ld  e, (ix + 3)
 	ld  d, (ix + 4)
+
+loc_7FB:
 	ld  a, (de)
 	inc de
 	cp  0E0h
@@ -1929,7 +1960,7 @@ loc_80A:                ; CODE XREF: sub_7F5+Ej
 	jr  nz, loc_85A
 
 	ex  af, af'
-	call sub_3C8
+	call setKeyOff
 	ex  af, af'
 
 	ld de, data_86B
@@ -1939,8 +1970,8 @@ loc_80A:                ; CODE XREF: sub_7F5+Ej
 	ldi
 
 	dec a
-	ld  hl, addr_878
-	rst dereferenceWithWordCount
+	ld  hl, drumSoundTable
+	rst dereferencePointerTable
 
 	ld bc, 6
 	ldir
@@ -1951,20 +1982,22 @@ loc_80A:                ; CODE XREF: sub_7F5+Ej
 	ld  a, (ix + 5)
 	add a, (hl)
 	ld  (hl), a
+
 	ld  a, (1D68h)
-	ld  hl, data_88C
-	rst dereferenceWithWordCount
+	ld  hl, drumInstrumentTable
+	rst dereferencePointerTable
 
 	ld  a, (1D66h)
 	ld  e, (ix + 6)
-	push    de
+	push de
+
 	add a, e
 	ld  (ix + 6), a
-	call    sub_469
+	call writeInstrumentData
 
 	pop de
 	ld  (ix + 6), e
-	call    loc_72F
+	call resetChannelCMode
 
 loc_85A:                ; CODE XREF: sub_7F5+23j
 	pop de
@@ -1987,50 +2020,45 @@ data_86B:
 ; ---------------------------------------------------------------------------
 
 loc_86E:                ; CODE XREF: sub_7F5+Aj
-	ld  hl, 874h
+	ld  hl, loc_874
 	jp  loc_999
 ; ---------------------------------------------------------------------------
-	db  13h
-	db 0C3h
-	db 0FBh
-	db    7
 
-addr_878:
-	dw data_898
-	dw data_8BA
-	dw data_8DE
-	dw data_8E7
-	dw data_8FB
-	dw data_91D
-	dw data_8F2
-	dw data_93F
-	dw data_948
-	dw data_96F
+loc_874:
+	inc de
+	jp loc_7FB
 
-data_88C:
-	db 0A1h
-	db    8
-	db 0C5h
-	db    8
-	db    4
-	db    9
-	db  26h
-	db    9
-	db  56h
-	db    9
-	db  7Dh
-	db    9
+drumSoundTable:
+	dw drumSound81
+	dw drumSound82
+	dw drumSound83
+	dw drumSound84
+	dw drumSound85
+	dw drumSound86
+	dw drumSound87
+	dw drumSound88
+	dw drumSound89
+	dw drumSound8A
 
-data_898:
-	db  9Eh
-	db    8
-	db    0
-	db    6
-	db    0
-	db    0
-	db 0B4h
-	db  10h
-	db 0F2h
+drumInstrumentTable:
+	dw drumInstrument0
+	dw drumInstrument1
+	dw drumInstrument2
+	dw drumInstrument3
+	dw drumInstrument4
+	dw drumInstrument5
+
+drumSound81:
+	dw data_89E     ; Track Pointer
+	db 0            ; Transposition
+	db 6            ; Volume
+	db 0            ; Modulation
+	db 0            ; Instrument
+
+data_89E:
+	db 0B4h, 010h, 0F2h
+
+drumInstrument0:
 	db  3Ch
 	db  0Fh
 	db    0
@@ -2057,18 +2085,17 @@ data_898:
 	db  16h
 	db  80h
 
-data_8BA:
-	db 0C0h
-	db    8
-	db    0
-	db  0Ch
-	db    1
-	db    1
-	db 0E0h
-	db  80h
-	db 0B6h
-	db  0Ah
-	db 0F2h
+drumSound82:
+	dw data_8C0     ; Track Pointer
+	db 0            ; Transposition
+	db 0Ch          ; Volume
+	db 1            ; Modulation
+	db 1            ; Instrument
+
+data_8C0:
+	db 0E0h, 080h, 0B6h, 00Ah, 0F2h
+
+drumInstrument1:
 	db  3Eh
 	db  60h
 	db  30h
@@ -2095,51 +2122,47 @@ data_8BA:
 	db  83h
 	db  80h
 
-data_8DE:
-	db 0E4h
-	db    8
-	db    0
-	db  0Ch
-	db    1
-	db    1
-	db 0B3h
-	db  0Ah
-	db 0F2h
+drumSound83:
+	dw data_8E4     ; Track Pointer
+	db 0            ; Transposition
+	db 0Ch          ; Volume
+	db 1            ; Modulation
+	db 1            ; Instrument
 
-data_8E7:
-	db 0EDh
-	db    8
-	db    0
-	db  0Ch
-	db    1
-	db    1
-	db 0E0h
-	db  40h
-	db 0B0h
-	db  0Ah
-	db 0F2h
+data_8E4:
+	db 0B3h, 00Ah, 0F2h
 
-data_8F2:
-	db 0F8h
-	db    8
-	db    0
-	db  0Ch
-	db    1
-	db    1
-	db 0B2h
-	db  0Ah
-	db 0F2h
+drumSound84:
+	dw data_8ED     ; Track Pointer
+	db 0            ; Transposition
+	db 0Ch          ; Volume
+	db 1            ; Modulation
+	db 1            ; Instrument
 
-data_8FB:
-	db    1
-	db    9
-	db    0
-	db  0Ah
-	db    1
-	db    2
-	db  8Fh
-	db    8
-	db 0F2h
+data_8ED:
+	db 0E0h, 040h, 0B0h, 00Ah, 0F2h
+
+drumSound87:
+	dw data_8F8     ; Track Pointer
+	db 0            ; Transposition
+	db 0Ch          ; Volume
+	db 1            ; Modulation
+	db 1            ; Instrument
+
+data_8F8:
+	db 0B2h, 00Ah, 0F2h
+
+drumSound85:
+	dw data_901     ; Track Pointer
+	db 0            ; Transposition
+	db 0Ah          ; Volume
+	db 1            ; Modulation
+	db 2            ; Instrument
+
+data_901:
+	db 08Fh, 008h, 0F2h
+
+drumInstrument2:
 	db  3Ch
 	db    0
 	db    0
@@ -2166,16 +2189,17 @@ data_8FB:
 	db  0Ah
 	db  80h
 
-data_91D:
-	db  23h
-	db    9
-	db    0
-	db    6
-	db    1
-	db    3
-	db 0B0h
-	db  16h
-	db 0F2h
+drumSound86:
+	dw data_923     ; Track Pointer
+	db 0            ; Transposition
+	db 6            ; Volume
+	db 1            ; Modulation
+	db 3            ; Instrument
+
+data_923:
+	db 0B0h, 016h, 0F2h
+
+drumInstrument3:
 	db  72h
 	db  9Eh
 	db  5Bh
@@ -2202,32 +2226,27 @@ data_91D:
 	db  10h
 	db  80h
 
-data_93F:
-	db  45h
-	db    9
-	db    0
-	db  0Eh
-	db    1
-	db    1
-	db 0B9h
-	db  10h
-	db 0F2h
+drumSound88:
+	dw data_945     ; Track Pointer
+	db 0            ; Transposition
+	db 0Eh          ; Volume
+	db 1            ; Modulation
+	db 1            ; Instrument
 
-data_948:
-	db  4Eh
-	db    9
-	db 0F7h
-	db  0Ah
-	db    0
-	db    4
-	db 0FEh
-	db    3
-	db    0
-	db    0
-	db    0
-	db  95h
-	db  20h
-	db 0F2h
+data_945:
+	db 0B9h, 010h, 0F2h
+
+drumSound89:
+	dw data_94E     ; Track Pointer
+	db 0F7h         ; Transposition
+	db 0Ah          ; Volume
+	db 0            ; Modulation
+	db 4            ; Instrument
+
+data_94E:
+	db 0FEh, 003h, 000h, 000h, 000h, 095h, 020h, 0F2h
+
+drumInstrument4:
 	db  3Ch
 	db  0Ah
 	db  50h
@@ -2254,21 +2273,17 @@ data_948:
 	db    0
 	db  8Eh
 
-data_96F:
-	db  75h
-	db    9
-	db    0
-	db    7
-	db    0
-	db    5
-	db 0FEh
-	db    0
-	db    3
-	db    0
-	db    3
-	db 0D1h
-	db    8
-	db 0F2h
+drumSound8A:
+	dw data_975     ; Track Pointer
+	db 0            ; Transposition
+	db 7            ; Volume
+	db 0            ; Modulation
+	db 5            ; Instrument
+
+data_975:
+	db 0FEh, 000h, 003h, 000h, 003h, 0D1h, 008h, 0F2h
+
+drumInstrument5:
 	db  3Dh
 	db    0
 	db  0Fh
@@ -2296,123 +2311,85 @@ data_96F:
 	db  85h
 ; ---------------------------------------------------------------------------
 
-loc_996:                ; CODE XREF: sub_150+12j
-	ld  hl, 9A2h
+handleCommandByte:                ; CODE XREF: sub_150+12j
+	ld  hl, loc_9A2
 
 loc_999:                ; CODE XREF: sub_7F5+7Cj
 	push    hl
-	sub 0E0h ; 'à'
-	ld  hl, 9A6h
-	rst dereferenceWithWordCount
+	sub 0E0h
+	ld  hl, commandTable
+	rst dereferencePointerTable
 	ld  a, (de)
 	jp  (hl)
 ; End of function sub_7F5
 
 ; ---------------------------------------------------------------------------
-		db  13h
-		db 0C3h ; Ã
-		db  5Eh ; ^
-		db    1
-		db  47h ; G
-		db  0Bh
-		db  76h ; v
-		db  0Ah
-		db  8Ah ; Š
-		db  0Ah
-		db 0ACh ; ¬
-		db  0Ah
-		db 0BCh ; ¼
-		db  0Ah
-		db  89h ; ‰
-		db  0Ch
-		db  61h ; a
-		db  0Bh
-		db 0CFh ; Ï
-		db  0Ah
-		db 0B2h ; ²
-		db  0Ah
-		db  58h ; X
-		db  0Bh
-		db  9Fh ; Ÿ
-		db  0Ch
-		db  9Fh ; Ÿ
-		db  0Ch
-		db  9Fh ; Ÿ
-		db  0Ch
-		db  8Eh ; Ž
-		db  0Ah
-		db  93h ; “
-		db  0Ah
-		db  12h
-		db  0Bh
-		db  9Eh ; ž
-		db  0Ah
-		db  9Fh ; Ÿ
-		db  0Ch
-		db 0BFh ; ¿
-		db  0Bh
-		db  9Fh ; Ÿ
-		db  0Ch
-		db  91h ; ‘
-		db  0Bh
-		db  9Fh ; Ÿ
-		db  0Ch
-		db  95h ; •
-		db  0Bh
-		db  72h ; r
-		db  0Ch
-		db  45h ; E
-		db  0Ch
-		db  5Fh ; _
-		db  0Ch
-		db  8Dh ; 
-		db  0Bh
-		db  86h ; †
-		db  0Bh
-		db  9Bh ; ›
-		db  0Bh
-		db 0B1h ; ±
-		db  0Bh
-		db 0D5h ; Õ
-		db  0Ah
-		db 0F6h ; ö
-		db    9
-		db  9Fh ; Ÿ
-		db  0Ch
-		db  83h ; ƒ
-		db  0Ah
-		db  25h ; %
-		db  0Ah
-		db  2Dh ; -
-		db  0Ah
-		db  68h ; h
-		db  0Ah
-		db  16h
-		db  0Ah
-		db 0FDh ; ý
-		db    9
-		db  7Ah ; z
-		db  0Ah
-		db  21h ; !
-		db 0E6h ; æ
-		db    9
-		db 0EFh ; ï
-		db  13h
-		db  1Ah
-		db 0E9h ; é
-		db 0DDh ; Ý
-		db  36h ; 6
-		db  18h
-		db  80h ; €
-		db 0DDh ; Ý
-		db  73h ; s
-		db  19h
-		db 0DDh ; Ý
-		db  72h ; r
-		db  1Ah
 
-sub_A07:
-	ld hl, data_7CE
+loc_9A2:
+	inc de
+	jp loc_15E
+; ---------------------------------------------------------------------------
+commandTable:
+	dw  cmd_E0   ; E0 - pan
+	dw  cmd_E1   ; E1 - detune
+	dw  cmd_E2   ; E2
+	dw  cmd_E3   ; E3 - silence track
+	dw  cmd_E4   ; E4
+	dw  cmd_E5   ; E5 - end loop
+	dw  cmd_E6   ; E6
+	dw  cmd_E7   ; E7
+	dw  cmd_E8   ; E8
+	dw  cmd_E9   ; E9
+	dw  _nullret ; EA - null
+	dw  _nullret ; EB - null
+	dw  _nullret ; EC - null
+	dw  cmd_ED  ; ED
+	dw  cmd_EE  ; EE
+	dw  cmd_EF  ; EF
+	dw  cmd_F0  ; F0
+	dw  _nullret ; F1 - null
+	dw  cmd_F2  ; F2
+	dw  _nullret ; F3 - null
+	dw  cmd_F4  ; F4
+	dw  _nullret ; F5 - null
+	dw  cmd_F6  ; F6 - goto
+	dw  cmd_F7  ; F7 - loop
+	dw  cmd_F8  ; F8 - gosub
+	dw  cmd_F9  ; F9 - return
+	dw  cmd_FA  ; FA
+	dw  cmd_FB  ; FB
+	dw  cmd_FC  ; FC
+	dw  cmd_FD  ; FD
+	dw  cmd_FE  ; FE
+	dw  cmd_FF  ; FF - meta command
+
+metaCommandTable:
+	dw  _nullret    ; 00 - null
+	dw  metacmd_01  ; 01
+	dw  metacmd_02  ; 02
+	dw  metacmd_03  ; 03
+	dw  metacmd_04  ; 04
+	dw  metacmd_05  ; 05
+	dw  metacmd_06  ; 06
+	dw  metacmd_07  ; 07
+
+cmd_FF:
+	ld hl, metaCommandTable
+	rst dereferencePointerTable
+	inc de
+	ld a, (de)
+	jp (hl)
+
+metacmd_06:
+	ld (ix + 18h), 80h
+	ld (ix + 19h), e
+	ld (ix + 1Ah), d
+
+; =============== S U B	R O U T	I N E =======================================
+
+
+writeSsg:
+	ld hl, instrumentSsg
 	ld b, 4
 	loc_A0C:
 		ld  a, (de)
@@ -2427,239 +2404,218 @@ sub_A07:
 
 	dec de
 	ret
+; End of function writeSsg
 
-		db 0D9h ; Ù
-		db    6
-		db    7
-		db  11h
-		db  30h ; 0
-		db    0
-		db  21h ; !
-		db  42h ; B
-		db  1Ch
-		db  77h ; w
-		db  19h
-		db  10h
-		db 0FCh ; ü
-		db 0D9h ; Ù
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0CDh ; Í
-		db  91h ; ‘
-		db    4
-		db 0DDh ; Ý
-		db 0E1h ; á
-		db 0C9h ; É
-		db  32h ; 2
-		db  11h
-		db  1Ch
-		db 0B7h ; ·
-		db  28h ; (
-		db  1Dh
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0D5h ; Õ
-		db 0DDh ; Ý
-		db  21h ; !
-		db  40h ; @
-		db  1Ch
-		db    6
-		db    7
-		db  11h
-		db  30h ; 0
-		db    0
-		db 0DDh ; Ý
-		db 0CBh ; Ë
-		db    0
-		db 0BEh ; ¾
-		db 0CDh ; Í
-		db 0CEh ; Î
-		db    3
-		db 0DDh ; Ý
-		db  19h
-		db  10h
-		db 0F5h ; õ
-		db 0D1h ; Ñ
-		db 0DDh ; Ý
-		db 0E1h ; á
-		db 0C3h ; Ã
-		db  31h ; 1
-		db    5
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0D5h ; Õ
-		db 0DDh ; Ý
-		db  21h ; !
-		db  40h ; @
-		db  1Ch
-		db    6
-		db    7
-		db  11h
-		db  30h ; 0
-		db    0
-		db 0DDh ; Ý
-		db 0CBh ; Ë
-		db    0
-		db 0FEh ; þ
-		db 0DDh ; Ý
-		db  19h
-		db  10h
-		db 0F8h ; ø
-		db 0D1h ; Ñ
-		db 0DDh ; Ý
-		db 0E1h ; á
-		db 0C9h ; É
-		db 0EBh ; ë
-		db  5Eh ; ^
-		db  23h ; #
-		db  56h ; V
-		db  23h ; #
-		db  4Eh ; N
-		db    6
-		db    0
-		db  23h ; #
-		db 0EBh ; ë
-		db 0EDh ; í
-		db 0B0h ; °
-		db  1Bh
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db  77h ; w
-		db  10h
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db  77h ; w
-		db  18h
-		db  13h
-		db  1Ah
-		db 0DDh ; Ý
-		db  77h ; w
-		db  19h
-		db 0C9h ; É
-		db  21h ; !
-		db  14h
-		db  1Ch
-		db  77h ; w
-		db  2Bh ; +
-		db  77h ; w
-		db 0C9h ; É
-		db  32h ; 2
-		db  16h
-		db  1Ch
-		db 0C9h ; É
-		db 0CDh ; Í
-		db  98h ; ˜
-		db  0Ah
-		db 0D7h ; ×
-		db 0C9h ; É
-		db 0CDh ; Í
-		db  98h ; ˜
-		db  0Ah
-		db 0DFh ; ß
-		db 0C9h ; É
-		db 0EBh ; ë
-		db  7Eh ; ~
-		db  23h ; #
-		db  4Eh ; N
-		db 0EBh ; ë
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db  73h ; s
-		db  20h
-		db 0DDh ; Ý
-		db  72h ; r
-		db  21h ; !
-		db 0DDh ; Ý
-		db  36h ; 6
-		db    7
-		db  80h ; €
-		db  13h
-		db  13h
-		db  13h
-		db 0C9h ; É
-		db 0CDh ; Í
-		db  97h ; —
-		db    7
-		db 0C3h ; Ã
-		db 0BFh ; ¿
-		db  0Bh
-		db 0CDh ; Í
-		db  0Bh
-		db    2
-		db 0DDh ; Ý
-		db  77h ; w
-		db  1Eh
-		db 0DDh ; Ý
-		db  77h ; w
-		db  1Fh
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0E1h ; á
-		db    1
-		db  11h
-		db    0
-		db    9
-		db 0EBh ; ë
-		db    1
-		db    5
-		db    0
-		db 0EDh ; í
-		db 0B0h ; °
-		db  3Eh ; >
-		db    1
-		db  12h
-		db 0EBh ; ë
-		db  1Bh
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db 0CBh ; Ë
-		db    0
-		db 0CEh ; Î
-		db  1Bh
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db  7Eh ; ~
-		db    1
-		db 0FEh ; þ
-		db    2
-		db  20h
-		db  2Ah ; *
-		db 0DDh ; Ý
-		db 0CBh ; Ë
-		db    0
-		db 0C6h ; Æ
-		db 0D9h ; Ù
-		db 0CDh ; Í
-		db  40h ; @
-		db    1
-		db    6
-		db    4
-		db 0C5h ; Å
-		db 0D9h ; Ù
-		db  1Ah
-		db  13h
-		db 0D9h ; Ù
-		db  21h ; !
-		db  0Ah
-		db  0Bh
-		db  87h ; ‡
-		db  4Fh ; O
-		db    6
-		db    0
-		db    9
-		db 0EDh ; í
-		db 0A0h ;  
-		db 0EDh ; í
-		db 0A0h ;  
-		db 0C1h ; Á
-		db  10h
-		db 0ECh ; ì
-		db 0D9h ; Ù
-		db  1Bh
-		db  3Eh ; >
-		db  4Fh ; O
+; ---------------------------------------------------------------------------
+
+metacmd_05:
+	exx
+	ld b, 7
+	ld de, 30h
+	ld hl, 1C42h
+
+	loc_A1F:
+		ld (hl), a
+		add hl, de
+		djnz loc_A1F
+
+	exx
+	ret
+; ---------------------------------------------------------------------------
+
+metacmd_02:
+	push ix
+	call loc_491
+	pop  ix
+	ret
+; ---------------------------------------------------------------------------
+
+metacmd_03:
+	ld (1C11h), a
+	or a
+	jr z, loc_A50
+	push ix
+	push de
+	ld ix, 1C40h
+
+	ld b, 7
+	ld de, 30h
+
+	loc_A3F:
+		res 7, (ix + 0)
+		call setFmKeyOff
+		add ix, de
+		djnz loc_A3F
+
+	pop de
+	pop ix
+
+	jp loc_531
+; ---------------------------------------------------------------------------
+
+loc_A50:
+	push ix
+	push de
+
+	ld ix, 1C40h
+	ld b, 7
+	ld de, 30h
+
+	loc_A5C:
+		set 7, (ix + 0)
+		add ix, de
+		djnz loc_A5C
+
+	pop de
+	pop ix
+	ret
+; ---------------------------------------------------------------------------
+
+metacmd_04:
+	ex de, hl
+
+	ld e, (hl)
+	inc hl
+
+	ld d, (hl)
+	inc hl
+
+	ld c, (hl)
+	ld b, 0
+	inc hl
+
+	ex de, hl
+	ldir
+
+	dec de
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_E1:
+	ld (ix + 10h), a
+	ret
+; ---------------------------------------------------------------------------
+
+metacmd_07:
+	ld (ix + 18h), a
+	inc de
+	ld a, (de)
+	ld (ix + 19h), a
+	ret
+; ---------------------------------------------------------------------------
+
+metacmd_01:
+	ld hl, 1C14h
+	ld (hl), a
+	dec hl
+	ld (hl), a
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_E2:
+	ld (1C16h), a
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_ED:
+	call loc_A98
+	rst j_writeFMRegisters
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_EE:
+	call loc_A98
+	rst j_writeDataToFM1
+	ret
+; ---------------------------------------------------------------------------
+
+loc_A98:
+	ex de, hl
+
+	ld a, (hl)
+	inc hl
+
+	ld c, (hl)
+
+	ex de, hl
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_F0:
+	ld (ix + 20h), e
+	ld (ix + 21h), d
+	ld (ix + 7), 80h
+	inc de
+	inc de
+	inc de
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_E3:
+	call muteChannel
+	jp   cmd_F2
+; ---------------------------------------------------------------------------
+
+cmd_E8:
+	call sub_20B
+	ld (ix + 1Eh), a
+	ld (ix + 1Fh), a
+	ret
+
+cmd_E4:
+	push ix
+	pop hl
+
+	ld bc, 11h
+	add hl, bc
+	ex de, hl
+
+	ld bc, 5
+	ldir
+
+	ld a, 1
+	ld (de), a
+
+	ex de, hl
+	dec de
+	ret
+
+cmd_E7:
+	set 1, (ix + 0)
+	dec de
+	ret
+
+cmd_FE:
+	ld a, (ix + 1)
+	cp 2
+	jr nz, sub_B06
+
+	set 0, (ix + 0)
+	exx
+	call sub_140
+	ld b, 4
+
+	loc_AE6:
+		push bc
+		exx
+		ld a, (de)
+		inc de
+		exx
+
+		ld hl, data_B0A
+		add a, a
+		ld c, a
+		ld b, 0
+		add hl, bc
+		ldi
+		ldi
+
+		pop bc
+		djnz loc_AE6
+
+	exx
+	dec de
+	ld a, 4Fh
 
 sub_AFE:
 	ld (timerStatus), a
@@ -2674,30 +2630,22 @@ sub_B06:
 	inc de
 	ret
 
-		db    0
-		db    0
-		db  32h ; 2
-		db    1
-		db  8Eh ; Ž
-		db    1
-		db 0E4h ; ä
-		db    1
-		db 0CDh ; Í
-		db 0A7h ; §
-		db    7
-		db  1Ah
-		db 0DDh ; Ý
-		db  77h ; w
-		db    8
-		db 0B7h ; ·
-		db 0F2h ; ò
-		db  3Dh ; =
-		db  0Bh
-		db  13h
-		db  1Ah
-		db 0DDh ; Ý
-		db  77h ; w
-		db  0Fh
+data_B0A:
+	dw 000h
+	dw 132h
+	dw 18Eh
+	dw 1E4h
+
+cmd_EF:
+	call muteSustain
+	ld a, (de)
+	ld (ix + 8), a
+	or a
+	jp p, loc_B3D
+
+	inc de
+	ld a, (de)
+	ld (ix + 0Fh), a
 
 sub_B22:
 	push de
@@ -2707,7 +2655,7 @@ sub_B22:
 	sub 81h
 	call loc_23
 
-	rst dereferenceWithWordCount
+	rst dereferencePointerTable
 	rst dereferencePointer
 	ld a, (ix + 8)
 	and 7Fh
@@ -2715,59 +2663,60 @@ sub_B22:
 	call loc_434
 	jr loc_B42
 
+loc_B3D:
 	push de
 	ld b, a
 	call sub_425
 
 loc_B42:
-	call sub_469
+	call writeInstrumentData
 	pop de
 	ret
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B47:                ; CODE XREF: sub_215+3Dp
+cmd_E0:                ; CODE XREF: sub_215+3Dp
 	ld  c, 3Fh
-	ld  a, (ix + NOTE.byte_A)
+
+loc_B49:
+	ld  a, (ix + TRACK.byte_A)
 	and c
 	ex  de, hl
 	or  (hl)
-	ld  (ix + NOTE.byte_A), a
+	ld  (ix + TRACK.byte_A), a
 
 	ld  c, a
 	ld  a, YM_CHENABLE
 	rst j_writeFMRegisters
 	ex  de, hl
 	ret
-; End of function sub_B47
+; End of function cmd_E0
 
 ; ---------------------------------------------------------------------------
-	db  4Fh
-	db  3Eh
-	db  22h
-	db 0DFh
-	db  13h
-	db  0Eh
-	db 0C0h
-	db  18h
-	db 0E8h
-	db 0DDh
-	db  86h
-	db    6
-	db 0DDh
-	db  77h
-	db    6
+
+cmd_E9:
+	ld c, a
+	ld a, 22h
+	rst j_writeDataToFM1
+	inc de
+	ld c, 0C0h
+	jr loc_B49
+; ---------------------------------------------------------------------------
+
+cmd_E6:
+	add a, (ix + 6)
+	ld (ix + 6), a
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B67:                ; CODE XREF: sub_469+1Cj sub_6BC+41p
+sub_B67:                ; CODE XREF: writeInstrumentData+1Cj handleFade+41p
 	exx
 
-	ld de, data_7CA
-	ld l, (ix + NOTE.addrlo_1C)
-	ld h, (ix + NOTE.addrhi_1D)
+	ld de, instrumentVolume
+	ld l, (ix + TRACK.addrlo_1C)
+	ld h, (ix + TRACK.addrhi_1D)
 
 	ld b, 4
 	loc_B73:
@@ -2775,7 +2724,7 @@ sub_B67:                ; CODE XREF: sub_469+1Cj sub_6BC+41p
 		or a
 		jp p, loc_B7B
 
-		add a, (ix + NOTE.byte_6)
+		add a, (ix + TRACK.byte_6)
 
 	loc_B7B:
 		and 7Fh
@@ -2796,48 +2745,48 @@ sub_B67:                ; CODE XREF: sub_469+1Cj sub_6BC+41p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B86:
+cmd_FB:
 	add a, (ix + 5)
 	ld  (ix + 5), a
 	ret
-; End of function sub_B86
+; End of function cmd_FB
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B8D:
+cmd_FA:
 	ld (ix + 2), a
 	ret
-; End of function sub_B8D
+; End of function cmd_FA
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B91:
+cmd_F4:
 	ld (ix + 7), a
 	ret
-; End of function sub_B91
+; End of function cmd_F4
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B95:                ; CODE XREF: sub_C89+13j
+cmd_F6:                ; CODE XREF: cmd_E5+13j
 	ex  de, hl
 	ld  e, (hl)
 	inc hl
 	ld  d, (hl)
 	dec de
 	ret
-; End of function sub_B95
+; End of function cmd_F6
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_B9B:
+cmd_FC:
 	cp 1
 	jr nz, loc_BA4
 
@@ -2845,20 +2794,20 @@ sub_B9B:
 	ret
 ; ---------------------------------------------------------------------------
 
-loc_BA4:                ; CODE XREF: sub_B9B+2j
+loc_BA4:                ; CODE XREF: cmd_FC+2j
 	res 1, (ix + 0)
 	res 5, (ix + 0)
 
 	xor a
 	ld  (ix + 10h), a
 	ret
-; End of function sub_B9B
+; End of function cmd_FC
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_BB1:
+cmd_FD:
 	cp 1
 	jr nz, loc_BBA
 
@@ -2866,18 +2815,18 @@ sub_BB1:
 	ret
 ; ---------------------------------------------------------------------------
 
-loc_BBA:                ; CODE XREF: sub_BB1+2j
+loc_BBA:                ; CODE XREF: cmd_FD+2j
 	res 3, (ix + 0)
 	ret
-; End of function sub_BB1
+; End of function cmd_FD
 
 ; ---------------------------------------------------------------------------
-sub_BBF:
+cmd_F2:
 	res 7, (ix + 0)
 	ld a, 1Fh
 	ld (1C15h), a
-	ld      c, (ix + NOTE.channel)
-	call    setKeyOnOff
+	ld      c, (ix + TRACK.channel)
+	call    setFmKeyOff
 
 	push    ix
 	call    setIndexRegisters
@@ -2891,7 +2840,7 @@ sub_BBF:
 	bit     7, (iy + 0)
 	jr      z, loc_BF5
 
-	ld      a, (ix + NOTE.channel)
+	ld      a, (ix + TRACK.channel)
 	cp      (iy + 1)
 	jr      nz, loc_BF5
 
@@ -2899,33 +2848,35 @@ sub_BBF:
 	ld      l, (iy + 2Ah)
 	ld      h, (iy + 2Bh)
 	jr      loc_BFD
+; ---------------------------------------------------------------------------
 
 loc_BF5:
 	push hl
 	ld hl, (1C37h)
 	res 2, (iy + 0)
+; ---------------------------------------------------------------------------
 
 loc_BFD:
 	pop ix
-	res 2, (ix + NOTE.flags)
-	bit 7, (ix + NOTE.flags)
+	res 2, (ix + TRACK.flags)
+	bit 7, (ix + TRACK.flags)
 	jr z, loc_C40
 
 	ld a, 2
-	cp (ix + NOTE.channel)
+	cp (ix + TRACK.channel)
 	jr nz, loc_C1D
 
 	ld a, 4Fh
-	bit 0, (ix + NOTE.flags)
+	bit 0, (ix + TRACK.flags)
 	jr nz, loc_C1A
 
 	and 0Fh
 
-loc_C1A:
+	loc_C1A:
 	call sub_AFE
 
 loc_C1D:
-	ld a, (ix + NOTE.byte_8)
+	ld a, (ix + TRACK.byte_8)
 	or a
 	jp p, loc_C29
 
@@ -2935,96 +2886,87 @@ loc_C1D:
 loc_C29:
 	ld b, a
 	call loc_434
-	call sub_469
+	call writeInstrumentData
 
-	ld a, (ix + NOTE.byte_18)
+	ld a, (ix + TRACK.byte_18)
 	or a
 	jp p, loc_C40
-	ld e, (ix + NOTE.byte_19)
-	ld d, (ix + NOTE.byte_1A)
+	ld e, (ix + TRACK.byte_19)
+	ld d, (ix + TRACK.byte_1A)
 
 loc_C3D:
-	call sub_A07
+	call writeSsg
 
 loc_C40:
 	pop ix
 	pop hl
 	pop hl
 	ret
+; ---------------------------------------------------------------------------
 
-		db  4Fh ; O
-		db  13h
-		db  1Ah
-		db  47h ; G
-		db 0C5h ; Å
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0E1h ; á
-		db 0DDh ; Ý
-		db  35h ; 5
-		db    9
-		db 0DDh ; Ý
-		db  4Eh ; N
-		db    9
-		db 0DDh ; Ý
-		db  35h ; 5
-		db    9
-		db    6
-		db    0
-		db    9
-		db  72h ; r
-		db  2Bh ; +
-		db  73h ; s
-		db 0D1h ; Ñ
-		db  1Bh
-		db 0C9h ; É
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0E1h ; á
-		db 0DDh ; Ý
-		db  4Eh ; N
-		db    9
-		db    6
-		db    0
-		db    9
-		db  5Eh ; ^
-		db  23h ; #
-		db  56h ; V
-		db 0DDh ; Ý
-		db  34h ; 4
-		db    9
-		db 0DDh ; Ý
-		db  34h ; 4
-		db    9
-		db 0C9h ; É
-		db  13h
-		db 0C6h ; Æ
-		db  28h ; (
-		db  4Fh ; O
-		db    6
-		db    0
-		db 0DDh ; Ý
-		db 0E5h ; å
-		db 0E1h ; á
-		db    9
-		db  7Eh ; ~
-		db 0B7h ; ·
-		db  20h
-		db    2
-		db  1Ah
-		db  77h ; w
-		db  13h
-		db  35h ; 5
-		db 0C2h ; Â
-		db  95h ; •
-		db  0Bh
-		db  13h
-		db 0C9h ; É
+cmd_F8:
+	ld c, a
+	inc de
+	ld a, (de)
+	ld b, a
+	push bc
+	push ix
+	pop hl
+	dec (ix + 9)
+	ld c, (ix + 9)
+	dec (ix + 9)
+	ld b, 0
+	add hl, bc
+	ld (hl), d
+	dec hl
+	ld (hl), e
+	pop de
+	dec de
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_F9:
+	push ix
+	pop hl
+
+	ld c, (ix + 9)
+	ld b, 0
+	add hl, bc
+	ld e, (hl)
+	inc hl
+	ld d, (hl)
+	inc (ix + 9)
+	inc (ix + 9)
+	ret
+; ---------------------------------------------------------------------------
+
+cmd_F7:
+	inc de
+	add a, 28h
+	ld c, a
+	ld b, 0
+
+	push ix
+	pop hl
+
+	add hl, bc
+	ld a, (hl)
+	or a
+	jr nz, loc_C82
+	ld a, (de)
+	ld (hl), a
+
+loc_C82:
+	inc de
+	dec (hl)
+	jp nz, cmd_F6
+	inc de
+	ret
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_C89:
+cmd_E5:
 	inc de
 	add a, 28h
 	ld  c, a
@@ -3041,12 +2983,13 @@ sub_C89:
 	ret
 ; ---------------------------------------------------------------------------
 
-loc_C9A:                ; CODE XREF: sub_C89+Cj
+loc_C9A:                ; CODE XREF: cmd_E5+Cj
 	xor a
 	ld  (hl), a
-	jp  sub_B95
+	jp  cmd_F6
+; End of function cmd_E5
 
+_nullret:
 	ret
-; End of function sub_C89
 
 	.end _PROG0

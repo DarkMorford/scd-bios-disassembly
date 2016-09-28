@@ -1,17 +1,22 @@
 frameCounter equ 1C08h
 
 flags_1C09 equ 1C09h
-byte_1C0D equ 1C0Dh
-byte_1C10 equ 1C10h
+fadeCounter equ 1C0Dh
+byte_1C0E equ 1C0Eh
+byte_1C0F equ 1C0Fh
+pauseMode equ 1C10h
 byte_1C11 equ 1C11h
-byte_1C13 equ 1C13h
+tempoTimeout equ 1C13h
 byte_1C14 equ 1C14h
 timerStatus equ 1C12h
 refreshCount equ 1C17h
 byte_1C18 equ 1C18h
-byte_1C19 equ 1C19h
+driverMode equ 1C19h
+word_1C33 equ 1C33h
+word_1C35 equ 1C35h
 tbl_1C4B equ 1C4Bh
 struct_1C40 equ 1C40h
 struct_1C70 equ 1C70h
 struct_1D90 equ 1D90h
+struct_1E20 equ 1E20h
 delayFrames equ 1FFFh
