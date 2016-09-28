@@ -1538,7 +1538,7 @@ writeTilemapSequence:                ; CODE XREF: ROM:0000036Cj
 
 
 sub_CC6:                        ; CODE XREF: ROM:00000370j
-	lea (VDP_DATA).l,a5
+	lea (VDP_DATA).l, a5
 
 	move.w #0, -(sp)
 	move.w (vdpLineIncrement).w, -(sp)
@@ -1598,7 +1598,7 @@ fillVramTilemap:                ; CODE XREF: ROM:000002CCj
 
 
 displayOn:                      ; CODE XREF: ROM:000002D8j
-	bset  #6, (vdpRegCache+3).w
+	bset  #6, (vdpRegCache + 3).w
 	bra.s writeDisplayControlReg
 ; ---------------------------------------------------------------------------
 
@@ -1607,10 +1607,10 @@ displayBlack:                   ; CODE XREF: ROM:00000384j
 	move.w #0, (VDP_DATA).l
 
 displayOff:                     ; CODE XREF: ROM:000002DCj
-	bclr #6, (vdpRegCache+3).w
+	bclr #6, (vdpRegCache + 3).w
 
 writeDisplayControlReg:
-	move.w (vdpRegCache+2).w, (VDP_CONTROL).l
+	move.w (vdpRegCache + 2).w, (VDP_CONTROL).l
 	rts
 ; End of function displayOn
 
@@ -1880,7 +1880,7 @@ loadZ80Prg:             ; CODE XREF: setupGenHardware+8p
 ; =============== S U B R O U T I N E =======================================
 
 
-loadZ80Prg0:                ; CODE XREF: playSegaAnimation+A6p
+loadZ80Driver:                ; CODE XREF: playSegaAnimation+A6p
 	lea (Z80_BUSREQ).l, a4
 
 	m_saveStatusRegister
@@ -1907,7 +1907,7 @@ loadZ80Prg0:                ; CODE XREF: playSegaAnimation+A6p
 
 	m_restoreStatusRegister
 	rts
-; End of function loadZ80Prg0
+; End of function loadZ80Driver
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2823,17 +2823,21 @@ sub_319E:                               ; DATA XREF: sub_30C2+1Co
 sub_3212:               ; CODE XREF: sub_31FE+Cj
 	jsr displayOff(pc)
 
+	; Set scroll size to 64x64
 	move.w #$9011, (VDP_CONTROL).l
-	move.w #$9011, (vdpRegCache+$20).w
+	move.w #$9011, (vdpRegCache + (16 * 2)).w
 
+	; Set background to palette 0, color 0
 	move.w #$8700, (VDP_CONTROL).l
-	move.w #$8700, (vdpRegCache+$0E).w
+	move.w #$8700, (vdpRegCache + (7 * 2)).w
 
+	; Set window H position to 0
 	move.w #$9100, (VDP_CONTROL).l
-	move.w #$9100, (vdpRegCache+$22).w
+	move.w #$9100, (vdpRegCache + (17 * 2)).w
 
+	; Set window V position to 0
 	move.w #$9200, (VDP_CONTROL).l
-	move.w #$9200, (vdpRegCache+$24).w
+	move.w #$9200, (vdpRegCache + (18 * 2)).w
 
 	m_loadVramWriteAddress $C220, d6
 	bsr.w  sub_6816
@@ -2842,7 +2846,7 @@ sub_3212:               ; CODE XREF: sub_31FE+Cj
 	clr.b  (byte_FFFFD061).w
 
 	m_loadVsramWriteAddress 0
-	move.l #$200100, (VDP_DATA).l
+	move.l #$00200100, (VDP_DATA).l
 
 	m_loadVramWriteAddress $8400
 	move.l #$FF800000, (VDP_DATA).l
@@ -10693,7 +10697,7 @@ playSegaAnimation:               ; CODE XREF: ROM:00000364j
 	move.w #223, d0
 	jsr copyToZ80Ram(pc)
 
-	jsr loadZ80Prg0(pc)
+	jsr loadZ80Driver(pc)
 
 	lea (decompScratch).w, a1
 	m_loadVramWriteAddress $C51A, d0

@@ -276,31 +276,31 @@ installDefaultJumpTable:
 
 	; Install interrupt vectors
 	lea (_LEVEL1).w, a0
-	lea word_378(pc), a1
+	lea tbl_378(pc), a1
 	lea loc_388(pc), a6
 	bra.w sub_556
 ; ---------------------------------------------------------------------------
-word_378:
-	dc.w (locret_660   - word_378)
-	dc.w (mdInterrupt  - word_378)
-	dc.w (locret_660   - word_378)
-	dc.w (cddInterrupt - word_378)
-	dc.w (cdcInterrupt - word_378)
-	dc.w (scdInterrupt - word_378)
-	dc.w (locret_660   - word_378)
+tbl_378:
+	dc.w (locret_660   - tbl_378)
+	dc.w (mdInterrupt  - tbl_378)
+	dc.w (locret_660   - tbl_378)
+	dc.w (cddInterrupt - tbl_378)
+	dc.w (cdcInterrupt - tbl_378)
+	dc.w (scdInterrupt - tbl_378)
+	dc.w (locret_660   - tbl_378)
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
 loc_388:
 	; Install _setjmptbl and _waitvsync handlers
 	lea (_SETJMPTBL).w, a0
-	lea word_398(pc), a1
+	lea tbl_398(pc), a1
 	lea loc_39E(pc), a6
 	bra.w sub_556
 ; ---------------------------------------------------------------------------
-word_398:
-	dc.w (_setJmpTbl     - word_398)
-	dc.w (_waitForVBlank - word_398)
+tbl_398:
+	dc.w (_setJmpTbl     - tbl_398)
+	dc.w (_waitForVBlank - tbl_398)
 	dc.w 0
 ; ---------------------------------------------------------------------------
 
