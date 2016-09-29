@@ -346,27 +346,27 @@ sub_18AAC:              ; CODE XREF: sub_18980:loc_1899Ap
 
 loc_18B0C:              ; CODE XREF: sub_18A98+Ej
 					; sub_18AAC+5Cj
-	addi.w  #$200,$16(a3)
-	move.l  $20(a3),d6
-	movea.l $24(a3),a2
-	movea.l $18(a3),a0
-	move.b  1(a3),d1
-	lsl.b   #1,d1
-	add.b   $12(a3),d1
-	ori.b   #$80,d1
-	move.b  d1,PCM_CTRL(a4)
-	move.l  #$200,d0
-	move.l  d0,d1
+	addi.w  #$200, $16(a3)
+	move.l  $20(a3), d6
+	movea.l $24(a3), a2
+	movea.l $18(a3), a0
+	move.b  1(a3), d1
+	lsl.b   #1, d1
+	add.b   $12(a3), d1
+	ori.b   #$80, d1
+	move.b  d1, PCM_CTRL(a4)
+	move.l  #$200, d0
+	move.l  d0, d1
 
 loc_18B38:              ; CODE XREF: sub_18AAC+B4j
-	cmp.l   d0,d6
+	cmp.l   d0, d6
 	bcc.s   loc_18B3E
-	move.l  d6,d0
+	move.l  d6, d0
 
 loc_18B3E:              ; CODE XREF: sub_18AAC+8Ej
-	sub.l   d0,d6
-	sub.l   d0,d1
-	subq.l  #1,d0
+	sub.l   d0, d6
+	sub.l   d0, d1
+	subq.l  #1, d0
 
 	@loc_18B44:
 		move.b (a2)+, (a0)+
@@ -375,44 +375,44 @@ loc_18B3E:              ; CODE XREF: sub_18AAC+8Ej
 
 	tst.l   d1
 	beq.s   loc_18B62
-	moveq   #0,d0
-	move.l  $1C(a3),d0
-	sub.l   $2C(a3),d0
-	suba.l  d0,a2
-	add.l   d0,d6
-	move.l  d1,d0
+	moveq   #0, d0
+	move.l  $1C(a3), d0
+	sub.l   $2C(a3), d0
+	suba.l  d0, a2
+	add.l   d0, d6
+	move.l  d1, d0
 	bra.s   loc_18B38
 ; ---------------------------------------------------------------------------
 
 loc_18B62:              ; CODE XREF: sub_18AAC+A2j
 	tst.l   d6
 	bne.s   loc_18B74
-	moveq   #0,d0
-	move.l  $1C(a3),d0
-	sub.l   $2C(a3),d0
-	suba.l  d0,a2
-	move.l  d0,d6
+	moveq   #0, d0
+	move.l  $1C(a3), d0
+	sub.l   $2C(a3), d0
+	suba.l  d0, a2
+	move.l  d0, d6
 
 loc_18B74:              ; CODE XREF: sub_18AAC+B8j
-	move.l  d6,$20(a3)
-	move.l  a2,$24(a3)
-	subq.b  #1,$13(a3)
+	move.l  d6, $20(a3)
+	move.l  a2, $24(a3)
+	subq.b  #1, $13(a3)
 	bmi.s   loc_18B88
-	move.l  a0,$18(a3)
+	move.l  a0, $18(a3)
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_18B88:              ; CODE XREF: sub_18AAC+D4j
-	move.l  #PCM_DATA,$18(a3)
+	move.l  #PCM_DATA, $18(a3)
 	tst.b   $12(a3)
 	bne.s   loc_18BA4
-	move.b  #6,$13(a3)
-	move.b  #1,$12(a3)
+	move.b  #6, $13(a3)
+	move.b  #1, $12(a3)
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_18BA4:              ; CODE XREF: sub_18AAC+E8j
-	move.b  #7,$13(a3)
+	move.b  #7, $13(a3)
 	clr.b   $12(a3)
 	rts
 ; End of function sub_18AAC
@@ -1353,8 +1353,8 @@ loc_19218:              ; CODE XREF: PLAYER:000191E0j
 
 loc_19242:              ; CODE XREF: PLAYER:000190F8j
 					; PLAYER:000190FCj ...
-	bclr    #7,(a3)
-	bclr    #4,(a3)
+	bclr    #7, (a3)
+	bclr    #4, (a3)
 	jsr sub_18ED8
 
 	tst.b   $E(a5)
@@ -1363,65 +1363,65 @@ loc_19242:              ; CODE XREF: PLAYER:000190F8j
 	clr.b   3(a5)
 
 loc_1925A:              ; CODE XREF: PLAYER:00019252j
-	addq.w  #8,sp
+	addq.w  #8, sp
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_1925E:              ; CODE XREF: PLAYER:00019108j
 					; PLAYER:00019110j ...
-	move.b  (a2)+,d0
-	lsl.w   #8,d0
-	move.b  (a2)+,d0
-	adda.w  d0,a2
-	subq.w  #1,a2
+	move.b  (a2)+, d0
+	lsl.w   #8, d0
+	move.b  (a2)+, d0
+	adda.w  d0, a2
+	subq.w  #1, a2
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_1926A:              ; CODE XREF: PLAYER:00019114j
-	moveq   #0,d0
-	move.b  (a2)+,d0
-	move.b  (a2)+,d1
+	moveq   #0, d0
+	move.b  (a2)+, d0
+	move.b  (a2)+, d1
 
-	tst.b   $40(a3,d0.w)
+	tst.b   $40(a3, d0.w)
 	bne.s   loc_1927A
 
-	move.b  d1,$40(a3,d0.w)
+	move.b  d1, $40(a3, d0.w)
 
 loc_1927A:              ; CODE XREF: PLAYER:00019274j
-	subq.b  #1,$40(a3,d0.w)
+	subq.b  #1, $40(a3, d0.w)
 	bne.s   loc_1925E
 
-	addq.w  #2,a2
+	addq.w  #2, a2
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_19284:              ; CODE XREF: PLAYER:00019118j
-	moveq   #0,d0
-	move.b  $A(a3),d0
-	subq.b  #4,d0
-	move.l  a2,(a3,d0.w)
-	move.b  d0,$A(a3)
+	moveq   #0, d0
+	move.b  $A(a3), d0
+	subq.b  #4, d0
+	move.l  a2, (a3, d0.w)
+	move.b  d0, $A(a3)
 	bra.s   loc_1925E
 ; ---------------------------------------------------------------------------
 
 loc_19296:              ; CODE XREF: PLAYER:0001911Cj
-	moveq   #0,d0
-	move.b  $A(a3),d0
-	movea.l (a3,d0.w),a2
-	addq.w  #2,a2
-	addq.b  #4,d0
-	move.b  d0,$A(a3)
+	moveq   #0, d0
+	move.b  $A(a3), d0
+	movea.l (a3, d0.w), a2
+	addq.w  #2, a2
+	addq.b  #4, d0
+	move.b  d0, $A(a3)
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_192AA:              ; CODE XREF: PLAYER:00019120j
-	move.b  (a2)+,2(a3)
+	move.b  (a2)+, 2(a3)
 	rts
 ; ---------------------------------------------------------------------------
 
 loc_192B0:              ; CODE XREF: PLAYER:00019124j
-	move.b  (a2)+,d0
-	add.b   d0,8(a3)
+	move.b  (a2)+, d0
+	add.b   d0, 8(a3)
 	rts
 ; ---------------------------------------------------------------------------
 

@@ -139,7 +139,7 @@ boot_user1:             ; CODE XREF: sub_610A+Cj
 
 	bsr.s clearWordRam1M
 
-	; Update CD player module
+	; Update audio player module
 	jsr sub_18004
 
 	; Clear communication data registers
